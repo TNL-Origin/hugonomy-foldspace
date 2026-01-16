@@ -1,0 +1,454 @@
+/* ═══════════════════════════════════════════════════════════
+   VibeAI FoldSpace - Phase VII Resonance HUD Styling
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --bg-overlay: rgba(10, 10, 25, 0.02);
+  --sidebar-bg: rgba(15, 20, 32, 0.95);
+  --sidebar-border: rgba(123, 162, 255, 0.3);
+  --text-primary: #dbe7ff;
+  --text-muted: #91a1bd;
+  --accent-blue: #7aa2ff;
+  --accent-purple: #9d5ce0;
+  --glow-blue: rgba(122, 162, 255, 0.4);
+  --glow-purple: rgba(157, 92, 224, 0.4);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: transparent;
+}
+
+/* ───────────────────────────────────────────────────────────
+   Transparent Overlay Container
+   ─────────────────────────────────────────────────────────── */
+#hud-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg-overlay);
+  pointer-events: none; /* Allow clicks through to page below */
+  z-index: 2147483640;
+}
+
+/* ───────────────────────────────────────────────────────────
+   Embedded Spiral Container (inside sidebar)
+   ─────────────────────────────────────────────────────────── */
+.spiral-container {
+  width: 100%;
+  height: 140px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  background: linear-gradient(145deg, rgba(33, 34, 68, 0.5), rgba(26, 27, 51, 0.5));
+  border-radius: 12px;
+  border: 1px solid rgba(122, 162, 255, 0.2);
+}
+
+#resonance-spiral {
+  width: 120px;
+  height: 120px;
+  filter: drop-shadow(0 0 15px var(--glow-purple));
+}
+
+/* ───────────────────────────────────────────────────────────
+   Privacy Sidebar (right edge)
+   ─────────────────────────────────────────────────────────── */
+#privacy-sidebar {
+  position: fixed;
+  top: 80px;
+  right: 16px;
+  width: 380px;
+  height: 82vh;
+  max-height: calc(100vh - 100px);
+  background: var(--sidebar-bg);
+  border-left: 2px solid var(--sidebar-border);
+  border-radius: 16px;
+  box-shadow: -4px 0 32px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  padding: 24px 20px;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+  z-index: 2147483641;
+}
+
+#privacy-sidebar.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(15px);
+}
+
+#privacy-sidebar.collapsed {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+/* ───────────────────────────────────────────────────────────
+   Sidebar Header
+   ─────────────────────────────────────────────────────────── */
+.sidebar-header {
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 16px;
+  position: relative;
+}
+
+.sidebar-header h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent-blue);
+  margin-bottom: 4px;
+  text-shadow: 0 0 12px var(--glow-blue);
+}
+
+.sidebar-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.close-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--accent-blue);
+  color: var(--text-primary);
+  transform: scale(1.1);
+}
+
+.close-btn:active {
+  transform: scale(0.95);
+}
+
+/* ───────────────────────────────────────────────────────────
+   Mood Display Section
+   ─────────────────────────────────────────────────────────── */
+.mood-section {
+  background: linear-gradient(135deg, rgba(122, 162, 255, 0.1), rgba(157, 92, 224, 0.1));
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid rgba(122, 162, 255, 0.2);
+}
+
+.mood-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.mood-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent-purple);
+  text-shadow: 0 0 8px var(--glow-purple);
+}
+
+/* ───────────────────────────────────────────────────────────
+   Chapter Journey Section
+   ─────────────────────────────────────────────────────────── */
+.chapter-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* vStable-2.3.3 Pointer Layer Fix (appended) */
+#vibeai-hud-host,
+#vibeai-hud-container {
+  pointer-events: none !important;
+  background: transparent !important;
+  z-index: 2147483646 !important;
+}
+
+#vibeai-hud-frame,
+#vibeai-hud-iframe {
+  pointer-events: auto !important;
+  background: transparent !important;
+  z-index: 2147483647 !important;
+}
+
+/* ChatGPT ghost overlay cleanup */
+body:has(#vibeai-hud-host) [data-testid="popover"],
+body:has(#vibeai-hud-host) [data-testid="popover-container"] {
+  display: none !important;
+}
+
+.chapter-section h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Chapter Reporter Box - Phase VII.9.3 */
+.chapter-list {
+  max-height: 280px;
+  overflow-y: auto;
+  margin: 8px 0 4px;
+  padding: 6px 8px 6px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex: 1;
+}
+
+.chapter-empty {
+  padding: 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.chapter-entry {
+  font-size: 0.85rem;
+  padding: 6px 8px;
+  color: #cfcfff;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+  border-radius: 6px;
+  margin-bottom: 2px;
+}
+
+.chapter-entry:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Scrollbar styling for chapter list */
+.chapter-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chapter-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 3px;
+}
+
+.chapter-list::-webkit-scrollbar-thumb {
+  background: rgba(122, 162, 255, 0.3);
+  border-radius: 3px;
+}
+
+.chapter-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(122, 162, 255, 0.5);
+}
+
+/* ───────────────────────────────────────────────────────────
+   Control Buttons - Phase VII.9.3 Horizontal Layout
+   ─────────────────────────────────────────────────────────── */
+.controls-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 6px;
+}
+
+.controls-row button {
+  font-size: 0.75rem;
+  padding: 5px 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: #e0e0ff;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.controls-row button:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(122, 162, 255, 0.3);
+}
+
+.controls-row button:active {
+  transform: scale(0.98);
+}
+
+/* Compact controls wrapper */
+.controls-compact {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#glyph-display {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+  transition: transform 0.35s ease, opacity 0.35s ease;
+  cursor: default;
+}
+
+/* Glyph swap animation */
+@keyframes glyphSwap {
+  0% { transform: scale(0.8) rotate(-8deg); opacity: 0; }
+  50% { transform: scale(1.15) rotate(6deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Spiral pulse triggered on mood change */
+@keyframes spiralPulse {
+  0% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(0,0,0,0.2)); }
+  50% { transform: scale(1.12); filter: drop-shadow(0 0 28px rgba(122,162,255,0.45)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 10px rgba(0,0,0,0.2)); }
+}
+
+/* Temporary ACK flash for buttons */
+.ack-flash {
+  animation: ackFlashAnim 1s ease forwards;
+}
+
+@keyframes ackFlashAnim {
+  0% { transform: translateY(0); box-shadow: 0 0 0 rgba(122,162,255,0); }
+  30% { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(122,162,255,0.35); }
+  100% { transform: translateY(0); box-shadow: 0 0 0 rgba(122,162,255,0); }
+}
+
+#privacy-btn:hover {
+  box-shadow: 0 0 12px rgba(157, 92, 224, 0.4);
+}
+
+/* ───────────────────────────────────────────────────────────
+   Mood-specific Glow Effects
+   ─────────────────────────────────────────────────────────── */
+.mood-calm #spiral-container {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 40px rgba(34, 193, 243, 0.6);
+}
+
+.mood-urgent #spiral-container {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 40px rgba(255, 155, 0, 0.6);
+  animation: pulse-urgent 2s ease-in-out infinite;
+}
+
+.mood-resonant #spiral-container {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 40px rgba(51, 205, 243, 0.6);
+}
+
+.mood-dim #spiral-container {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(66, 66, 66, 0.4);
+}
+
+@keyframes pulse-urgent {
+  0%, 100% {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 40px rgba(255, 155, 0, 0.6);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 60px rgba(255, 62, 46, 0.8);
+  }
+}
+
+/* ───────────────────────────────────────────────────────────
+   Toggle Button for Re-opening HUD
+   ─────────────────────────────────────────────────────────── */
+#vibeai-toggle {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  background: radial-gradient(circle, #6aa5ff, #5994ff);
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  z-index: 2147483646;
+  display: none;
+  font-size: 24px;
+  box-shadow: 0 4px 16px rgba(122, 162, 255, 0.4);
+  transition: all 0.3s ease;
+  pointer-events: auto;
+}
+
+#vibeai-toggle:hover {
+  background: radial-gradient(circle, #7ab5ff, #6aa4ff);
+  box-shadow: 0 6px 24px rgba(122, 162, 255, 0.6);
+  transform: scale(1.1);
+}
+
+#vibeai-toggle:active {
+  transform: scale(0.95);
+}
+
+/* ───────────────────────────────────────────────────────────
+   Phase VII.9 – Resonant Memory Field Integration
+   ─────────────────────────────────────────────────────────── */
+#privacy-sidebar {
+  transition: background 1s ease-in-out;
+  background: radial-gradient(circle at 50% 20%, hsl(220, 30%, 30%), #000);
+}
+
+.spiral-container {
+  animation: pulseGlow 4s infinite alternate;
+}
+
+@keyframes pulseGlow {
+  0%   { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 1;   transform: scale(1.05); }
+}
+
+.chapter-entry {
+  color: #cfcfff;
+  font-size: 0.85rem;
+  opacity: 0.85;
+  margin-top: 2px;
+  letter-spacing: 0.3px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.chapter-entry:hover {
+  background: rgba(255, 255, 255, 0.06);
+  opacity: 1;
+}

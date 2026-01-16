@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>VibeAI Sidebar</title>
+    <meta http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; connect-src 'self'; frame-ancestors *;">
+    <link rel="stylesheet" href="./sidebar.css" />
+  </head>
+  <body>
+    <aside id="panel" aria-label="VibeAI Sidebar">
+      <header class="top">
+        <div class="title">
+          <img src="../icons/icon48.png" alt="" />
+          <span>VibeAI Sidebar</span>
+        </div>
+        <button id="closeBtn" title="Hide">×</button>
+      </header>
+
+      <section class="brand">
+        <div class="host">🤖 <span id="hostName">Chat</span></div>
+        <div class="canvasWrap">
+          <canvas id="lantern" width="320" height="160" aria-hidden="true"></canvas>
+        </div>
+      </section>
+
+      <section class="weather">
+        <div class="label">Emotional Weather:</div>
+        <div id="weatherText">Awaiting signal…</div>
+      </section>
+
+      <section class="chapters">
+        <div class="label">📘 Chapters</div>
+        <div class="empty">(will appear here)</div>
+      </section>
+
+      <footer class="controls">
+        <button id="settingsBtn">⚙️ Settings</button>
+        <button id="reanalyzeBtn">🔁 Re-analyze</button>
+        <button id="clearBtn">🧹 Clear Data</button>
+        <button id="privacyBtn">🛡️ Privacy / Beta</button>
+      </footer>
+    </aside>
+
+    <script type="module" src="./sidebar.js"></script>
+  </body>
+</html>

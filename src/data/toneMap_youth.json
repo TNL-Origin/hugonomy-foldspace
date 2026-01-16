@@ -1,0 +1,33 @@
+{
+  "_notice": "Controlled Data — ©2025 Hugonomy Systems | Patent Pending (USPTO 63/856,714) | Non-commercial beta use only.",
+  "calm": {
+    "title": "Chill 🌊",
+    "phrase": "Things feel peaceful and steady.",
+    "color": "#3B82F6",
+    "emoji": "🌊"
+  },
+  "urgent": {
+    "title": "Rushed ⚡",
+    "phrase": "You feel like time's running out.",
+    "color": "#F97316",
+    "emoji": "⚡"
+  },
+  "reflective": {
+    "title": "Deep 🔮",
+    "phrase": "You're thinking it through, finding clarity.",
+    "color": "#A855F7",
+    "emoji": "🔮"
+  },
+  "dissonant": {
+    "title": "Shaky ⚙️",
+    "phrase": "Something feels off or out of sync.",
+    "color": "#64748B",
+    "emoji": "⚙️"
+  },
+  "resonant": {
+    "title": "Connected ✨",
+    "phrase": "You feel in tune — everything clicks.",
+    "color": "#EC4899",
+    "emoji": "✨"
+  }
+}

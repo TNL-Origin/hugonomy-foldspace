@@ -1,0 +1,54 @@
+:root{
+  --bg:#0d1117;
+  --panel:#0f1420cc;
+  --card:#121a28;
+  --text:#dbe7ff;
+  --muted:#91a1bd;
+  --accent:#7aa2ff;
+  --ring:rgba(124, 167, 255, 0.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:transparent;color:var(--text);font:14px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+
+#panel{
+  height:100vh; width:380px;
+  background:var(--panel);
+  backdrop-filter: blur(10px);
+  display:flex; flex-direction:column; gap:12px;
+  border-left:1px solid #202a3d;
+}
+
+.top{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 12px; border-bottom:1px solid #1d2739;
+}
+.title{display:flex;gap:8px;align-items:center;font-weight:600}
+.title img{width:20px;height:20px}
+#closeBtn{
+  all:unset; cursor:pointer; width:28px; height:28px; text-align:center;
+  border-radius:6px; background:#1a2335; color:var(--text);
+}
+#closeBtn:hover{outline:1px solid var(--ring)}
+
+.brand{padding:10px 12px; display:flex; flex-direction:column; gap:10px}
+.host{color:var(--muted)}
+.canvasWrap{
+  background:linear-gradient(180deg,#111a2a,#0b1220);
+  border:1px solid #1f2a40; border-radius:14px; padding:10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.25) inset, 0 0 0 1px rgba(255,255,255,.03);
+}
+
+.weather,.chapters{padding:0 12px; display:flex; flex-direction:column; gap:6px}
+.label{color:var(--muted); font-size:12px}
+#weatherText{font-size:16px; font-weight:600}
+
+.controls{
+  margin-top:auto; padding:12px;
+  display:grid; gap:8px; grid-template-columns:repeat(2, 1fr);
+}
+.controls button{
+  all:unset; cursor:pointer; text-align:center; padding:10px 12px;
+  background:#152035; border:1px solid #22304b; border-radius:10px;
+  color:var(--text); font-weight:600;
+}
+.controls button:hover{outline:1px solid var(--ring)}

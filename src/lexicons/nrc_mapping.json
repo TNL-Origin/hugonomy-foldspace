@@ -1,0 +1,66 @@
+{
+  "_comment": "NRC Emotion Lexicon -> VibeAI Tone Mapping (v2.14.3+)",
+  "_description": "Maps NRC emotion labels to VibeAI tone categories with configurable weights",
+  "_last_updated": "2025-12-23",
+  "_note": "Tone names must match content-parser.js: calm, urgent, reflective, dissonant, resonant",
+
+  "anger": {
+    "tone": "dissonant",
+    "weight": 1.0,
+    "rationale": "Anger is a clear dissonance indicator"
+  },
+
+  "fear": {
+    "tone": "dissonant",
+    "weight": 1.0,
+    "rationale": "Fear creates conversational dissonance"
+  },
+
+  "sadness": {
+    "tone": "dissonant",
+    "weight": 0.8,
+    "rationale": "Sadness can create mild dissonance"
+  },
+
+  "disgust": {
+    "tone": "dissonant",
+    "weight": 0.9,
+    "rationale": "Disgust indicates strong negative reaction"
+  },
+
+  "anticipation": {
+    "tone": "reflective",
+    "weight": 0.6,
+    "rationale": "Anticipation suggests forward-thinking/planning mode"
+  },
+
+  "surprise": {
+    "tone": "urgent",
+    "weight": 0.6,
+    "rationale": "Surprise can indicate unexpected urgency"
+  },
+
+  "joy": {
+    "tone": "resonant",
+    "weight": 1.0,
+    "rationale": "Joy indicates positive resonance"
+  },
+
+  "trust": {
+    "tone": "resonant",
+    "weight": 0.9,
+    "rationale": "Trust shows strong conversational resonance"
+  },
+
+  "positive": {
+    "tone": "resonant",
+    "weight": 0.4,
+    "rationale": "General positive sentiment (lighter weight to avoid over-counting)"
+  },
+
+  "negative": {
+    "tone": "dissonant",
+    "weight": 0.4,
+    "rationale": "General negative sentiment (lighter weight to avoid over-counting)"
+  }
+}
