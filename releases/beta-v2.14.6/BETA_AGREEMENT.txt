@@ -1,0 +1,132 @@
+================================================================================
+                    VIBEAI FOLDSPACE BETA TESTER AGREEMENT
+================================================================================
+
+Version: 2.14.6
+Effective Date: January 18, 2026
+Company: Hugonomy Systems
+
+By installing or using VibeAI FoldSpace Beta, you agree to the following terms:
+
+--------------------------------------------------------------------------------
+1. BETA SOFTWARE DISCLAIMER
+--------------------------------------------------------------------------------
+
+This is PRE-RELEASE SOFTWARE provided for testing and evaluation purposes.
+
+- The software may contain bugs, errors, or incomplete features
+- Performance may not reflect the final product
+- Features may change or be removed without notice
+- Data created during beta may not be preserved in future versions
+
+YOU USE THIS SOFTWARE AT YOUR OWN RISK.
+
+--------------------------------------------------------------------------------
+2. CONFIDENTIALITY
+--------------------------------------------------------------------------------
+
+As a beta tester, you agree to:
+
+- NOT publicly distribute this software without permission
+- NOT reverse engineer, decompile, or attempt to extract source code
+- NOT share screenshots or recordings publicly without approval
+- Keep beta-specific features and bugs confidential until public release
+
+You MAY:
+- Share feedback directly with Hugonomy Systems
+- Discuss general concepts with permission
+- Report bugs through official channels
+
+--------------------------------------------------------------------------------
+3. INTELLECTUAL PROPERTY
+--------------------------------------------------------------------------------
+
+VibeAI FoldSpace and the HugoScore algorithm are protected intellectual property.
+
+Patent Status: USPTO Provisional Patent Application #63/856,714
+Copyright: 2026 Hugonomy Systems. All rights reserved.
+
+The software includes proprietary algorithms for emotional resonance analysis.
+These algorithms are trade secrets protected by law.
+
+You may NOT:
+- Copy, modify, or create derivative works
+- Use the algorithms in competing products
+- Claim ownership of any part of the software
+- Remove copyright notices or patent markings
+
+--------------------------------------------------------------------------------
+4. DATA AND PRIVACY
+--------------------------------------------------------------------------------
+
+VibeAI FoldSpace processes all data LOCALLY in your browser.
+
+We do NOT:
+- Collect your conversations
+- Send data to external servers
+- Track your usage or behavior
+- Share any information with third parties
+
+We DO store locally (on your device only):
+- Your consent preference
+- Extension settings
+- No conversation content is ever stored
+
+--------------------------------------------------------------------------------
+5. FEEDBACK AND CONTRIBUTIONS
+--------------------------------------------------------------------------------
+
+By providing feedback, you grant Hugonomy Systems the right to:
+
+- Use your feedback to improve the product
+- Implement suggested features without compensation
+- Quote anonymized feedback in marketing materials
+
+Your name and personal details will never be shared without consent.
+
+--------------------------------------------------------------------------------
+6. LIMITATION OF LIABILITY
+--------------------------------------------------------------------------------
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW:
+
+- Hugonomy Systems is not liable for any damages arising from use of this beta
+- This includes direct, indirect, incidental, or consequential damages
+- The software is provided "AS IS" without warranty of any kind
+- We do not guarantee uptime, accuracy, or fitness for any purpose
+
+--------------------------------------------------------------------------------
+7. TERMINATION
+--------------------------------------------------------------------------------
+
+This agreement terminates when:
+- The beta testing period ends
+- You uninstall the software
+- Hugonomy Systems revokes your beta access
+- You violate any term of this agreement
+
+Upon termination, you must delete all copies of the beta software.
+
+--------------------------------------------------------------------------------
+8. AGREEMENT TO TERMS
+--------------------------------------------------------------------------------
+
+By installing VibeAI FoldSpace Beta, you confirm that:
+
+- You have read and understood this agreement
+- You agree to be bound by these terms
+- You are at least 18 years old or have parental consent
+- You will use the software only for its intended purpose
+
+--------------------------------------------------------------------------------
+CONTACT
+--------------------------------------------------------------------------------
+
+Questions about this agreement:
+Email: hugonomysystems@gmail.com
+Website: https://sites.google.com/view/hugonomy-systems
+
+================================================================================
+          Copyright 2026 Hugonomy Systems. All Rights Reserved.
+               Patent Pending: USPTO #63/856,714
+================================================================================
