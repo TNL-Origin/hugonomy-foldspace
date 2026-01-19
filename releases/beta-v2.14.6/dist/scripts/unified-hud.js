@@ -2627,7 +2627,7 @@ function attachEventListeners() {
   if (reportBugBtn) {
     reportBugBtn.addEventListener('click', () => {
       console.log('[VibeAI UniHUD] 🐛 Report Bug clicked');
-      window.open('https://github.com/TNL-Origin/vibeai-foldspace/issues/new?template=bug_report.md', '_blank');
+      window.open('https://github.com/TNL-Origin/hugonomy-foldspace/issues/new', '_blank');
     });
   }
 
@@ -3487,8 +3487,8 @@ function showPrivacyModal() {
         <h3 style="color: #00d4ff; margin-top: 16px; margin-bottom: 12px;">Open Source</h3>
         <p style="margin-bottom: 12px;">
           You can review the complete source code at:
-          <a href="https://github.com/TNL-Origin/vibeai-foldspace" target="_blank" style="color: #00d4ff; text-decoration: underline;">
-            github.com/TNL-Origin/vibeai-foldspace
+          <a href="https://github.com/TNL-Origin/hugonomy-foldspace" target="_blank" style="color: #00d4ff; text-decoration: underline;">
+            github.com/TNL-Origin/hugonomy-foldspace
           </a>
         </p>
 
