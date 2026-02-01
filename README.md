@@ -67,6 +67,8 @@ When you first visit a supported platform:
 2. Click **Accept & Continue** to enable the extension
 3. The **Unified HUD** will appear on the right side of your screen
 
+**Changed your mind?** If you clicked "Maybe later" and want to enable VibeAI, press **`Ctrl+Shift+V`** to bring back the consent modal anytime.
+
 ### HUD Controls
 
 - **🔄 Reanalyze** - Re-scan current page for threads
@@ -75,6 +77,10 @@ When you first visit a supported platform:
 - **📋 Consent** - Review consent and privacy settings
 - **🔒 Privacy** - View detailed privacy statement
 - **🐛 Report Bug** - Submit bug reports via GitHub Issues
+
+### Keyboard Shortcuts
+
+- **`Ctrl+Shift+V`** - Show consent modal (re-enable VibeAI after declining)
 
 ### Emotional Tone Legend
 
@@ -115,6 +121,10 @@ dist/                         # Build output (load this in Chrome)
 - **Chrome Storage API** - Local-only thread persistence
 - **HugoScore Algorithm** - Proprietary emotional tone analysis
 - **Vite Build System** - Fast bundling and optimization
+
+### Proprietary Components
+
+> **Note:** The **HugoScore engine** (`hugoscore-engine.js`) is proprietary intellectual property protected by U.S. Provisional Patent Application No. 63/856,714. It is **not included in source form** in this repository. The distributed extension contains a compiled/obfuscated build. All other source code is fully open for inspection. See [HUGOSCORE_PROPRIETARY_NOTICE.md](scripts/HUGOSCORE_PROPRIETARY_NOTICE.md) for details.
 
 ---
 
