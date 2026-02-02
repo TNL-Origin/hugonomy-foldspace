@@ -16,7 +16,7 @@
       iframe.style.setProperty('pointer-events','none','important');
       iframe.style.setProperty('z-index','2147483647','important');
       iframe.style.setProperty('border','none','important');
-      console.log('[VibeAI Guards] Emergency pointer-release enforced');
+      void 0;
     } catch { console.warn('[VibeAI Guards] ensurePointerRelease failed'); }
   }
 
@@ -49,5 +49,5 @@
   });
 
   // Final fallback sweep
-  setTimeout(() => { try { ensurePointerRelease(); console.log('[VibeAI Guards] Final pointer-release sweep'); } catch { console.warn('[VibeAI Guards] final sweep failed'); } }, 5000);
+  setTimeout(() => { try { ensurePointerRelease(); void 0; } catch { console.warn('[VibeAI Guards] final sweep failed'); } }, 5000);
 })();

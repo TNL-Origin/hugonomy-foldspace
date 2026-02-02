@@ -8,7 +8,26 @@ if (!window.VIBEAI_PARSER_DEBUG) window.VIBEAI_PARSER_DEBUG = false;
 
 window.VIBEAI_PARSER_ACTIVE = true; // Debug flag
 
-console.log("[VibeAI Parser] Universal mode active");
+void 0;
+
+// v2.14.8: Initialize parser registry and detect platform
+const registry = window.__vibeai_parser_registry;
+if (!registry) {
+  console.error('[VibeAI Parser] ❌ Parser registry not initialized! Check manifest.json load order');
+  throw new Error('Parser registry missing');
+}
+
+const activeParser = registry.detectAndActivate();
+if (!activeParser) {
+  console.warn('[VibeAI Parser] ⚠️  No parser for this platform, exiting');
+  // Exit early - we don't support this platform
+}
+
+// v2.14.4: Optional HugoScore WASM integration (feature-flagged)
+// Feature flag is in hugoscore-integration.js: ENABLE_WASM_HUGOSCORE
+// Default: OFF (uses lightweight tone detection below)
+// To enable: Set ENABLE_WASM_HUGOSCORE = true in scripts/hugoscore-integration.js
+let hugoScoreIntegration = null;
 
 // v2.14.1: Persistent bridge token per page session (prevents token mismatch errors)
 let VIBEAI_BRIDGE_TOKEN = null;
@@ -28,7 +47,7 @@ function getBridgeToken() {
         bubbles: true,
         composed: true
       }));
-      console.log('[VibeAI Parser] 🔐 Bridge token initialized and dispatched');
+      void 0;
     } catch (err) {
       console.warn('[VibeAI Parser] ⚠️ Could not dispatch bridge token', err);
     }
@@ -38,90 +57,28 @@ function getBridgeToken() {
 
 /**
  * Detect which platform we're running on
- * v2.14.3: Fixed chat.openai.com detection (was missing due to .includes() logic)
+ * v2.14.8: Now uses modular parser registry
  */
 function detectPlatform() {
-  const host = location.hostname;
-  // ChatGPT: chatgpt.com, www.chatgpt.com, chat.openai.com
-  if (host === 'chatgpt.com' || host === 'www.chatgpt.com' || host === 'chat.openai.com') return "chatgpt";
-  if (host.includes("gemini")) return "gemini";
-  if (host.includes("copilot")) return "copilot";
-  if (host.includes("claude.ai")) return "claude";
-  return "unknown";
+  return registry.getPlatformName() || 'unknown';
 }
 
 /**
  * Extract messages based on platform-specific selectors
  */
+/**
+ * Extract messages based on platform-specific selectors
+ * v2.14.8: Uses modular parser registry
+ */
 function extractMessages() {
-  const platform = detectPlatform();
-  let nodes = [];
-
-  if (platform === "chatgpt") {
-    nodes = document.querySelectorAll(".markdown, .text-base");
-  } else if (platform === "gemini") {
-    nodes = document.querySelectorAll("[data-message-content], article, .response-container");
-  } else if (platform === "copilot") {
-    // Copilot uses different selectors - targeting message containers
-    nodes = document.querySelectorAll(
-      ".ac-textBlock, .cib-message-content, [class*='message'], [class*='response-message'], [data-content], .text-message-content"
-    );
-  } else if (platform === "claude") {
-    // Claude.ai uses specific message container divs
-    nodes = document.querySelectorAll(
-      "[data-test-render-count], .font-claude-message, div[class*='font-user-message'], div[class*='font-claude'], [class*='MessageContent']"
-    );
-  }
-
-  const messages = [];
-  nodes.forEach((node, idx) => {
-    let text = node.innerText?.trim();
-
-    // Claude-specific fallback: drill into child elements if text is empty or too short
-    if (platform === "claude" && (!text || text.length < 15)) {
-      const childText = Array.from(node.querySelectorAll('p, div, span'))
-        .map(child => child.innerText || child.textContent)
-        .filter(t => t && t.trim().length > 0)
-        .join(' ')
-        .trim();
-      if (childText.length > text.length) {
-        text = childText;
-      }
-    }
-
-    if (text && text.length > 15) {
-      messages.push({
-        id: `${platform}-${idx}`,
-        source: platform,
-        content: text.slice(0, 2000), // Increased from 1000 to 2000
-        timestamp: Date.now(),
-        element: node // Store reference for click-to-scroll
-      });
-    }
-  });
-
-  // DEBUG FIX (v2.14.1): Content-based deduplication to prevent duplicate messages
-  // Issue: Overlapping selectors (e.g., .markdown, .text-base) can extract same content multiple times
-  const seen = new Set();
-  const deduplicated = messages.filter(msg => {
-    const fingerprint = msg.content.slice(0, 100); // Use first 100 chars as unique identifier
-    if (seen.has(fingerprint)) return false;
-    seen.add(fingerprint);
-    return true;
-  });
-
-  // Store for debugging
-  window.VIBEAI_LAST_THREADS = deduplicated;
-
-  // Phase VIII.0: HRI migration - alias for backward compatibility
+  // v2.14.8: Delegate to modular parsers
+  const messages = registry.extractMessages();
+  
+  // Store for debugging (maintained for backward compatibility)
+  window.VIBEAI_LAST_THREADS = messages;
   window.VIBEAI_LAST_HRI = window.VIBEAI_LAST_SCORE || 0;
-
-  // Claude-specific logging
-  if (platform === "claude") {
-    if (window.VIBEAI_PARSER_DEBUG) console.log(`[VibeAI Parser] 🔍 Claude extraction: found ${nodes.length} nodes, extracted ${deduplicated.length} messages (${messages.length - deduplicated.length} duplicates removed)`);
-  }
-
-  return deduplicated;
+  
+  return messages;
 }
 
 /**
@@ -187,44 +144,137 @@ function calculateHRI(text, tone) {
 }
 
 /**
- * Enrich threads with HRI and tone data
+ * Lazy-load HugoScore integration (WASM/JS)
+ * Only loads if explicitly requested
  */
-function enrichThreads(threads) {
-  return threads.map((thread, idx) => {
-    const tone = detectTone(thread.content);
-    const hri = calculateHRI(thread.content, tone);
+async function getHugoScoreAnalyzer() {
+  if (hugoScoreIntegration) return hugoScoreIntegration;
 
-    // Debug: Log detected tone for each thread
-    if (window.VIBEAI_PARSER_DEBUG) console.log(`[Parser] Thread ${idx}: tone="${tone}", preview="${(thread.content || '').slice(0, 60)}..."`);
+  try {
+    const module = await import(chrome.runtime.getURL('scripts/hugoscore-integration.js'));
+    hugoScoreIntegration = module;
 
-    return {
+    // Log which implementation is active
+    const info = module.getImplementationInfo();
+    if (window.VIBEAI_PARSER_DEBUG) {
+      void 0;
+    }
+
+    return module;
+  } catch (error) {
+    console.warn('[Parser] Could not load HugoScore integration:', error.message);
+    return null;
+  }
+}
+
+/**
+ * Analyze thread with optional WASM-enhanced HugoScore
+ * Falls back to lightweight tone detection if WASM disabled or unavailable
+ */
+async function analyzeThreadContent(text, idx) {
+  // Try HugoScore integration first (if available and enabled)
+  const analyzer = await getHugoScoreAnalyzer();
+  if (analyzer) {
+    try {
+      const analysis = await analyzer.analyzeText(text);
+
+      // Map HugoScore mood to VibeAI tone
+      const moodToTone = {
+        'calm': 'calm',
+        'urgent': 'urgent',
+        'reflective': 'reflective',
+        'dissonant': 'dissonant',
+        'resonant': 'resonant'
+      };
+
+      const tone = moodToTone[analysis.mood] || 'reflective';
+
+      if (window.VIBEAI_PARSER_DEBUG) {
+        void 0;
+      }
+
+      return {
+        tone: tone,
+        hri: analysis.hri,
+        hugoScoreAnalysis: analysis // Full analysis for advanced features
+      };
+    } catch (error) {
+      console.warn('[Parser] HugoScore analysis failed, using fallback:', error.message);
+      // Fall through to lightweight detection
+    }
+  }
+
+  // Fallback: Use lightweight tone detection
+  const tone = detectTone(text);
+  const hri = calculateHRI(text, tone);
+
+  if (window.VIBEAI_PARSER_DEBUG) {
+    void 0;
+  }
+
+  return {
+    tone: tone,
+    hri: hri,
+    hugoScoreAnalysis: null
+  };
+}
+
+/**
+ * Enrich threads with HRI and tone data
+ * v2.14.4: Optionally uses WASM-enhanced HugoScore (feature-flagged)
+ */
+async function enrichThreads(threads) {
+  // Process threads sequentially to avoid overwhelming WASM loader
+  const enriched = [];
+
+  for (let idx = 0; idx < threads.length; idx++) {
+    const thread = threads[idx];
+    const analysis = await analyzeThreadContent(thread.content, idx);
+
+    enriched.push({
       ...thread,
-      emotionalTones: [tone], // Array format for foldspaceMiniHTML
-      hri: hri,
-      tone: tone
-    };
-  });
+      emotionalTones: [analysis.tone], // Array format for foldspaceMiniHTML
+      hri: analysis.hri,
+      tone: analysis.tone,
+      hugoScoreAnalysis: analysis.hugoScoreAnalysis // Optional detailed analysis
+    });
+  }
+
+  return enriched;
 }
 
 /**
  * Send extracted threads to background service worker
+ * v2.14.4: Async to support WASM-enhanced HugoScore analysis
  */
-function sendThreadsToBackground() {
-  const platform = detectPlatform();
+// mCopi audit fix: Overlap guard to prevent concurrent analysis calls
+let __vibeai_parser_running = false;
 
-  // Claude-specific logging
-  if (platform === "claude") {
-    if (window.VIBEAI_PARSER_DEBUG) console.log(`[VibeAI Parser] 🔄 Starting Claude thread extraction...`);
+async function sendThreadsToBackground() {
+  // Skip if previous analysis still running (prevents CPU spikes from overlapping calls)
+  if (__vibeai_parser_running) {
+    void 0;
+    return;
   }
 
-  const threads = extractMessages();
+  __vibeai_parser_running = true;
+  try {
+    const platform = detectPlatform();
+
+    // Claude-specific logging
+    if (platform === "claude") {
+      if (window.VIBEAI_PARSER_DEBUG) void 0;
+    }
+
+    const threads = extractMessages();
 
   // Phase Δ9.3-Lite: Notify HUD of thread updates for dynamic canvas refresh
   if (threads.length > 0) {
     // v2.14.2: Enrich threads with HRI + tone data (MAKES MOOD ICONS ALIVE!)
-    if (window.VIBEAI_PARSER_DEBUG) console.log(`[Parser] 🧬 Enriching ${threads.length} threads with tone detection...`);
-    const enrichedThreads = enrichThreads(threads);
-    if (window.VIBEAI_PARSER_DEBUG) console.log(`[Parser] ✅ Enriched threads:`, enrichedThreads.map(t => ({ tone: t.tone, preview: t.content.slice(0, 40) })));
+    // v2.14.4: Now async to support optional WASM-enhanced analysis
+    if (window.VIBEAI_PARSER_DEBUG) void 0;
+    const enrichedThreads = await enrichThreads(threads);
+    if (window.VIBEAI_PARSER_DEBUG) void 0;
     const latest = enrichedThreads[enrichedThreads.length - 1];
 
     // v2.14.1: Enhanced postMessage bridge (PRIMARY transport mechanism)
@@ -258,7 +308,7 @@ function sendThreadsToBackground() {
       try { payload.bridgeToken = bridgeToken; } catch (tb) { /* ignore */ }
 
       window.postMessage(payload, '*');
-      console.log(`[VibeAI Parser] 📤 postMessage sent (type: ${payload.type}, platform: ${platform}, count: ${threads.length})`);
+      void 0;
 
     } catch (e) {
       console.error('[VibeAI Parser] ❌ postMessage failed:', e);
@@ -287,58 +337,36 @@ function sendThreadsToBackground() {
     }));
   }
 
-  chrome.runtime.sendMessage(
-    { type: "THREADS_EXTRACTED", payload: threads },
-    response => {
-      if (chrome.runtime.lastError) {
-        console.warn("[VibeAI Parser] ⚠️ Send failed:", chrome.runtime.lastError.message);
-      } else if (response && response.status === "OK") {
-        console.log(`[VibeAI Parser] ✅ Sent ${threads.length} messages (${detectPlatform()})`);
+    chrome.runtime.sendMessage(
+      { type: "THREADS_EXTRACTED", payload: threads },
+      response => {
+        if (chrome.runtime.lastError) {
+          console.warn("[VibeAI Parser] ⚠️ Send failed:", chrome.runtime.lastError.message);
+        } else if (response && response.status === "OK") {
+          void 0;
+        }
       }
-    }
-  );
+    );
+  } finally {
+    // mCopi audit fix: Always reset flag, even if error occurs
+    __vibeai_parser_running = false;
+  }
 }
 
-// Periodic scan every 8 seconds
-setInterval(sendThreadsToBackground, 8000);
+// Periodic scan every 2.5 seconds (v2.14.7: Reduced from 8s for faster mood updates)
+setInterval(sendThreadsToBackground, 2500);
 
 // Initial scan
 sendThreadsToBackground();
 
-console.log(`[VibeAI Parser] 🔄 Monitoring ${detectPlatform()} threads (scan every 8s)`);
+void 0;
 
-// Claude-specific: Watch for dynamic content changes
-if (detectPlatform() === "claude") {
-  console.log("[VibeAI Parser] 👁️ Setting up Claude mutation observer");
-
-  const observer = new MutationObserver((mutations) => {
-    const hasNewMessages = mutations.some(m =>
-      Array.from(m.addedNodes).some(n =>
-        n.nodeType === 1 &&
-        n.querySelector &&
-        n.querySelector('[data-test-render-count]')
-      )
-    );
-
-    if (hasNewMessages) {
-      console.log("[VibeAI Parser] 🔄 Claude DOM changed, re-scanning...");
-      setTimeout(sendThreadsToBackground, 500);
-    }
-  });
-
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true
-  });
-
-  console.log("[VibeAI Parser] ✅ Claude mutation observer active");
-}
-
-// 🌊 Phase III-D: Host Text Highlighting for Drift Resonance Trails
-let currentHighlightElement = null;
+// v2.14.8: Setup mutation observers using modular parsers
+// Each parser handles its own observer logic
+registry.setupObserver(sendThreadsToBackground);
 
 /**
- * Highlight a thread's text on the host page
+ * Highlight a thread on the host page
  * @param {string} threadId - Thread identifier
  * @param {string} tone - Emotional tone
  * @param {string} hue - Color for highlight
@@ -404,7 +432,7 @@ function highlightThreadOnHost(threadId, tone, hue) {
     // Store for cleanup
     currentHighlightElement = targetElement;
 
-    console.log(`[VibeAI Parser] ✨ Highlighted thread: ${threadId} (${tone} → ${hue})`);
+    void 0;
 
     // Auto-remove highlight after 2 seconds
     setTimeout(() => {
@@ -412,7 +440,7 @@ function highlightThreadOnHost(threadId, tone, hue) {
         targetElement.style.outline = "";
         targetElement.style.boxShadow = "";
         currentHighlightElement = null;
-        console.log(`[VibeAI Parser] 🌊 Highlight faded: ${threadId}`);
+        void 0;
       }
     }, 2000);
 
@@ -429,7 +457,7 @@ function highlightThreadOnHost(threadId, tone, hue) {
 window.addEventListener("message", (event) => {
   if (event.data.type === "HIGHLIGHT_THREAD") {
     const { threadId, tone, hue, cardRect } = event.data;
-    console.log(`[VibeAI Parser] 🎯 Received highlight request: ${threadId}`);
+    void 0;
 
     const textRect = highlightThreadOnHost(threadId, tone, hue);
 
@@ -451,14 +479,14 @@ window.addEventListener("message", (event) => {
         hue
       }, "*");
 
-      console.log(`[VibeAI Parser] 🌊 Trail coordinates sent for: ${threadId}`);
+      void 0;
     }
   }
 
   // 📖 Phase V: Chapter Navigation - Scroll to chapter on glyph click
   if (event.data.type === "SCROLL_TO_CHAPTER") {
     const { chapterId, startIndex } = event.data;
-    console.log(`[VibeAI Parser] 📖 Scrolling to chapter: ${chapterId} (index: ${startIndex})`);
+    void 0;
 
     const platform = detectPlatform();
     let targetElement = null;
@@ -482,7 +510,7 @@ window.addEventListener("message", (event) => {
         block: "start",
         inline: "nearest"
       });
-      console.log(`[VibeAI Parser] ✅ Scrolled to chapter ${chapterId}`);
+      void 0;
     } else {
       console.warn(`[VibeAI Parser] ⚠️ Chapter element not found at index ${startIndex}`);
     }

@@ -16,7 +16,7 @@
     return 'unknown';
   })();
 
-  console.log('[VibeAI] 🧠 Dynamic scraper v1.0.8 initialized for', platform);
+  void 0;
 
   // ---- Shadow DOM recursive query helper ----
   function queryAllDeep(selector, root = document) {
@@ -61,7 +61,7 @@
 
     for (const phase of phases) {
       await new Promise(resolve => setTimeout(resolve, phase.delay));
-      console.log(`[VibeAI] 💫 Attempting ChatGPT selector ${phase.name}...`);
+      void 0;
 
       for (const sel of phase.selectors) {
         const nodes = document.querySelectorAll(sel);
@@ -72,7 +72,7 @@
             .map(t => t.trim());
 
           if (chats.length) {
-            console.log(`[VibeAI] 💫 ChatGPT ${phase.name} found ${chats.length} chats`);
+            void 0;
             return chats;
           }
         }
@@ -82,7 +82,7 @@
     // Fallback to document title
     const title = document.title?.trim();
     if (title) {
-      console.log('[VibeAI] 🌸 Fallback title used:', title);
+      void 0;
       return [`${title} (Fallback)`];
     }
 
@@ -100,7 +100,7 @@
           .map(t => t.trim());
 
         if (chats.length) {
-          console.log(`[VibeAI] 💫 Claude found ${chats.length} chats`);
+          void 0;
           return chats;
         }
       }
@@ -119,7 +119,7 @@
           .map(t => t.trim());
 
         if (chats.length) {
-          console.log(`[VibeAI] 💫 Gemini found ${chats.length} chats`);
+          void 0;
           return chats;
         }
       }
@@ -128,7 +128,7 @@
     // Fallback: use tab title
     const title = document.title?.trim();
     if (title) {
-      console.log('[VibeAI] 🌸 Fallback title used:', title);
+      void 0;
       return [`${title} (active Gemini tab)`];
     }
 
@@ -146,7 +146,7 @@
           .map(t => t.trim());
 
         if (chats.length) {
-          console.log(`[VibeAI] 💫 Copilot found ${chats.length} chats`);
+          void 0;
           return chats;
         }
       }
@@ -154,7 +154,7 @@
 
     // URL fallback
     if (window.location.pathname.includes('/chats/')) {
-      console.log('[VibeAI] 🌸 Copilot URL fallback used');
+      void 0;
       return ['Microsoft Copilot (active chat)'];
     }
 
@@ -195,7 +195,7 @@
         return;
       }
 
-      console.log(`[VibeAI] 🧩 ${platform} chats updated (${chats.length})`);
+      void 0;
       window.postMessage({ type: 'VIBEAI_CHATS', payload: chats.slice(0, 50) }, '*');
     } finally {
       scrapeInProgress = false;
@@ -208,7 +208,7 @@
     const titleObserver = new MutationObserver(() => {
       clearTimeout(titleDebounce);
       titleDebounce = setTimeout(() => {
-        console.log('[VibeAI] 🔁 Title change detected, refreshing chat list');
+        void 0;
         scrapeChats();
       }, 1000);
     });
@@ -216,7 +216,7 @@
     const titleElement = document.querySelector('title');
     if (titleElement) {
       titleObserver.observe(titleElement, { childList: true, characterData: true, subtree: true });
-      console.log('[VibeAI] ⚙️ Gemini title observer active');
+      void 0;
     }
   }
 
@@ -237,5 +237,5 @@
   window.VibeAI = window.VibeAI || {};
   window.VibeAI.scanChats = scrapeChats;
 
-  console.log(`[VibeAI] 🌐 Observer active for ${platform}`);
+  void 0;
 })();

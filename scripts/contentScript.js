@@ -8,7 +8,7 @@ import { detectChapters } from "../src/chapters/detectChapters.js";
 // --- Boot Log ---
 (function bootLog(){
   try {
-    console.log("[VibeAI] CS loaded on:", location.hostname);
+    void 0;
     window.dispatchEvent(new CustomEvent("vibeai:csLoaded", { detail: { host: location.hostname }}));
   } catch(e){ console.warn("[VibeAI] bootLog error", e); }
 })();
@@ -109,5 +109,5 @@ window.vibeAI.jumpToChapter = jumpToChapter;
 // --- Event Logging for Verification ---
 window.addEventListener("vibeai:chaptersUpdated", (e)=>{
   const { chapters, reason } = e.detail || {};
-  console.log(`[VibeAI] chaptersUpdated → ${chapters?.length || 0} (${reason})`);
+  void 0;
 });

@@ -1,4 +1,4 @@
-console.log('[VibeAI Content] Initializing...');
+void 0;
 // vStable-2.4.3 handshake timeout (ms)
 const HANDSHAKE_TIMEOUT = 20000;
 const HANDSHAKE_RETRY_DELAY = 4000; // ms between retry and final enforcement
@@ -20,7 +20,7 @@ function ensurePointerRelease() {
     iframe.style.setProperty('pointer-events', 'none', 'important');
     iframe.style.setProperty('z-index', '2147483647', 'important');
     iframe.style.setProperty('border', 'none', 'important');
-    console.log('[VibeAI] 🔓 Emergency pointer-release enforced');
+    void 0;
   } catch { /* non-fatal */ }
 }
 
@@ -45,7 +45,7 @@ function extUrl(path) {
           const list = document.querySelectorAll('.markdown, .chat-message, .text-message, [data-message-id], .message, [role="article"], .response-container');
           if (list && list[idx]) {
             list[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            console.log('[VibeAI] Scrolled to index', idx);
+            void 0;
           } else console.warn('[VibeAI] Requested index not found:', idx);
         }
         if (d.type === 'VIBEAI_ALLOW_CLICKTHROUGH') {
@@ -59,7 +59,7 @@ function extUrl(path) {
       } catch { /* ignore */ }
     });
 
-    console.log('[VibeAI Content] Ready');
+    void 0;
 
 // ID generator
 function makeInstanceId() { return `hud-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,9)}`; }
@@ -108,7 +108,7 @@ let _iframeWindow = null;
         const mountTarget = document.getElementById('vibeai-safe-root') || document.documentElement;
         mountTarget.appendChild(container);
         if (mountTarget.id === 'vibeai-safe-root') {
-          console.log('[VibeAI] 🧭 HUD mounted inside safe-root (Claude mode)');
+          void 0;
         }
 
         // Force styles again after append
@@ -122,7 +122,7 @@ let _iframeWindow = null;
           iframe.style.setProperty('pointer-events', 'none', 'important');
           iframe.style.setProperty('z-index', '2147483647', 'important');
           iframe.style.setProperty('border', 'none', 'important');
-          console.log('[VibeAI] Iframe styles FORCE-APPLIED with setProperty (AFTER append)');
+          void 0;
         }, 100);
 
         // Remove other instances
@@ -141,7 +141,7 @@ let _iframeWindow = null;
         } catch { /* ignore */ }
 
         // Finish grace period
-        setTimeout(() => { window.vibeaiCleanupPaused = false; console.log('[VibeAI] Cleanup grace period ended'); }, 10000);
+        setTimeout(() => { window.vibeaiCleanupPaused = false; void 0; }, 10000);
       } catch (err) {
         console.warn('[VibeAI] injectHUD failed', err);
         window.vibeaiCleanupPaused = false;
@@ -196,7 +196,7 @@ let _iframeWindow = null;
           try {
             const el = document.querySelector(`[data-vibeai-instance="${instanceId}"]`);
             if (el) el.dataset.vibeaiVerified = 'true';
-            console.log('[VibeAI] HUD verified:', instanceId);
+            void 0;
           } catch { /* ignore */ }
         }
         // 🛡️ Claude Handshake Soft-Bind Fallback (v2.11.3)
@@ -205,7 +205,7 @@ let _iframeWindow = null;
             const hud = document.querySelector("#vibeai-safe-root") || document.querySelector("#vibeai-root");
             if (hud) {
               hud.dataset.vibeVerified = "true";
-              console.log("[VibeAI] 🫱 Soft-bind verification fallback triggered");
+              void 0;
             } else {
               console.warn("[VibeAI] Safe-root not found for handshake");
             }
@@ -236,7 +236,7 @@ let _iframeWindow = null;
                 console.warn("[VibeAI] Removing unverified HUD:", id, "age", age);
                 el.remove();
               } else {
-                console.log("[VibeAI] 🧩 HUD preserved under safe-root context (Claude mode)");
+                void 0;
               }
             }
           } catch { /* ignore per-entry */ }
@@ -256,7 +256,7 @@ let _iframeWindow = null;
         const pending = pendingHandshakes.has(id);
         if (!el || !document.body.contains(el)) {
           if (!pending) injectHUD();
-          else console.log('[VibeAI] Reinjection suppressed while handshake pending for', id);
+          else void 0;
         }
       } catch { /* ignore */ }
     });
@@ -271,7 +271,7 @@ let _iframeWindow = null;
         if (!window.__vibeai_release_ran) {
           ensurePointerRelease();
           window.__vibeai_release_ran = true;
-          console.log('[VibeAI] 🔓 One-time pointer-release enforced');
+          void 0;
         }
       } catch { /* ignore */ }
     }, 5000);
@@ -282,7 +282,7 @@ let _iframeWindow = null;
         const iframe = document.querySelector('#vibeai-hud-frame');
         if (iframe && getComputedStyle(iframe).pointerEvents !== 'none') {
           iframe.style.setProperty('pointer-events', 'none', 'important');
-          console.log('[VibeAI] Repaired host pointer-events:none');
+          void 0;
         }
       } catch { /* ignore */ }
     }, 30000);

@@ -7,7 +7,7 @@
 // Listen for ESC key to close sidebar
 window.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    console.log('[VibeAI] 🌀 ESC pressed - toggling sidebar');
+    void 0;
     window.parent.postMessage({ type: 'VIBEAI_TOGGLE' }, '*');
   }
 });
@@ -15,11 +15,11 @@ window.addEventListener('keydown', e => {
 // Listen for close button clicks (if added to UI)
 document.addEventListener('click', e => {
   if (e.target.id === 'vibeai-close-btn' || e.target.closest('#vibeai-close-btn')) {
-    console.log('[VibeAI] 🌀 Close button clicked');
+    void 0;
     window.parent.postMessage({ type: 'VIBEAI_TOGGLE' }, '*');
   }
 });
 
-console.log('[VibeAI] ✅ Toggle patch loaded (ESC + close button)');
+void 0;
 
 })();

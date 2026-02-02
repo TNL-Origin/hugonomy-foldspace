@@ -22,7 +22,7 @@ const inlined = `try { const styleEl = document.createElement('style'); styleEl.
 if (fetchPattern.test(src)) {
   src = src.replace(fetchPattern, inlined);
   fs.writeFileSync(outPath, src, 'utf8');
-  console.log('Wrote', outPath);
+  void 0;
 } else {
   console.error('fetch pattern not found in content.js; please update the script if content.js changed.');
   process.exit(3);

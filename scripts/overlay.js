@@ -24,7 +24,7 @@ function render(items){
     d.className='item';
     d.textContent=title;
     d.addEventListener('click',()=>{
-      console.log('[VibeAI] Chat clicked:', title);
+      void 0;
       // Future: navigate to conversation
     });
     list.appendChild(d);
@@ -43,19 +43,19 @@ q.addEventListener('input',e=>{
 // Listen for messages from parent
 window.addEventListener('message',e=>{
   if(e.data?.type==='PAGE_CONTEXT') {
-    console.log('[VibeAI Overlay] Connected to',e.data.platform,e.data.url);
+    void 0;
   }
 
   // Receive dynamic chat list
   if(e.data?.type==='VIBEAI_CHATS') {
     currentChats = e.data.payload || [];
-    console.log('[VibeAI Overlay] 📥 Received', currentChats.length, 'chats');
+    void 0;
     render(currentChats);
   }
 
   // Handle toggle request from parent
   if(e.data?.type==='VIBEAI_TOGGLE') {
-    console.log('[VibeAI Overlay] 🔄 Toggle request received');
+    void 0;
     window.parent.postMessage({ type: 'VIBEAI_TOGGLE_ACK' }, '*');
   }
 });
@@ -63,7 +63,7 @@ window.addEventListener('message',e=>{
 // ESC key to close
 window.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    console.log('[VibeAI Overlay] 🌀 ESC pressed - sending toggle');
+    void 0;
     window.parent.postMessage({ type: 'VIBEAI_TOGGLE' }, '*');
   }
 });
@@ -83,7 +83,7 @@ async function checkConsent() {
 async function saveConsent() {
   try {
     await chrome.storage.local.set({ vibeai_beta_consent: true });
-    console.log('[VibeAI] ✅ Consent saved');
+    void 0;
   } catch (e) {
     console.error('[VibeAI] Failed to save consent:', e);
   }
@@ -185,7 +185,7 @@ function showConsentModal() {
 
   declineBtn.addEventListener('click', () => {
     modal.remove();
-    console.log('[VibeAI] User declined beta agreement');
+    void 0;
     list.innerHTML = '<div style="padding: 20px; text-align: center; opacity: 0.6;">Beta agreement required to use VibeAI FoldSpace</div>';
   });
 
@@ -267,8 +267,7 @@ function createClearDataButton() {
     if (confirm('⚠️ This will delete all VibeAI settings and preferences.\n\nAre you sure you want to continue?')) {
       try {
         await chrome.storage.local.clear();
-        await chrome.storage.sync.clear();
-        console.log('[VibeAI] ✅ All extension data cleared');
+        void 0;
         alert('✅ All VibeAI data has been cleared.\n\nReload the page to restart the extension.');
         window.location.reload();
       } catch (e) {
@@ -295,7 +294,7 @@ function initializeApp() {
 
   window.parent.postMessage({type:'VIBEAI_READY'},'*');
   createClearDataButton();
-  console.log('[VibeAI Overlay] ✅ Ready for dynamic chats');
+  void 0;
 }
 
 // ---- Startup Flow ----

@@ -1,4 +1,4 @@
-// CSP Bypass for Claude Platform
+// CSP Bypass for CSP-Restricted Platforms (Claude, Copilot, M365)
 // Injects lightweight root for sandboxed iframe contexts
 (function injectSafeRoot() {
   try {
@@ -12,18 +12,24 @@
       root.style.left = "0";
       root.style.pointerEvents = "none";
       safeDoc.body.appendChild(root);
-      console.log("[VibeAI] Claude safe-root injected");
+      const platform = location.hostname.includes("claude") ? "Claude" :
+                       location.hostname.includes("copilot") ? "Copilot" : "M365";
+      void 0;
     }
   } catch (err) {
-    console.warn("[VibeAI] Claude sandbox injection failed:", err);
+    console.warn("[VibeAI] Platform sandbox injection failed:", err);
   }
 })();
 
-// 🧭 Claude Visible Anchor Patch (v2.11.5)
-// Re-anchors HUD inside Claude's visible container to restore rendering
-(function injectClaudeAnchor() {
+// 🧭 Platform-Specific Visible Anchor Patch (v2.14.19)
+// Re-anchors HUD inside platform's visible container to restore rendering
+(function injectPlatformAnchor() {
   try {
-    if (!location.hostname.includes("claude.ai")) return;
+    const isClaude = location.hostname.includes("claude.ai");
+    const isCopilot = location.hostname.includes("copilot.microsoft.com");
+    const isM365 = location.hostname.includes("m365.cloud.microsoft");
+
+    if (!isClaude && !isCopilot && !isM365) return;
 
     // Wait for safe-root to be ready
     const waitForRoot = setInterval(() => {
@@ -32,16 +38,25 @@
 
       clearInterval(waitForRoot);
 
-      // Claude-specific visible container targets
-      const claudeContainer =
-        document.querySelector("main") ||
-        document.querySelector('[data-testid="chat-interface"]') ||
-        document.querySelector('[class*="chat"]') ||
-        document.querySelector("body > div:first-child");
+      // Platform-specific visible container targets
+      let platformContainer;
+      if (isClaude) {
+        platformContainer =
+          document.querySelector("main") ||
+          document.querySelector('[data-testid="chat-interface"]') ||
+          document.querySelector('[class*="chat"]') ||
+          document.querySelector("body > div:first-child");
+      } else if (isCopilot || isM365) {
+        platformContainer =
+          document.querySelector("main") ||
+          document.querySelector('[class*="container"]') ||
+          document.querySelector('[id*="root"]') ||
+          document.querySelector("body > div:first-child");
+      }
 
-      if (claudeContainer) {
+      if (platformContainer) {
         // Move root to visible container
-        claudeContainer.appendChild(root);
+        platformContainer.appendChild(root);
 
         // Force visibility with explicit styles
         Object.assign(root.style, {
@@ -57,7 +72,7 @@
           opacity: "1",
         });
 
-        console.log("[VibeAI] 🧭 Anchoring inside Claude visible container:", claudeContainer.tagName);
+        void 0;
 
         // Continuous visibility enforcement
         const enforceVisibility = setInterval(() => {
@@ -80,14 +95,14 @@
           // Log status every 5 seconds
           if (Math.floor(Date.now() / 5000) % 1 === 0) {
             if (rect.width > 0 && rect.height > 0) {
-              console.log(`[VibeAI] ✅ HUD visible: ${Math.round(rect.width)}x${Math.round(rect.height)}`);
+              void 0;
               clearInterval(enforceVisibility); // Stop once confirmed visible
             }
           }
         }, 500);
 
       } else {
-        console.warn("[VibeAI] Claude container not found; fallback to body.");
+        console.warn(`[VibeAI] ${isClaude ? 'Claude' : isCopilot ? 'Copilot' : 'M365'} container not found; fallback to body.`);
         document.body.appendChild(root);
       }
     }, 100);
@@ -96,6 +111,6 @@
     setTimeout(() => clearInterval(waitForRoot), 10000);
 
   } catch (err) {
-    console.error("[VibeAI] Claude anchor injection failed:", err);
+    console.error("[VibeAI] Platform anchor injection failed:", err);
   }
 })();

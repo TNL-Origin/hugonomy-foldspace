@@ -67,7 +67,7 @@ window.addEventListener('vibeai:setBridgeToken', (ev) => {
     const t = ev?.detail?.token;
     if (typeof t === 'string' && t.length >= 8) {
       __VIBEAI_BRIDGE_TOKEN_LOCAL = String(t);
-      console.log('[VibeAI HRI] 🔐 Bridge token set');
+      void 0;
       // best-effort: remove any global window token if it exists
       try { if (window.__VIBEAI_BRIDGE_TOKEN__) delete window.__VIBEAI_BRIDGE_TOKEN__; } catch (e) {}
     }
@@ -117,7 +117,7 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-console.log('[VibeAI UniHUD] 🧱 Initializing Unified HUD Container...');
+void 0;
 
 /**
  * Phase VIII.0.2: Draggable HUD System (Steven Beta Feedback - Priority 2)
@@ -193,7 +193,7 @@ function initDraggableHUD(hudElement, headerElement) {
           vibeai_hud_position_x: currentLeft,
           vibeai_hud_position_y: currentTop
         }, () => {
-          console.log(`[VibeAI HUD] Position saved: ${currentLeft}, ${currentTop}`);
+          void 0;
         });
       }
     } catch (e) {
@@ -378,7 +378,7 @@ function initResizableHUD(hudElement) {
           vibeai_hud_width: currentWidth,
           vibeai_hud_height: currentHeight
         }, () => {
-          console.log(`[VibeAI HUD] Size saved: ${currentWidth} × ${currentHeight}`);
+          void 0;
         });
       }
     } catch (e) {
@@ -424,7 +424,7 @@ function applyTheme(theme) {
     document.documentElement.classList.remove('theme-switching');
   }, 600);
 
-  console.log(`[VibeAI HUD] 🌗 Theme set to ${theme.toUpperCase()}`);
+  void 0;
 }
 
 // Toggle theme (manual override)
@@ -437,7 +437,7 @@ function toggleTheme() {
   try {
     chrome.storage.local.set({ vibeaiTheme: newTheme });
   } catch (e) {
-    console.log('[VibeAI Theme] Could not save preference:', e);
+    void 0;
   }
 }
 
@@ -459,7 +459,7 @@ async function loadToneMap(lexicon = ACTIVE_LEXICON) {
     const url = chrome.runtime.getURL(`src/data/toneMap_${lexicon}.json`);
     const res = await fetch(url);
     ACTIVE_TONE_MAP = await res.json();
-    console.log(`[VibeAI Lexicon] ✅ Loaded tone map: ${lexicon}`, ACTIVE_TONE_MAP);
+    void 0;
     return true;
   } catch (err) {
     console.error(`[VibeAI Lexicon] ❌ Failed to load tone map: ${lexicon}`, err);
@@ -476,7 +476,7 @@ async function switchLexicon(newLexicon) {
     return false;
   }
 
-  console.log(`[VibeAI Lexicon] 🔄 Switching to ${newLexicon} lexicon...`);
+  void 0;
   ACTIVE_LEXICON = newLexicon;
   const loaded = await loadToneMap(newLexicon);
 
@@ -485,7 +485,7 @@ async function switchLexicon(newLexicon) {
     try {
       await chrome.storage.local.set({ vibeaiLexicon: newLexicon });
     } catch (e) {
-      console.log('[VibeAI Lexicon] Could not save preference:', e);
+      void 0;
     }
 
     // Phase Δ9.2: Force tooltip refresh on active canvas instances
@@ -497,7 +497,7 @@ async function switchLexicon(newLexicon) {
     const canvasEvent = new CustomEvent('vibeai:lexiconChanged', { detail: { lexicon: newLexicon } });
     document.dispatchEvent(canvasEvent);
 
-    console.log(`[VibeAI Lexicon] ✅ Switched to ${newLexicon} lexicon`);
+    void 0;
     return true;
   }
   return false;
@@ -509,10 +509,10 @@ async function loadLexiconPreference() {
     const stored = await chrome.storage.local.get('vibeaiLexicon');
     if (stored.vibeaiLexicon) {
       ACTIVE_LEXICON = stored.vibeaiLexicon;
-      console.log(`[VibeAI Lexicon] 📖 Restored preference: ${ACTIVE_LEXICON}`);
+      void 0;
     }
   } catch {
-    console.log('[VibeAI Lexicon] Using default lexicon (youth)');
+    void 0;
   }
 }
 
@@ -520,7 +520,7 @@ async function loadLexiconPreference() {
 // SECURITY: Only expose in debug mode to prevent page scripts from manipulating extension
 if (window.VIBEAI_HUD_DEBUG) {
   window.__vibeai_switchLexicon = switchLexicon;
-  console.log('[VibeAI] Debug API enabled: window.__vibeai_switchLexicon');
+  void 0;
 }
 
 // 🎨 Phase Δ.8 - FoldSpace Canvas Mood Field
@@ -646,7 +646,7 @@ class FoldSpaceCanvas {
       this.tooltip.style.top = `${this.mouse.y}px`;
     }, 16); // ~60fps
 
-    console.log('[VibeAI Canvas] Initialized');
+    void 0;
   }
 
   // Phase VIII.0: Set intensity (HRI-driven)
@@ -682,13 +682,13 @@ class FoldSpaceCanvas {
 
     // Start animation loop
     this.animate();
-    console.log('[VibeAI Canvas] Started successfully');
+    void 0;
   }
 
   setActiveTone(tone) {
     if (this.activeTone !== tone) {
       this.activeTone = tone;
-      console.log(`[VibeAI Canvas] Active tone: ${tone}`);
+      void 0;
 
       // Activate particles on tone change
       this.particles.forEach((p, i) => {
@@ -804,7 +804,7 @@ class FoldSpaceCanvas {
         this.tooltip.style.opacity = '1';
         this.tooltip.style.transform = 'translateY(0px) scale(1)';
 
-        console.log(`[VibeAI Lexicon] Tooltip active for tone: ${tone} | ${String(lex.title)}`);
+        void 0;
       } else {
         // Fallback if lexicon data missing
         console.warn(`[VibeAI Lexicon] ⚠️ No lexicon data for tone: ${tone}`, ACTIVE_TONE_MAP);
@@ -820,7 +820,7 @@ class FoldSpaceCanvas {
 
   handleClick(e) {
     if (this.hoveredEmoji) {
-      console.log(`[VibeAI Canvas] Clicked tone: ${this.hoveredEmoji}`);
+      void 0;
       this.setActiveTone(this.hoveredEmoji);
 
       // Create ripple effect
@@ -963,7 +963,7 @@ class FoldSpaceCanvas {
       this.tooltip = null;
     }
 
-    console.log('[VibeAI Canvas] Destroyed');
+    void 0;
   }
 }
 
@@ -1035,7 +1035,7 @@ function updateHRIBridge(text) {
     // v2.14.1 FIX #2: If orb not ready yet, cache state for replay after mount
     if (!orb || typeof orb.updateState !== 'function') {
       window.__VIBEAI_PENDING_ORB_STATE__ = { text, tone, hri, intensity };
-      console.log('[VibeAI HRI] ⏳ Orb not ready yet, state cached for replay');
+      void 0;
 
       // Safe subtitle update (minimal)
       const hriLabel = document.getElementById('hri-label-output');
@@ -1129,7 +1129,7 @@ function updateHRIBridge(text) {
     }
   }
 
-  console.log(`[HRI Bridge] Tone: ${tone} | HRI: ${hri.toFixed(3)} | Intensity: ${intensity.toFixed(2)}`);
+  void 0;
 }
 
 // Tone Detection Heuristic (Phase Δ.8 - enhanced in Phase VIII.0 with HRI)
@@ -1173,18 +1173,23 @@ let foldSpaceCanvas = null;
 // 1. Create unified HUD container
 function renderHUDContainer() {
   if (document.getElementById('vibeai-unified-hud')) {
-    console.log('[VibeAI UniHUD] Container already exists');
+    void 0;
     return document.getElementById('vibeai-unified-hud');
   }
 
   const hud = document.createElement('div');
   hud.id = 'vibeai-unified-hud';
+
+  // v2.14.17: Load saved width or use default (360px)
+  const savedWidth = localStorage.getItem('vibeai-hud-width') || '360';
+  const hudWidth = Math.max(280, Math.min(520, parseInt(savedWidth))); // Min: 280px, Max: 520px
+
   hud.style.cssText = `
     position: fixed;
     top: 50%;
     right: 20px;
     transform: translateY(-50%);
-    width: 360px;
+    width: ${hudWidth}px;
     max-height: 85vh;
     background: var(--vibeai-hud-bg);
     backdrop-filter: blur(var(--vibeai-hud-blur, 14px)) saturate(180%);
@@ -1202,6 +1207,64 @@ function renderHUDContainer() {
     display: flex;
     flex-direction: column;
   `;
+
+  // v2.14.17: Add resize handle on left edge
+  const resizeHandle = document.createElement('div');
+  resizeHandle.id = 'vibeai-resize-handle';
+  resizeHandle.style.cssText = `
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 6px;
+    height: 100%;
+    cursor: ew-resize;
+    background: transparent;
+    z-index: 10;
+    transition: background 0.2s ease;
+  `;
+
+  // Resize handle hover effect
+  resizeHandle.addEventListener('mouseenter', () => {
+    resizeHandle.style.background = 'rgba(0, 212, 255, 0.3)';
+  });
+  resizeHandle.addEventListener('mouseleave', () => {
+    resizeHandle.style.background = 'transparent';
+  });
+
+  // Drag-to-resize functionality
+  let isResizing = false;
+  let startX = 0;
+  let startWidth = 0;
+
+  resizeHandle.addEventListener('mousedown', (e) => {
+    isResizing = true;
+    startX = e.clientX;
+    startWidth = hud.offsetWidth;
+    document.body.style.cursor = 'ew-resize';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+
+    const delta = startX - e.clientX; // Left drag = increase width
+    const newWidth = Math.max(280, Math.min(520, startWidth + delta));
+    hud.style.width = `${newWidth}px`;
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isResizing) {
+      isResizing = false;
+      document.body.style.cursor = '';
+
+      // Save width to localStorage
+      const finalWidth = hud.offsetWidth;
+      localStorage.setItem('vibeai-hud-width', finalWidth.toString());
+      void 0;
+    }
+  });
+
+  hud.appendChild(resizeHandle);
   // Mark HUD as mounted for inject-once guards
   try {
     window.__VIBEAI__ = window.__VIBEAI__ || {};
@@ -1641,12 +1704,12 @@ function renderHUDContainer() {
     if (orbCanvas) {
       // v2.14.1 FIX #1: Store orb globally at window.hugoOrb (single source of truth)
       window.hugoOrb = createHugoOrb(orbCanvas);
-      console.log('[VibeAI] 🌀 Hugo Orb initialized (window.hugoOrb available)');
+      void 0;
 
       // v2.14.1 FIX #3: Replay pending state if updates arrived before orb was ready
       const pending = window.__VIBEAI_PENDING_ORB_STATE__;
       if (pending?.text) {
-        console.log('[VibeAI HRI] 🔄 Replaying pending state after orb mount');
+        void 0;
         updateHRIBridge(pending.text);
         window.__VIBEAI_PENDING_ORB_STATE__ = null;
       }
@@ -1760,12 +1823,14 @@ function renderHUDContainer() {
         filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
         ${currentTheme === 'dark' ? '☀️' : '🌙'}
       </button>
-      <button id="vibeai-lexicon-toggle"
-        title="Switch language style: ${ACTIVE_LEXICON === 'youth' ? 'Currently Student-Friendly (🎓). Click for Professional (💼)' : 'Currently Professional (💼). Click for Student-Friendly (🎓)'}"
-        style="background:none; border:none; cursor:pointer; font-size:16px; padding:4px;
-        border-radius:6px; transition:all 0.3s ease;
-        filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3)); font-weight:600;">
-        ${ACTIVE_LEXICON === 'youth' ? '🎓' : '💼'}
+      <button id="vibeai-coach-btn"
+        title="VibeAI Coach: Post-send reflection & prompt library"
+        style="background:none; border:none; cursor:pointer; font-size:14px; padding:6px 10px;
+        border-radius:8px; transition:all 0.3s ease;
+        filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3)); font-weight:700;
+        background: rgba(255,255,255,0.1); color: white; display: flex; align-items: center; gap: 4px;">
+        <span>🧠</span>
+        <span style="font-size: 12px;">Coach</span>
       </button>
     </div>
   `;
@@ -1813,14 +1878,14 @@ function renderHUDContainer() {
 
   // Pre-Phase A: Apply fixed HUD opacity (design authority)
   applyFixedHudOpacity();
-  console.log('[VibeAI HUD] Fixed opacity applied: α=0.65, blur=14px');
+  void 0;
 
   // 🎨 Phase Δ.9.1 - Load lexicon preference and tone map
   // Phase Δ9.2.2: Wait for lexicon to load BEFORE initializing canvas
   loadLexiconPreference().then(() => {
     return loadToneMap();
   }).then(() => {
-    console.log('[VibeAI Lexicon] ✅ Lexicon loaded, initializing canvas...');
+    void 0;
     initializeFoldSpaceCanvas();
   }).catch(err => {
     console.warn('[VibeAI Lexicon] Failed to load initial lexicon:', err);
@@ -1833,7 +1898,7 @@ function renderHUDContainer() {
     // DEBUG FIX (v2.14.0): HARD-GATE FoldSpaceCanvas when Hugo Orb is enabled
     // Hugo Orb uses a completely different DOM structure and rendering pipeline
     if (ENABLE_HUGO_ORB) {
-      console.log('[VibeAI Canvas] Skipping FoldSpaceCanvas init (Hugo Orb active)');
+      void 0;
       return;
     }
 
@@ -1927,12 +1992,12 @@ function renderHUDContainer() {
               }
             });
 
-            console.log('[VibeAI Canvas] Debug bridge injected (cross-context active)');
+            void 0;
           } catch (hookErr) {
             console.warn('[VibeAI Canvas] Failed to inject debug bridge:', hookErr);
           }
         } else {
-          console.log('[VibeAI] Running in production mode - debug APIs disabled');
+          void 0;
         }
 
       } catch (err) {
@@ -1948,7 +2013,7 @@ function renderHUDContainer() {
     const latest = window.VIBEAI_LAST_THREADS[window.VIBEAI_LAST_THREADS.length - 1];
     if (latest && latest.content) {
       updateHRIBridge(latest.content);
-      console.log('[VibeAI HRI] 🎯 Initial HRI sync from existing threads');
+      void 0;
     }
   }
 
@@ -2045,31 +2110,31 @@ function renderHUDContainer() {
     registerCleanup(() => {
       window.removeEventListener('message', messageHandler, true);
       window.__VIBEAI_MESSAGE_LISTENER_REGISTERED__ = false;
-      console.log('[VibeAI HRI] 🧹 postMessage listener cleaned up');
+      void 0;
     });
 
-    console.log('[VibeAI HRI] ✅ postMessage listener registered (listening for VIBEAI_THREAD_UPDATE)');
+    void 0;
   } else {
     console.warn('[VibeAI HRI] ⚠️ postMessage listener already registered, skipping duplicate');
   }
 
   document.addEventListener('vibeai:threadUpdate', (e) => {
-    if (window.VIBEAI_HUD_DEBUG) console.log('[VibeAI HRI] 📨 threadUpdate event received', { count: e?.detail?.count, hasThreads: Array.isArray(e?.detail?.threads) });
+    if (window.VIBEAI_HUD_DEBUG) void 0;
     if (e.detail && e.detail.content) {
       updateHRIBridge(e.detail.content);
       const target = ENABLE_HUGO_ORB ? 'Hugo Orb' : 'Canvas';
-      if (window.VIBEAI_HUD_DEBUG) console.log(`[VibeAI HRI] 🔄 ${target} updated from ${e.detail.platform} (${e.detail.count} messages)`);
+      if (window.VIBEAI_HUD_DEBUG) void 0;
     } else {
       console.warn('[VibeAI HRI] ⚠️ threadUpdate event missing content', e.detail);
     }
   }, { capture: true });
-  console.log('[VibeAI HRI] ✅ Dynamic thread monitoring active (8s interval, capture mode)');
+  void 0;
 
   // DEBUG FIX (v2.14.0): Expose safe debug hooks for testing
   if (window.VIBEAI_HUD_DEBUG) {
     window.__VIBEAI_DEBUG__ = window.__VIBEAI_DEBUG__ || {};
     window.__VIBEAI_DEBUG__.forceHRI = (text) => {
-      console.log('[DEBUG] Manual HRI update triggered');
+      void 0;
       updateHRIBridge(text || 'This is a test message for debugging HRI pipeline.');
     };
     window.__VIBEAI_DEBUG__.getLast = () => ({
@@ -2099,10 +2164,10 @@ function renderHUDContainer() {
       listenerRegistered: window.__VIBEAI_MESSAGE_LISTENER_REGISTERED__
     });
 
-    console.log('[VibeAI DEBUG] 🔧 Debug hooks available: __VIBEAI_DEBUG__.forceHRI(), .getLast(), .dispatchTest(), __VIBEAI_DEBUG_ORB__()');
+    void 0;
   }
 
-  console.log('[VibeAI UniHUD] ✅ Unified HUD Container injected');
+  void 0;
   return hud;
 }
 
@@ -2124,7 +2189,7 @@ function ensureCanvasLayer() {
     `;
     // Keep it empty for now; real canvas will be injected later by FoldSpaceCanvas when re-integrated
     document.body.appendChild(canvas);
-    console.log('[VibeAI UniHUD] ✅ Pre-injected foldspace-canvas placeholder');
+    void 0;
   } catch { /* best-effort */ }
 }
 
@@ -2134,16 +2199,23 @@ function ensureCanvasLayer() {
  */
 function injectUnifiedHUD(options = { observer: true }) {
   try {
+    // BUG-001 fix: Ensure DOM is ready before injection
+    if (!document.body) {
+      console.warn('[VibeAI HUD] DOM not ready (document.body missing), retrying in 500ms');
+      setTimeout(() => injectUnifiedHUD(options), 500);
+      return null;
+    }
+
     // Inject-once guard: avoid duplicate mounts during SPA reinjection
     try { window.__VIBEAI__ = window.__VIBEAI__ || {}; } catch (e) { window.__VIBEAI__ = {}; }
 
     if (window.__VIBEAI__.hudMounted) {
-      console.log('[VibeAI HUD] mount skipped (already mounted)');
+      void 0;
       return document.getElementById('vibeai-unified-hud');
     }
 
     if (window.__VIBEAI__.hudMounting) {
-      console.log('[VibeAI HUD] mount skipped (mounting in progress)');
+      void 0;
       return document.getElementById('vibeai-unified-hud') || null;
     }
 
@@ -2178,7 +2250,7 @@ function injectUnifiedHUD(options = { observer: true }) {
         observer.observe(document.body, { childList: true, subtree: true });
         window.__vibeai_unified_observer_set = true;
         window.__vibeai_unified_observer = observer;
-        console.log('[VibeAI UniHUD] MutationObserver enabled for reinjection (ChatGPT)');
+        void 0;
       }
     } catch { /* ignore observer errors */ }
 
@@ -2347,9 +2419,20 @@ function injectHUDStyles() {
       background: rgba(0, 212, 255, 0.15) !important;
       transform: translateY(-1px);
     }
-    #vibeai-theme-toggle:hover,
-    #vibeai-lexicon-toggle:hover {
+    #vibeai-theme-toggle:hover {
       transform: scale(1.1);
+    }
+    #vibeai-coach-btn:hover {
+      background: rgba(255,255,255,0.2) !important;
+      transform: translateY(-1px);
+    }
+    #vibeai-coach-btn.highlight {
+      background: linear-gradient(135deg, #ff6b6b, #feca57) !important;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(254, 202, 87, 0.7); }
+      50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(254, 202, 87, 0); }
     }
       /* Tile icon image + emoji fallback handling */
       .foldspace-tile-icon {
@@ -2452,7 +2535,7 @@ function injectHUDStyles() {
     }
   `;
   document.head.appendChild(style);
-  console.log('[VibeAI UniHUD] ✅ Styles injected');
+  void 0;
 }
 
 // 3. Event listeners
@@ -2464,7 +2547,7 @@ function attachEventListeners() {
   const privacyBtn = document.getElementById('vibeai-privacy');
   const reportBugBtn = document.getElementById('vibeai-report-bug');
   const themeToggleBtn = document.getElementById('vibeai-theme-toggle');
-  const lexiconToggleBtn = document.getElementById('vibeai-lexicon-toggle');
+  const coachBtn = document.getElementById('vibeai-coach-btn');
 
   if (toggleCanvasBtn) {
     let hudMinimized = false;
@@ -2517,7 +2600,7 @@ function attachEventListeners() {
           toggleCanvasBtn.style.background = 'rgba(0, 170, 255, 0.3)';
           toggleCanvasBtn.style.color = '#00d4ff';
           toggleCanvasBtn.title = 'Maximize HUD';
-          console.log('[VibeAI UniHUD] HUD minimized to bottom tab');
+          void 0;
         } else {
           // Maximize: restore full HUD
           hud.style.width = '360px';
@@ -2562,7 +2645,7 @@ function attachEventListeners() {
           toggleCanvasBtn.style.background = '';
           toggleCanvasBtn.style.color = '';
           toggleCanvasBtn.title = 'Minimize HUD';
-          console.log('[VibeAI UniHUD] HUD maximized');
+          void 0;
         }
       }
     });
@@ -2573,7 +2656,7 @@ function attachEventListeners() {
       const hud = document.getElementById('vibeai-unified-hud');
       if (hud) {
         hud.style.display = 'none';
-        console.log('[VibeAI UniHUD] HUD hidden');
+        void 0;
 
         // Run registered cleanup functions (remove listeners, intervals, observers)
         try {
@@ -2585,7 +2668,7 @@ function attachEventListeners() {
         if (ENABLE_HUGO_ORB && window.hugoOrb) {
           try { window.hugoOrb.destroy(); } catch (e) { console.warn('hugoOrb.destroy error', e); }
           try { window.hugoOrb = null; } catch (e) {}
-          console.log('[VibeAI HUD] 🧹 Hugo Orb cleaned up');
+          void 0;
         }
 
         // Legacy: Cleanup FoldSpace canvas on close
@@ -2599,22 +2682,22 @@ function attachEventListeners() {
 
   if (consentBtn) {
     consentBtn.addEventListener('click', () => {
-      console.log('[VibeAI UniHUD] 📋 Consent clicked - showing consent modal');
+      void 0;
       showConsentModal();
     });
   }
 
   if (privacyBtn) {
     privacyBtn.addEventListener('click', () => {
-      console.log('[VibeAI UniHUD] 🔒 Privacy clicked - opening privacy statement');
+      void 0;
       showPrivacyModal();
     });
   }
 
   if (reportBugBtn) {
     reportBugBtn.addEventListener('click', () => {
-      console.log('[VibeAI UniHUD] 🐛 Report Bug clicked');
-      window.open('https://github.com/TNL-Origin/vibeai-foldspace/issues/new?template=bug_report.md', '_blank');
+      void 0;
+      window.open('https://github.com/TNL-Origin/hugonomy-foldspace/issues/new', '_blank');
     });
   }
 
@@ -2628,21 +2711,32 @@ function attachEventListeners() {
     });
   }
 
-  // Phase Δ.9.1: Lexicon toggle button (Youth ↔ Pro)
-  if (lexiconToggleBtn) {
-    lexiconToggleBtn.addEventListener('click', async () => {
-      const newLexicon = ACTIVE_LEXICON === 'youth' ? 'pro' : 'youth';
-      const success = await switchLexicon(newLexicon);
+  // Phase VIII.1 Coach: Coach button opens Lexicon Panel
+  if (coachBtn) {
+    coachBtn.addEventListener('click', () => {
+      void 0;
 
-      if (success) {
-        // Update button icon and title
-        lexiconToggleBtn.textContent = ACTIVE_LEXICON === 'youth' ? '🎓' : '💼';
-        lexiconToggleBtn.title = `Toggle lexicon (Current: ${ACTIVE_LEXICON})`;
-        console.log(`[VibeAI Lexicon] 🔄 UI switched to ${ACTIVE_LEXICON} mode`);
+      // Remove highlight when clicked
+      coachBtn.classList.remove('highlight');
+
+      // Wire to VibeCoach
+      if (window.VibeCoach && typeof window.VibeCoach.showLexiconPanel === 'function') {
+        window.VibeCoach.showLexiconPanel();
       } else {
-        console.error('[VibeAI Lexicon] ❌ Failed to switch lexicon');
+        console.warn('[VibeAI Coach] Coach not loaded yet');
       }
     });
+
+    // Expose function to highlight button when coaching triggers
+    window.highlightCoachButton = () => {
+      if (coachBtn) {
+        coachBtn.classList.add('highlight');
+        // Auto-remove highlight after 5 seconds
+        setTimeout(() => {
+          coachBtn.classList.remove('highlight');
+        }, 5000);
+      }
+    };
   }
 
     // --- HUD Drag & Resize Handlers (user sovereignty) ---
@@ -2825,7 +2919,7 @@ function updateThreadFeed(threads) {
       : (thread.tone ? [thread.tone] : pickFromMetrics());
 
     // Debug: Log what we're rendering for this thread
-    if (window.VIBEAI_HUD_DEBUG) console.log(`[Renderer] foldspaceMiniHTML: tones=${JSON.stringify(tones)}, thread.tone=${thread.tone}, mapped=${JSON.stringify(mapped)}`);
+    if (window.VIBEAI_HUD_DEBUG) void 0;
 
     // Map mood keys to representative emoji (aligned with tone strip)
     const moodMap = {
@@ -2909,7 +3003,7 @@ function updateThreadFeed(threads) {
     });
   });
 
-  console.log(`[VibeAI UniHUD] ✅ Rendered ${threads.length} threads`);
+  void 0;
 }
 
 // Helper: auto-title from first 5 words
@@ -2921,7 +3015,7 @@ function autoTitle(content) {
 
 // Scroll to thread on click
 function scrollToThread(threadId) {
-  console.log(`[VibeAI UniHUD] 🎯 Scrolling to thread: ${threadId}`);
+  void 0;
 
   // Detect platform
   const _HOSTNAME = window.location.hostname;
@@ -2969,14 +3063,14 @@ function scrollToThread(threadId) {
     targetElement.style.setProperty('border-radius', '8px', 'important');
     targetElement.style.setProperty('transition', 'all 0.3s ease', 'important');
 
-    console.log(`[VibeAI UniHUD] ✅ Scrolled to thread: ${threadId}`);
+    void 0;
 
     // Remove highlight after 2 seconds
     setTimeout(() => {
       targetElement.style.removeProperty('outline');
       targetElement.style.removeProperty('background-color');
       targetElement.style.removeProperty('border-radius');
-      console.log(`[VibeAI UniHUD] 🌊 Highlight faded: ${threadId}`);
+      void 0;
     }, 2000);
   } else {
     console.warn(`[VibeAI UniHUD] ⚠️ Thread element not found: ${threadId} (index: ${index})`);
@@ -3057,16 +3151,19 @@ function renderOnboardingHint() {
       <span>Welcome to VibeAI</span>
     </div>
     <div style="margin-bottom: 10px; line-height: 1.5;">
-      VibeAI helps you <strong>understand the emotional tone</strong> of your AI conversations in real-time, so you can <strong>communicate more effectively</strong> and catch drift before burnout.
+      <strong>VibeAI</strong> tracks the <strong>emotional tone</strong> of your AI conversations in real-time, helping you <strong>communicate clearly</strong> and <strong>improve your prompts</strong> before frustration sets in.
       <br><br>
       <div style="margin-top: 10px; padding: 8px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; border-left: 3px solid rgba(34, 211, 238, 0.7);">
-        <div style="font-weight: 600; margin-bottom: 6px; opacity: 0.95;">Quick Start Guide:</div>
-        <div style="font-size: 12px; opacity: 0.85; line-height: 1.6;">
-          <div>🎓/💼 <strong>Lexicon Toggle:</strong> Choose Student-Friendly or Professional language style</div>
+        <div style="font-weight: 600; margin-bottom: 6px; opacity: 0.95;">Features:</div>
+        <div style="font-size: 12px; opacity: 0.85; line-height: 1.7;">
+          <div><strong>📊 Live Mood Tracking:</strong> See emotional patterns as you chat</div>
+          <div style="margin-top: 4px;"><strong>🧠 Coach:</strong> Get post-send tips to improve urgent/confused prompts</div>
+          <div style="margin-top: 4px;"><strong>📚 Prompt Library:</strong> Copy proven templates for better responses</div>
+          <div style="margin-top: 4px;"><strong>🎓/💼 Tone Switch:</strong> Student-friendly or professional language</div>
         </div>
       </div>
       <br>
-      <span style="opacity: 0.85; font-size: 13px;">💡 <strong>Pro tip:</strong> Hover glyphs above for insights about each mood state.</span>
+      <span style="opacity: 0.85; font-size: 13px;">💡 <strong>Tip:</strong> Drag any panel header to reposition. Click 🧠 Coach for the full prompt library.</span>
     </div>
     <button id="vibeai-first-time-hint-btn"
       style="
@@ -3096,7 +3193,7 @@ function renderOnboardingHint() {
     if (el && el.parentElement) {
       el.parentElement.removeChild(el);
     }
-    console.log('[VibeAI UniHUD] ✅ Onboarding dismissed (will show again on next page)');
+    void 0;
   }
 
   const btn = document.getElementById('vibeai-first-time-hint-btn');
@@ -3142,6 +3239,80 @@ try {
 }
 
 // 6. Consent Modal
+// v2.14.6: P0 Beta Fix - Event delegation + session-only decline + recovery path
+
+// In-memory session decline flag (fallback if chrome.storage.session unavailable)
+let __vibeai_declined_this_session = false;
+
+// Show the "Paused" bar with recovery option
+function showPausedBar() {
+  if (document.getElementById('vibeai-paused-bar')) return;
+
+  const bar = document.createElement('div');
+  bar.id = 'vibeai-paused-bar';
+  bar.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(15, 15, 20, 0.95);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 2147483640;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    animation: vibeai-slide-in 0.3s ease;
+  `;
+
+  bar.innerHTML = `
+    <span style="color: #888; font-size: 13px;">🌀 VibeAI is paused</span>
+    <button id="vibeai-paused-enable" style="
+      padding: 6px 14px;
+      background: rgba(0, 170, 255, 0.25);
+      color: #00d4ff;
+      border: 1px solid rgba(0, 170, 255, 0.4);
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    ">Enable</button>
+    <button id="vibeai-paused-dismiss" style="
+      padding: 6px 10px;
+      background: transparent;
+      color: #666;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+    ">✕</button>
+  `;
+
+  document.body.appendChild(bar);
+
+  // Event delegation for paused bar buttons
+  bar.addEventListener('click', (e) => {
+    const target = e.target;
+    if (target.id === 'vibeai-paused-enable') {
+      bar.remove();
+      // Clear session decline and show consent modal
+      __vibeai_declined_this_session = false;
+      try {
+        if (chrome?.storage?.session) {
+          chrome.storage.session.remove('declinedThisSession');
+        }
+      } catch (err) { /* ignore */ }
+      showConsentModal();
+    } else if (target.id === 'vibeai-paused-dismiss') {
+      bar.remove();
+    }
+  });
+
+  void 0;
+}
+
 function showConsentModal() {
   if (document.getElementById('vibeai-consent-modal')) return;
 
@@ -3164,7 +3335,7 @@ function showConsentModal() {
   `;
 
   modal.innerHTML = `
-    <div style="
+    <div class="vibeai-consent-card" style="
       background: rgba(15, 15, 20, 0.95);
       border: 2px solid rgba(0, 212, 255, 0.5);
       border-radius: 16px;
@@ -3196,6 +3367,9 @@ function showConsentModal() {
         </ul>
         <p style="font-size: 0.8em; opacity: 0.65; font-style: italic; padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 12px;">
           <strong>Disclaimer:</strong> This is not a medical, mental health, therapeutic, or diagnostic tool. For informational purposes only.
+        </p>
+        <p style="font-size: 0.75em; opacity: 0.5; margin-top: 8px; text-align: center;">
+          💡 Press <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 3px; font-family: monospace;">Ctrl+Shift+V</kbd> anytime to show this prompt
         </p>
       </div>
       <div style="margin-bottom: 16px;">
@@ -3233,10 +3407,73 @@ function showConsentModal() {
 
   document.body.appendChild(modal);
 
-  // Checkbox logic: enable "Start Reflecting" only when checked
+  // v2.14.6: Use EVENT DELEGATION on modal container to fix first-load click race
+  // This ensures clicks work even if elements were just inserted
+  modal.addEventListener('click', (e) => {
+    const target = e.target;
+
+    // Handle checkbox change via click (delegation doesn't catch 'change' but click works)
+    if (target.id === 'vibeai-consent-checkbox') {
+      // Let the native checkbox behavior happen, then update button state
+      setTimeout(() => {
+        const checkbox = document.getElementById('vibeai-consent-checkbox');
+        const acceptBtn = document.getElementById('vibeai-consent-accept');
+        if (checkbox && acceptBtn) {
+          if (checkbox.checked) {
+            acceptBtn.disabled = false;
+            acceptBtn.style.cursor = 'pointer';
+            acceptBtn.style.opacity = '1';
+          } else {
+            acceptBtn.disabled = true;
+            acceptBtn.style.cursor = 'not-allowed';
+            acceptBtn.style.opacity = '0.4';
+          }
+        }
+      }, 0);
+    }
+
+    // Handle Accept button click
+    if (target.id === 'vibeai-consent-accept' && !target.disabled) {
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({ consentGiven: true }, () => {
+          void 0;
+          modal.remove();
+          renderHUDContainer();
+          setTimeout(() => { showFirstTimeHint(); }, 500);
+        });
+      } else {
+        try { localStorage.setItem('vibeai_consentGiven', 'true'); } catch (err) { /* ignore */ }
+        void 0;
+        modal.remove();
+        renderHUDContainer();
+        setTimeout(() => { showFirstTimeHint(); }, 500);
+      }
+    }
+
+    // Handle Decline button click - SESSION-ONLY decline (P0 fix)
+    if (target.id === 'vibeai-consent-decline') {
+      void 0;
+
+      // Set session-only decline flag (NOT permanent consentGiven:false)
+      __vibeai_declined_this_session = true;
+
+      // Try chrome.storage.session first (clears on browser close)
+      try {
+        if (chrome?.storage?.session) {
+          chrome.storage.session.set({ declinedThisSession: true });
+        }
+      } catch (err) { /* ignore - in-memory flag is the fallback */ }
+
+      modal.remove();
+
+      // Show paused bar with recovery option
+      setTimeout(() => { showPausedBar(); }, 300);
+    }
+  });
+
+  // Also add direct listener as backup for checkbox 'change' event
   const checkbox = document.getElementById('vibeai-consent-checkbox');
   const acceptBtn = document.getElementById('vibeai-consent-accept');
-
   if (checkbox && acceptBtn) {
     checkbox.addEventListener('change', () => {
       if (checkbox.checked) {
@@ -3251,53 +3488,7 @@ function showConsentModal() {
     });
   }
 
-  // Accept button (with null safety)
-  if (acceptBtn) {
-    acceptBtn.addEventListener('click', () => {
-      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.set({ consentGiven: true }, () => {
-          console.log('[VibeAI UniHUD] ✅ User consent granted');
-          modal.remove();
-          renderHUDContainer();
-
-          // DEBUG FIX (v2.14.1): Trigger onboarding after consent modal dismissed
-          setTimeout(() => {
-            showFirstTimeHint();
-          }, 500); // Short delay to ensure HUD is fully rendered
-        });
-      } else {
-        // Fallback for non-extension envs
-        try { localStorage.setItem('vibeai_consentGiven', 'true'); } catch (e) { console.warn('[VibeAI UniHUD] local fallback set failed', e); }
-        console.log('[VibeAI UniHUD] ✅ User consent granted (local fallback)');
-        modal.remove();
-        renderHUDContainer();
-
-        // DEBUG FIX (v2.14.1): Trigger onboarding after consent modal dismissed (fallback path)
-        setTimeout(() => {
-          showFirstTimeHint();
-        }, 500);
-      }
-    });
-  }
-
-  // Decline button (with null safety)
-  const declineBtn = document.getElementById('vibeai-consent-decline');
-  if (declineBtn) {
-    declineBtn.addEventListener('click', () => {
-      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.set({ consentGiven: false }, () => {
-          console.log('[VibeAI UniHUD] ❌ User declined consent');
-          modal.remove();
-        });
-      } else {
-        try { localStorage.setItem('vibeai_consentGiven', 'false'); } catch (e) { console.warn('[VibeAI UniHUD] local fallback set failed', e); }
-        console.log('[VibeAI UniHUD] ❌ User declined consent (local fallback)');
-        modal.remove();
-      }
-    });
-  }
-
-  console.log('[VibeAI UniHUD] 📋 Consent modal displayed');
+  void 0;
 }
 
 // 6b. Privacy Modal
@@ -3369,8 +3560,8 @@ function showPrivacyModal() {
         <h3 style="color: #00d4ff; margin-top: 16px; margin-bottom: 12px;">Open Source</h3>
         <p style="margin-bottom: 12px;">
           You can review the complete source code at:
-          <a href="https://github.com/TNL-Origin/vibeai-foldspace" target="_blank" style="color: #00d4ff; text-decoration: underline;">
-            github.com/TNL-Origin/vibeai-foldspace
+          <a href="https://github.com/TNL-Origin/hugonomy-foldspace" target="_blank" style="color: #00d4ff; text-decoration: underline;">
+            github.com/TNL-Origin/hugonomy-foldspace
           </a>
         </p>
 
@@ -3401,7 +3592,7 @@ function showPrivacyModal() {
   if (closeBtn) {
     closeBtn.addEventListener('click', () => {
       modal.remove();
-      console.log('[VibeAI UniHUD] 🔒 Privacy modal closed');
+      void 0;
     });
   }
 
@@ -3412,7 +3603,7 @@ function showPrivacyModal() {
     }
   });
 
-  console.log('[VibeAI UniHUD] 🔒 Privacy modal displayed');
+  void 0;
 }
 
 // 7. Initial load (guarded)
@@ -3434,58 +3625,129 @@ function showPrivacyModal() {
 // }
 
 // 8. Robust initialization window with consent check + fallback reinjection for ChatGPT
+// v2.14.6: Updated to handle session-only decline (P0 fix - no more permanent brick state)
+// v2.14.7: Added idempotence guard to prevent duplicate initialization on page refresh (BUG-001 fix)
+let __vibeai_safe_init_called = false;
 function vibeaiSafeInit() {
+  // Idempotence guard - prevent multiple calls on refresh
+  if (__vibeai_safe_init_called) {
+    void 0;
+    return;
+  }
+  __vibeai_safe_init_called = true;
+  void 0;
+
   try {
-    chrome.storage.local.get(['consentGiven'], (data) => {
-      if (data.consentGiven === true) {
-        // Small delay to avoid race with hydrations; enable observer only on ChatGPT
-        setTimeout(() => injectUnifiedHUD({ observer: PLATFORM === 'chatgpt' }), 1000);
+    // First check session decline (in-memory flag or chrome.storage.session)
+    if (__vibeai_declined_this_session) {
+      void 0;
+      setTimeout(() => { showPausedBar(); }, 1000);
+      return;
+    }
 
-        // Extra lightweight reinjection loop for hosts that aggressively wipe the DOM (ChatGPT)
-        if (PLATFORM === 'chatgpt' && !window.__vibeai_unified_reinject_interval) {
-          let attempts = 0;
-          window.__vibeai_unified_reinject_interval = setInterval(() => {
-            try {
-              if (document.getElementById('vibeai-unified-hud')) {
-                clearInterval(window.__vibeai_unified_reinject_interval);
-                window.__vibeai_unified_reinject_interval = null;
-                return;
-              }
-              attempts += 1;
-              if (attempts > 12) { // ~18s of attempts
-                clearInterval(window.__vibeai_unified_reinject_interval);
-                window.__vibeai_unified_reinject_interval = null;
-                return;
-              }
-              console.warn('[VibeAI UniHUD] Reinjection poll: HUD missing, attempting inject (ChatGPT)');
-              injectUnifiedHUD({ observer: true });
-            } catch { /* ignore */ }
-          }, 1500);
-
-          // Ensure reinject interval is cleared on cleanup
-          registerCleanup(() => {
-            try {
-              if (window.__vibeai_unified_reinject_interval) {
-                clearInterval(window.__vibeai_unified_reinject_interval);
-                window.__vibeai_unified_reinject_interval = null;
-                dbg('reinjection interval cleared');
-              }
-            } catch (e) { console.warn('failed clearing reinject interval', e); }
+    // Check chrome.storage.session for decline (if available)
+    const checkSessionDecline = new Promise((resolve) => {
+      try {
+        if (chrome?.storage?.session) {
+          chrome.storage.session.get(['declinedThisSession'], (sessionData) => {
+            resolve(sessionData?.declinedThisSession === true);
           });
+        } else {
+          resolve(false);
         }
-
-      } else if (data.consentGiven === undefined) {
-        // First time - show consent modal after a short pause so hydration can finish
-        setTimeout(() => {
-          showConsentModal();
-        }, 1000);
+      } catch (err) {
+        resolve(false);
       }
-      // If false, do nothing (user declined)
+    });
+
+    checkSessionDecline.then((sessionDeclined) => {
+      if (sessionDeclined) {
+        __vibeai_declined_this_session = true;
+        void 0;
+        setTimeout(() => { showPausedBar(); }, 1000);
+        return;
+      }
+
+      // Now check permanent consent state with timeout (BUG-001 fix)
+      // mCopi audit fix: Track if timeout fired to auto-dismiss modal if consent arrives late
+      let timeoutFired = false;
+      const consentCheckTimeout = setTimeout(() => {
+        timeoutFired = true;
+        console.warn('[VibeAI UniHUD] Consent check timed out, showing consent modal');
+        showConsentModal();
+      }, 3000);
+
+      chrome.storage.local.get(['consentGiven'], (data) => {
+        clearTimeout(consentCheckTimeout);
+        void 0;
+
+        if (data.consentGiven === true) {
+          void 0;
+
+          // mCopi audit fix: If timeout fired and showed modal, dismiss it now
+          if (timeoutFired) {
+            void 0;
+            const modal = document.getElementById('vibeai-consent-modal');
+            if (modal) modal.remove();
+          }
+          // Small delay to avoid race with hydrations; enable observer only on ChatGPT
+          setTimeout(() => injectUnifiedHUD({ observer: PLATFORM === 'chatgpt' }), 1000);
+
+          // Extra lightweight reinjection loop for hosts that aggressively wipe the DOM (ChatGPT)
+          if (PLATFORM === 'chatgpt' && !window.__vibeai_unified_reinject_interval) {
+            let attempts = 0;
+            window.__vibeai_unified_reinject_interval = setInterval(() => {
+              try {
+                if (document.getElementById('vibeai-unified-hud')) {
+                  clearInterval(window.__vibeai_unified_reinject_interval);
+                  window.__vibeai_unified_reinject_interval = null;
+                  return;
+                }
+                attempts += 1;
+                if (attempts > 12) { // ~18s of attempts
+                  clearInterval(window.__vibeai_unified_reinject_interval);
+                  window.__vibeai_unified_reinject_interval = null;
+                  return;
+                }
+                console.warn('[VibeAI UniHUD] Reinjection poll: HUD missing, attempting inject (ChatGPT)');
+                injectUnifiedHUD({ observer: true });
+              } catch { /* ignore */ }
+            }, 1500);
+
+            // Ensure reinject interval is cleared on cleanup
+            registerCleanup(() => {
+              try {
+                if (window.__vibeai_unified_reinject_interval) {
+                  clearInterval(window.__vibeai_unified_reinject_interval);
+                  window.__vibeai_unified_reinject_interval = null;
+                  dbg('reinjection interval cleared');
+                }
+              } catch (e) { console.warn('failed clearing reinject interval', e); }
+            });
+          }
+
+        } else if (data.consentGiven === undefined || data.consentGiven === false) {
+          // v2.14.6: Treat both undefined AND false as "show consent modal"
+          // This fixes the permanent brick state - false is no longer a dead end
+          // If user previously had consentGiven:false, they'll now see the modal again
+          setTimeout(() => {
+            showConsentModal();
+          }, 1000);
+
+          // Clean up any legacy consentGiven:false to prevent confusion
+          if (data.consentGiven === false) {
+            void 0;
+            try {
+              chrome.storage.local.remove('consentGiven');
+            } catch (err) { /* ignore */ }
+          }
+        }
+      });
     });
   } catch (err) {
     console.warn('[VibeAI UniHUD] vibeaiSafeInit storage check failed', err);
-    // Best-effort: if chrome.storage fails, fall back to immediate injection
-    setTimeout(() => injectUnifiedHUD({ observer: PLATFORM === 'chatgpt' }), 1000);
+    // Best-effort: if chrome.storage fails, show consent modal
+    setTimeout(() => { showConsentModal(); }, 1000);
   }
 }
 
@@ -3497,4 +3759,58 @@ if (document.readyState === 'complete') {
   window.addEventListener('load', vibeaiSafeInit);
   // And a fallback in case load never fires or hydration is delayed
   setTimeout(vibeaiSafeInit, 3000);
+}
+
+// v2.14.8: Keyboard shortcut to re-enable VibeAI if user clicked "Maybe later"
+// Ctrl+Shift+V = "VibeAI"
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.shiftKey && e.key === 'V') {
+    void 0;
+
+    chrome.storage.local.get(['consentGiven'], (data) => {
+      if (data.consentGiven === true) {
+        void 0;
+
+        // If HUD is missing despite consent, reinject it
+        if (!document.getElementById('vibeai-unified-hud')) {
+          void 0;
+          injectUnifiedHUD({ observer: PLATFORM === 'chatgpt' });
+        }
+      } else {
+        void 0;
+        showConsentModal();
+      }
+    });
+  }
+});
+
+void 0;
+
+// v1.0 Coach: Initialize post-send coaching (runs after VibeAI HUD is ready)
+// Only on supported LLM platforms
+if (window.VibeCoach && typeof window.VibeCoach.init === 'function') {
+  const coachHosts = new Set([
+    'chat.openai.com',
+    'chatgpt.com',
+    'www.chatgpt.com',
+    'gemini.google.com',
+    'copilot.microsoft.com',
+    'claude.ai'
+  ]);
+  const shouldInitCoach = coachHosts.has(location.hostname);
+
+  if (shouldInitCoach) {
+    setTimeout(() => {
+      try {
+        const initialized = window.VibeCoach.init();
+        if (initialized) {
+          void 0;
+        } else {
+          void 0;
+        }
+      } catch (err) {
+        console.warn('[VibeAI Coach] Initialization failed:', err);
+      }
+    }, 2000); // Wait 2s for page hydration
+  }
 }

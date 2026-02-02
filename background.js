@@ -1,6 +1,6 @@
 // 🪐 VibeAI FoldSpace Auto-Injector + Bookmark Core (vStable-2.5.0-RC1)
 chrome.runtime.onInstalled.addListener(() => {
-  console.log("[VibeAI] Background service worker initialized.");
+  void 0;
 });
 
 // 🚫 DISABLED: Old iframe HUD injection (replaced by unified-hud.js in v2.11.10)
@@ -57,7 +57,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       const threads = Array.isArray(msg.payload) ? msg.payload : [];
       const redacted = threads.map(redactThread);
       chrome.storage.local.set({ lastThreads: redacted }, () => {
-        console.log(`[VibeAI] 💾 Saved ${redacted.length} redacted threads`);
+        void 0;
       });
       sendResponse({ status: "OK" });
     } catch (err) {
@@ -84,7 +84,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       const updated = existing.concat(redacted);
       // Overwrite stored bookmarks with redacted-only records (migration-safe)
       chrome.storage.local.set({ bookmarks: updated }, () => {
-        console.log("[VibeAI] 📘 Added redacted bookmark:", redacted.bookmarkId || redacted.threadId);
+        void 0;
         sendResponse({ status: "OK" });
       });
     });

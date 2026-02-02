@@ -119,7 +119,7 @@ function safeGetURL(path) {
       const given = await getConsentGiven();
       if (!given && !document.getElementById(CONSENT_HOST_ID)) {
         injectConsentDialog();
-        console.log("[VibeAI] Consent heartbeat re-injected dialog.");
+        void 0;
       }
     }, 3000);
   }
@@ -140,11 +140,11 @@ function safeGetURL(path) {
       setTimeout(() => {
         injectConsentDialog();
         startConsentHeartbeat();
-        console.log("[VibeAI] Consent dialog mounted (DOM-safe).");
+        void 0;
       }, 500);
     } else {
       removeConsentDialog();
-      console.log("[VibeAI] Consent already given.");
+      void 0;
     }
   }
 
@@ -155,20 +155,20 @@ function safeGetURL(path) {
 
 // Main consent check initialization
 function initConsentCheck() {
-  console.log("[VibeAI] Checking user consent...");
+  void 0;
 
   chrome.storage.local.get(["consentGiven"], (result) => {
     if (result.consentGiven === undefined) {
       // First time user - show consent dialog
-      console.log("[VibeAI] First-time user detected, opening consent dialog");
+      void 0;
       showConsentModal();
     } else if (result.consentGiven === true) {
       // User has accepted - proceed with VibeAI
-      console.log("[VibeAI] Consent verified, activating VibeAI");
+      void 0;
       initializeVibeAI();
     } else {
       // User declined - show pause message
-      console.log("[VibeAI] Consent declined, VibeAI paused");
+      void 0;
       showPausedMessage();
     }
   });
@@ -177,7 +177,7 @@ function initConsentCheck() {
 function showConsentModal() {
   // Don't show multiple modals
   if (document.getElementById("vibeai-consent-overlay")) {
-    console.log("[VibeAI] Consent modal already visible");
+    void 0;
     return;
   }
 
@@ -217,7 +217,7 @@ function showConsentModal() {
   // Listen for postMessage from consent iframe
   window.addEventListener("message", (event) => {
     if (event.data?.source === "vibeai-consent" && event.data?.action === "accepted") {
-      console.log("[VibeAI] Received consent acceptance message");
+      void 0;
       overlay.remove();
       injectHUD();
     }
@@ -232,10 +232,10 @@ function showConsentModal() {
         overlay.remove();
 
         if (result.consentGiven === true) {
-          console.log("[VibeAI] User accepted consent");
+          void 0;
           injectHUD();
         } else {
-          console.log("[VibeAI] User declined consent");
+          void 0;
           showPausedMessage();
         }
       }
@@ -247,12 +247,12 @@ function showConsentModal() {
 function injectHUD() {
   // Don't inject if already present
   if (document.getElementById("vibeai-hud-frame")) {
-    console.log("[VibeAI] HUD already present");
+    void 0;
     return;
   }
 
   try {
-    console.log("[VibeAI] Injecting HUD into current page...");
+    void 0;
 
     // Create iframe for HUD (this properly executes scripts)
     const hudFrame = document.createElement("iframe");
@@ -280,7 +280,7 @@ function injectHUD() {
     // Append to body
     document.body.appendChild(hudFrame);
 
-    console.log("[VibeAI] HUD iframe injected successfully");
+    void 0;
 
     // Phase VII.9.2 - Enforce HUD positioning for ChatGPT visibility
     setTimeout(() => {
@@ -294,7 +294,7 @@ function injectHUD() {
   hud.style.zIndex = '2147483645';
   hud.style.display = 'block';
   hud.style.pointerEvents = 'auto';
-  console.log('[VibeAI Content] HUD positioning enforced for visibility');
+  void 0;
       }
     }, 100);
 
@@ -313,7 +313,7 @@ function loadContentScript() {
     script.src = safeGetURL('scripts/content-script.js');
     script.type = 'module';
     script.onload = () => {
-      console.log("[VibeAI] Content script loaded");
+      void 0;
     };
     script.onerror = (error) => {
       console.error("[VibeAI] Failed to load content script:", error);
@@ -418,7 +418,7 @@ function startSelfHealingSystem() {
       const root = document.querySelector("div#__next");
       const hud = document.getElementById("vibeai-hud-frame");
       if (root && !hud) {
-        console.log("[VibeAI] DOM mutation detected, HUD re-injected.");
+        void 0;
         injectHUD();
       }
     });
@@ -426,17 +426,17 @@ function startSelfHealingSystem() {
     // Observe body for ChatGPT React re-hydration
     if (document.body) {
       rootObserver.observe(document.body, { childList: true, subtree: true });
-      console.log("[VibeAI] Self-healing mount system active");
+      void 0;
     }
   });
 }
 
 // DOMContentLoaded fallback for ChatGPT and other strict CSP sites
 if (document.readyState === "loading") {
-  console.log("[VibeAI] Waiting for DOMContentLoaded...");
+  void 0;
   document.addEventListener("DOMContentLoaded", initConsentCheck);
 } else {
-  console.log("[VibeAI] DOM already loaded, running consent check");
+  void 0;
   initConsentCheck();
 }
 
@@ -450,7 +450,7 @@ function waitForHUD(attempt = 0) {
     if (iframe && iframe.contentWindow) {
       // We must not access iframe.contentDocument directly (CSP / cross-origin).
       // Always rely on postMessage handshake. Send a bind request and wait for HUD's ready ping.
-      console.log('[VibeAI] Binding HUD via postMessage (CSP-safe)');
+      void 0;
       try { iframe.contentWindow.postMessage({ type: 'VIBEAI_BIND_REQUEST' }, '*'); } catch (errPost) { console.warn('[VibeAI] VIBEAI_BIND_REQUEST postMessage failed:', errPost); }
 
       // Handshake fail-safe: if HUD doesn't respond within HANDSHAKE_TIMEOUT, log and keep waiting via polling

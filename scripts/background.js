@@ -5,24 +5,24 @@
 /* eslint-env browser */
 const { runtime: _runtime } = chrome || {};
 // --- Initialization ---
-console.log("🌀 VibeAI FoldSpace Background Worker active");
+void 0;
 
 // Handle extension installation/update
 chrome.runtime.onInstalled.addListener((details) => {
-  console.log("🔧 Extension installed or updated:", details.reason);
+  void 0;
   if (details.reason === "install") {
-    chrome.storage.sync.set({ consentAccepted: false });
+    chrome.storage.local.set({ consentAccepted: false });
   }
 });
 
 // Handle startup reinitialization
 chrome.runtime.onStartup.addListener(() => {
-  console.log("🚀 Chrome restarted, reinitializing FoldSpace session.");
+  void 0;
 });
 
 // Message listener
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  console.log("📨 Background received message:", msg);
+  void 0;
 
   try {
     if (msg.action === "ping") {
@@ -32,7 +32,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     // Example: Trigger page reload if user clears data
     if (msg.action === "clearData") {
       chrome.storage.local.clear(() => {
-        console.log("🧹 Cleared local storage");
+        void 0;
         sendResponse({ cleared: true });
       });
       return true; // Keep channel open for async response

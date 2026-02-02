@@ -19,7 +19,7 @@ if (!fs.existsSync(svgPath)) {
   for (const s of sizes) {
   const out = path.join(outDir, `icon${s}.png`);
   const tmp = out + '.tmp';
-    console.log('Rasterizing', svgPath, '->', out, s + 'x' + s);
+    void 0;
     try {
       await sharp(svgBuffer, { density: 300 })
         .resize(s, s, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
@@ -33,11 +33,11 @@ if (!fs.existsSync(svgPath)) {
         // If move fails, leave tmp in place and report both
         console.warn('Could not move tmp to out, tmp is at', tmp, mvErr.message || mvErr);
       }
-      console.log('Wrote', out);
+      void 0;
     } catch (e) {
       console.error('Failed to rasterize', s, e.message || e);
       process.exit(1);
     }
   }
-  console.log('All sizes written.');
+  void 0;
 })();
