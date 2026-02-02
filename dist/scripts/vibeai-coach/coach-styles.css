@@ -1,0 +1,404 @@
+/* coach-styles.css — Cybernetic Glassmorphism, calm + premium */
+
+.vibeai-coach-panel {
+  position: fixed;
+  right: auto;
+  left: 24px; /* Position on left side (HUD is on right) */
+  bottom: 24px;
+  width: 340px;
+  z-index: 2147483648; /* Above HUD (HUD is 2147483647) */
+  background: rgba(12, 12, 18, 0.88);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 16px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.45);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: #fff;
+  overflow: hidden;
+  animation: vibeaiSlideIn 160ms ease-out;
+}
+
+@keyframes vibeaiSlideIn {
+  from { transform: translateY(10px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.vibeai-top {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 12px 12px 8px 12px;
+  cursor: move; /* Draggable header */
+  -webkit-user-select: none; /* Safari */
+  user-select: none; /* Prevent text selection while dragging */
+  background: rgba(255,255,255,0.03); /* Subtle contrast for draggable area */
+  border-radius: 16px 16px 0 0; /* Match panel border radius */
+  transition: background 0.2s ease;
+}
+
+.vibeai-top:hover {
+  background: rgba(255,255,255,0.06); /* Brighten on hover */
+}
+
+.vibeai-brand {
+  display:flex; align-items:center; gap:10px;
+}
+
+.vibeai-badge {
+  width: 30px; height: 30px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2bb3ff, #8a5bff);
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800;
+  letter-spacing: 0.02em;
+}
+
+.vibeai-title {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.vibeai-sub {
+  font-size: 11px;
+  opacity: 0.72;
+  margin-top: 2px;
+}
+
+.drag-hint {
+  font-size: 10px;
+  opacity: 0.4;
+  margin-left: 4px;
+  letter-spacing: -2px;
+  transition: opacity 0.2s ease;
+}
+
+.vibeai-top:hover .drag-hint,
+.lexicon-header:hover .drag-hint {
+  opacity: 0.7;
+}
+
+.vibeai-x {
+  border:none;
+  background:transparent;
+  color:#fff;
+  opacity:0.7;
+  cursor:pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+.vibeai-x:hover { opacity: 1; }
+
+.vibeai-body {
+  padding: 10px 12px 12px 12px;
+}
+
+.vibeai-state {
+  display:flex; align-items:center; justify-content:space-between;
+  border-left: 4px solid rgba(255,255,255,0.2);
+  padding: 10px 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+}
+
+.vibeai-state-left {
+  display:flex; align-items:center; gap:8px;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.vibeai-confidence {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+.vibeai-insight {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: rgba(255,255,255,0.88);
+}
+
+.vibeai-suggestions {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.vibeai-suggestions ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: rgba(255,255,255,0.85);
+}
+
+.vibeai-example {
+  margin-top: 10px;
+  font-size: 11px;
+  opacity: 0.85;
+  font-style: italic;
+  padding: 8px 10px;
+  border-left: 2px solid rgba(255,255,255,0.18);
+  background: rgba(0,0,0,0.18);
+  border-radius: 10px;
+}
+
+.vibeai-actions {
+  display:flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.vibeai-btn {
+  flex:1;
+  border-radius: 12px;
+  padding: 9px 10px;
+  font-size: 12px;
+  cursor:pointer;
+}
+
+.vibeai-btn-ghost {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.88);
+}
+.vibeai-btn-ghost:hover { border-color: rgba(255,255,255,0.28); }
+
+.vibeai-btn-primary {
+  border:none;
+  background: linear-gradient(135deg, #2bb3ff, #8a5bff);
+  color: #fff;
+  font-weight: 800;
+}
+.vibeai-btn-primary:hover { filter: brightness(1.05); }
+
+.vibeai-footer {
+  margin-top: 10px;
+  font-size: 10px;
+  opacity: 0.65;
+}
+
+/* Lexicon Panel Styles */
+.vibeai-lexicon-panel {
+  position: fixed;
+  right: 78px;
+  bottom: 24px;
+  width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+  z-index: 2147483649; /* Above everything (HUD is 2147483647, Coach is 2147483648) */
+  background: rgba(12, 12, 18, 0.92);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.50);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: #fff;
+  animation: vibeaiSlideIn 180ms ease-out;
+}
+
+.lexicon-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  cursor: move; /* Draggable header */
+  -webkit-user-select: none; /* Safari */
+  user-select: none; /* Prevent text selection while dragging */
+  background: rgba(255,255,255,0.04); /* Slightly more contrast than Coach header */
+  border-radius: 16px 16px 0 0; /* Match panel border radius */
+  transition: background 0.2s ease;
+}
+
+.lexicon-header:hover {
+  background: rgba(255,255,255,0.08); /* Brighten more on hover */
+}
+
+.lexicon-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.lexicon-close {
+  border: none;
+  background: transparent;
+  color: #fff;
+  opacity: 0.7;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+}
+.lexicon-close:hover { opacity: 1; }
+
+.lexicon-content {
+  padding: 16px;
+}
+
+.lexicon-content section {
+  margin-bottom: 20px;
+}
+
+.lexicon-content h4 {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.85;
+}
+
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 10px;
+}
+
+.mood-tile {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 12px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mood-tile:hover {
+  background: rgba(255,255,255,0.10);
+  border-color: rgba(255,255,255,0.18);
+  transform: translateY(-2px);
+}
+
+.mood-icon {
+  display: block;
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.mood-name {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.pattern-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pattern-item {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.pattern-toggle {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #fff;
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pattern-toggle:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.pattern-content {
+  padding: 0 12px 12px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.pattern-content p {
+  margin: 6px 0;
+}
+
+.pattern-content code {
+  display: block;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  margin: 8px 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.copy-template {
+  background: linear-gradient(135deg, #2bb3ff, #8a5bff);
+  border: none;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 6px;
+}
+
+.copy-template:hover {
+  filter: brightness(1.08);
+}
+
+.quick-tips ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.88;
+}
+
+.lexicon-footer {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.lexicon-footer label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.lexicon-footer label:hover {
+  opacity: 1;
+}
+
+.lexicon-back {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.88);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.lexicon-back:hover {
+  border-color: rgba(255,255,255,0.28);
+}

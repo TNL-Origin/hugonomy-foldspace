@@ -1,0 +1,33 @@
+{
+  "_notice": "Controlled Data — ©2025 Hugonomy Systems | Patent Pending (USPTO 63/856,714) | Non-commercial beta use only.",
+  "calm": {
+    "title": "Calm 🌊",
+    "phrase": "Balanced emotional state with low arousal.",
+    "color": "#3B82F6",
+    "emoji": "🌊"
+  },
+  "urgent": {
+    "title": "Urgent ⚡",
+    "phrase": "High-energy state requiring immediate action.",
+    "color": "#F97316",
+    "emoji": "⚡"
+  },
+  "reflective": {
+    "title": "Reflective 🔮",
+    "phrase": "Analytical mindset, processing complexity.",
+    "color": "#A855F7",
+    "emoji": "🔮"
+  },
+  "dissonant": {
+    "title": "Dissonant ⚙️",
+    "phrase": "Cognitive tension, conflicting signals detected.",
+    "color": "#64748B",
+    "emoji": "⚙️"
+  },
+  "resonant": {
+    "title": "Resonant ✨",
+    "phrase": "Peak emotional coherence and alignment.",
+    "color": "#EC4899",
+    "emoji": "✨"
+  }
+}
