@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "VibeAI FoldSpace",
   "version": "2.15.1",
-  "description": "Production Beta - All audit fixes applied, privacy-first architecture verified",
+  "description": "Real-time emotional tone analysis for AI conversations. Privacy-first HUD for ChatGPT, Claude, Gemini, and Copilot.",
   "background": {
     "service_worker": "background.js"
   },
@@ -99,15 +99,13 @@
     "https://chatgpt.com/*",
     "https://www.chatgpt.com/*",
     "https://gemini.google.com/*",
-    "https://bing.com/*",
-    "https://www.bing.com/*",
+    "https://bing.com/chat/*",
+    "https://www.bing.com/chat/*",
     "https://claude.ai/*",
     "https://m365.cloud.microsoft.com/*",
     "https://copilot.microsoft.com/*"
   ],
   "permissions": [
-    "scripting",
-    "tabs",
     "activeTab",
     "storage"
   ],
@@ -139,8 +137,8 @@
         "https://chatgpt.com/*",
         "https://www.chatgpt.com/*",
         "https://gemini.google.com/*",
-        "https://bing.com/*",
-        "https://www.bing.com/*",
+        "https://bing.com/chat/*",
+        "https://www.bing.com/chat/*",
         "https://claude.ai/*",
         "https://m365.cloud.microsoft.com/*",
         "https://copilot.microsoft.com/*"

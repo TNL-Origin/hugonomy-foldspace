@@ -117,6 +117,27 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+// Safe overlay host to keep HUD/modals out of React roots (ChatGPT scrub resilience)
+function ensureVibeAIHost() {
+  const ID = 'vibeai-overlay-host';
+  let host = document.getElementById(ID);
+  if (!host) {
+    host = document.createElement('div');
+    host.id = ID;
+    host.style.position = 'fixed';
+    host.style.inset = '0';
+    host.style.zIndex = '2147483647';
+    host.style.pointerEvents = 'none';
+    const mountPoint = document.documentElement || document.body;
+    if (mountPoint) mountPoint.appendChild(host);
+  }
+  return host;
+}
+
+function getUnifiedHudEl() {
+  return document.getElementById('vibeai-unified-hud');
+}
+
 void 0;
 
 /**
@@ -1172,9 +1193,9 @@ let foldSpaceCanvas = null;
 
 // 1. Create unified HUD container
 function renderHUDContainer() {
-  if (document.getElementById('vibeai-unified-hud')) {
+  if (getUnifiedHudEl()) {
     void 0;
-    return document.getElementById('vibeai-unified-hud');
+    return getUnifiedHudEl();
   }
 
   const hud = document.createElement('div');
@@ -1836,7 +1857,14 @@ function renderHUDContainer() {
   `;
   hud.appendChild(footer);
 
-  document.body.appendChild(hud);
+  // Mount HUD under safe overlay host to avoid React scrubbing
+  try {
+    const host = ensureVibeAIHost();
+    if (host) host.appendChild(hud);
+    else document.body.appendChild(hud);
+  } catch {
+    document.body.appendChild(hud);
+  }
   // Restore saved HUD position/size if available (user sovereignty)
   try {
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
@@ -2209,25 +2237,31 @@ function injectUnifiedHUD(options = { observer: true }) {
     // Inject-once guard: avoid duplicate mounts during SPA reinjection
     try { window.__VIBEAI__ = window.__VIBEAI__ || {}; } catch (e) { window.__VIBEAI__ = {}; }
 
-    if (window.__VIBEAI__.hudMounted) {
+    const existingHud = getUnifiedHudEl();
+    if (window.__VIBEAI__.hudMounted && !existingHud && !window.__VIBEAI__.hudMounting) {
+      // Recover if HUD was scrubbed but flag remained true
+      window.__VIBEAI__.hudMounted = false;
+    }
+
+    if (window.__VIBEAI__.hudMounted && existingHud) {
       void 0;
-      return document.getElementById('vibeai-unified-hud');
+      return existingHud;
     }
 
     if (window.__VIBEAI__.hudMounting) {
       void 0;
-      return document.getElementById('vibeai-unified-hud') || null;
+      return existingHud || null;
     }
 
     // Indicate mount in progress to avoid race conditions
     window.__VIBEAI__.hudMounting = true;
 
     // Prefer stable body mount to avoid React overwrites
-    if (document.getElementById('vibeai-unified-hud')) {
+    if (getUnifiedHudEl()) {
       // Another context created the HUD between our checks
       window.__VIBEAI__.hudMounted = true;
       window.__VIBEAI__.hudMounting = false;
-      return document.getElementById('vibeai-unified-hud');
+      return getUnifiedHudEl();
     }
 
     const hud = renderHUDContainer();
@@ -2238,16 +2272,23 @@ function injectUnifiedHUD(options = { observer: true }) {
     try {
       const shouldObserve = Boolean(options && options.observer) && PLATFORM === 'chatgpt';
       if (shouldObserve && !window.__vibeai_unified_observer_set) {
-        const observer = new MutationObserver(() => {
-          try {
-            if (!document.getElementById('vibeai-unified-hud')) {
-              console.warn('[VibeAI UniHUD] HUD removed from DOM — reinjecting');
-              // reinject via unified API so observer can be enabled when needed
+        let reinjectTimer = null;
+        const scheduleReinject = () => {
+          if (reinjectTimer) return;
+          reinjectTimer = setTimeout(() => {
+            reinjectTimer = null;
+            if (!getUnifiedHudEl()) {
+              console.warn('[VibeAI UniHUD] HUD missing after debounce — reinjecting');
               injectUnifiedHUD();
             }
+          }, 500);
+        };
+        const observer = new MutationObserver(() => {
+          try {
+            if (!getUnifiedHudEl()) scheduleReinject();
           } catch { /* ignore */ }
         });
-        observer.observe(document.body, { childList: true, subtree: true });
+        observer.observe(document.documentElement || document.body, { childList: true, subtree: true });
         window.__vibeai_unified_observer_set = true;
         window.__vibeai_unified_observer = observer;
         void 0;
@@ -3405,7 +3446,18 @@ function showConsentModal() {
     </div>
   `;
 
-  document.body.appendChild(modal);
+  // Mount under safe overlay host to avoid React scrubbing
+  try {
+    const host = ensureVibeAIHost();
+    if (host) {
+      modal.style.pointerEvents = 'auto';
+      host.appendChild(modal);
+    } else {
+      document.body.appendChild(modal);
+    }
+  } catch {
+    document.body.appendChild(modal);
+  }
 
   // v2.14.6: Use EVENT DELEGATION on modal container to fix first-load click race
   // This ensures clicks work even if elements were just inserted
@@ -3585,7 +3637,18 @@ function showPrivacyModal() {
     </div>
   `;
 
-  document.body.appendChild(modal);
+  // Mount under safe overlay host to avoid React scrubbing
+  try {
+    const host = ensureVibeAIHost();
+    if (host) {
+      modal.style.pointerEvents = 'auto';
+      host.appendChild(modal);
+    } else {
+      document.body.appendChild(modal);
+    }
+  } catch {
+    document.body.appendChild(modal);
+  }
 
   // Close button (with null safety)
   const closeBtn = document.getElementById('vibeai-privacy-close');
@@ -3638,6 +3701,11 @@ function vibeaiSafeInit() {
   void 0;
 
   try {
+    // Track consent resolution to avoid modal flash on slow storage
+    try {
+      window.__VIBEAI__ = window.__VIBEAI__ || {};
+      window.__VIBEAI__.consentResolved = false;
+    } catch (e) {}
     // First check session decline (in-memory flag or chrome.storage.session)
     if (__vibeai_declined_this_session) {
       void 0;
@@ -3674,11 +3742,18 @@ function vibeaiSafeInit() {
       const consentCheckTimeout = setTimeout(() => {
         timeoutFired = true;
         console.warn('[VibeAI UniHUD] Consent check timed out, showing consent modal');
-        showConsentModal();
+        try {
+          if (!window.__VIBEAI__ || window.__VIBEAI__.consentResolved !== true) {
+            showConsentModal();
+          }
+        } catch {
+          showConsentModal();
+        }
       }, 3000);
 
       chrome.storage.local.get(['consentGiven'], (data) => {
         clearTimeout(consentCheckTimeout);
+        try { if (window.__VIBEAI__) window.__VIBEAI__.consentResolved = true; } catch (e) {}
         void 0;
 
         if (data.consentGiven === true) {
