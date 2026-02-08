@@ -2064,8 +2064,7 @@ function renderHUDContainer() {
         const allowedHosts = [
           'chatgpt.com', 'www.chatgpt.com', 'chat.openai.com',
           'claude.ai', 'www.claude.ai',
-          'gemini.google.com',
-          'copilot.microsoft.com'
+          'gemini.google.com'
         ];
         if (!allowedHosts.includes(location.hostname)) {
           if (window.VIBEAI_HUD_DEBUG) console.warn('[VibeAI HRI] ⚠️ Message blocked: hostname not in allowlist');
@@ -3869,7 +3868,6 @@ if (window.VibeCoach && typeof window.VibeCoach.init === 'function') {
     'chatgpt.com',
     'www.chatgpt.com',
     'gemini.google.com',
-    'copilot.microsoft.com',
     'claude.ai'
   ]);
   const shouldInitCoach = coachHosts.has(location.hostname);

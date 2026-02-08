@@ -12,13 +12,12 @@
 
 ---
 
-## Microsoft Edge Copilot Blocking
+## Microsoft Edge Copilot Disabled
 
-**Platform:** Microsoft Copilot (copilot.microsoft.com) when accessed via Edge browser
-**Issue:** Microsoft Edge blocks extensions from running on copilot.microsoft.com by browser policy.
-**Workaround:** Use Chrome, Brave, or another Chromium browser to access Microsoft Copilot with VibeAI FoldSpace.
-
-**Status:** This is a Microsoft Edge browser policy, not an extension limitation. The extension works correctly on Copilot when accessed via other browsers.
+**Platform:** Microsoft Copilot (copilot.microsoft.com) in Edge
+**Status:** Disabled in the Edge build for store compliance.
+**Reason:** Edge policies can block extensions on Copilot; to avoid inconsistent behavior, Copilot is excluded from Edge targeting.
+**Workaround:** Use Chrome or another Chromium browser for Copilot.
 
 ---
 

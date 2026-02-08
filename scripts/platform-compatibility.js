@@ -26,10 +26,8 @@
 (function injectPlatformAnchor() {
   try {
     const isClaude = location.hostname.includes("claude.ai");
-    const isCopilot = location.hostname.includes("copilot.microsoft.com");
-    const isM365 = location.hostname.includes("m365.cloud.microsoft");
 
-    if (!isClaude && !isCopilot && !isM365) return;
+    if (!isClaude) return;
 
     // Wait for safe-root to be ready
     const waitForRoot = setInterval(() => {
@@ -38,19 +36,13 @@
 
       clearInterval(waitForRoot);
 
-      // Platform-specific visible container targets
+      // Claude-specific visible container targets
       let platformContainer;
       if (isClaude) {
         platformContainer =
           document.querySelector("main") ||
           document.querySelector('[data-testid="chat-interface"]') ||
           document.querySelector('[class*="chat"]') ||
-          document.querySelector("body > div:first-child");
-      } else if (isCopilot || isM365) {
-        platformContainer =
-          document.querySelector("main") ||
-          document.querySelector('[class*="container"]') ||
-          document.querySelector('[id*="root"]') ||
           document.querySelector("body > div:first-child");
       }
 

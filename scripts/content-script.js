@@ -97,7 +97,6 @@ let _iframeWindow = null;
           if (host.includes('chatgpt') || host.includes('openai')) platform = 'chatgpt';
           else if (host.includes('gemini.google')) platform = 'gemini';
           else if (host.includes('claude.ai')) platform = 'claude';
-          else if (host.includes('copilot.microsoft')) platform = 'copilot';
         } catch { /* ignore */ }
 
   try { iframe.src = extUrl(`src/foldspace.html?platform=${platform}`); } catch { iframe.src = `./src/foldspace.html?platform=${platform}`; }

@@ -12,7 +12,6 @@
     if (h.includes('chatgpt.com')) return 'chatgpt';
     if (h.includes('claude.ai')) return 'claude';
     if (h.includes('gemini.google.com')) return 'gemini';
-    if (h.includes('copilot.microsoft.com')) return 'copilot';
     return 'unknown';
   })();
 

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "VibeAI FoldSpace",
   "version": "2.15.1",
-  "description": "Real-time emotional tone analysis for AI conversations. Privacy-first HUD for ChatGPT, Claude, Gemini, and Copilot.",
+  "description": "Real-time emotional tone analysis for AI conversations. Privacy-first HUD for ChatGPT, Claude, and Gemini.",
   "background": {
     "service_worker": "background.js"
   },
@@ -21,7 +21,6 @@
         "scripts/parsers/chatgpt-parser.js",
         "scripts/parsers/claude-parser.js",
         "scripts/parsers/gemini-parser.js",
-        "scripts/parsers/copilot-parser.js",
         "scripts/parsers/parser-registry.js",
         "content-parser.js",
         "scripts/vibeai-coach/heuristics.js",
@@ -35,50 +34,11 @@
     {
       "matches": ["https://claude.ai/*"],
       "js": [
-        "scripts/csp-bypass.js",
+        "scripts/platform-compatibility.js",
         "scripts/parsers/base-parser.js",
         "scripts/parsers/chatgpt-parser.js",
         "scripts/parsers/claude-parser.js",
         "scripts/parsers/gemini-parser.js",
-        "scripts/parsers/copilot-parser.js",
-        "scripts/parsers/parser-registry.js",
-        "content-parser.js",
-        "scripts/vibeai-coach/heuristics.js",
-        "scripts/vibeai-coach/lexicon-data.js",
-        "scripts/vibeai-coach/coach-panel.js",
-        "scripts/unified-hud.js"
-      ],
-      "css": ["scripts/vibeai-coach/coach-styles.css"],
-      "run_at": "document_end"
-    },
-    {
-      "matches": ["https://m365.cloud.microsoft.com/*"],
-      "js": [
-        "scripts/csp-bypass.js",
-        "scripts/parsers/base-parser.js",
-        "scripts/parsers/chatgpt-parser.js",
-        "scripts/parsers/claude-parser.js",
-        "scripts/parsers/gemini-parser.js",
-        "scripts/parsers/copilot-parser.js",
-        "scripts/parsers/parser-registry.js",
-        "content-parser.js",
-        "scripts/vibeai-coach/heuristics.js",
-        "scripts/vibeai-coach/lexicon-data.js",
-        "scripts/vibeai-coach/coach-panel.js",
-        "scripts/unified-hud.js"
-      ],
-      "css": ["scripts/vibeai-coach/coach-styles.css"],
-      "run_at": "document_end"
-    },
-    {
-      "matches": ["https://copilot.microsoft.com/*"],
-      "js": [
-        "scripts/csp-bypass.js",
-        "scripts/parsers/base-parser.js",
-        "scripts/parsers/chatgpt-parser.js",
-        "scripts/parsers/claude-parser.js",
-        "scripts/parsers/gemini-parser.js",
-        "scripts/parsers/copilot-parser.js",
         "scripts/parsers/parser-registry.js",
         "content-parser.js",
         "scripts/vibeai-coach/heuristics.js",
@@ -101,9 +61,7 @@
     "https://gemini.google.com/*",
     "https://bing.com/chat/*",
     "https://www.bing.com/chat/*",
-    "https://claude.ai/*",
-    "https://m365.cloud.microsoft.com/*",
-    "https://copilot.microsoft.com/*"
+    "https://claude.ai/*"
   ],
   "permissions": [
     "activeTab",
@@ -139,9 +97,7 @@
         "https://gemini.google.com/*",
         "https://bing.com/chat/*",
         "https://www.bing.com/chat/*",
-        "https://claude.ai/*",
-        "https://m365.cloud.microsoft.com/*",
-        "https://copilot.microsoft.com/*"
+        "https://claude.ai/*"
       ]
     }
   ]

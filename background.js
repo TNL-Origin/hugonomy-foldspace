@@ -7,7 +7,7 @@ chrome.runtime.onInstalled.addListener(() => {
 // chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 //   if (changeInfo.status === 'complete') {
 //     // Match target hostnames
-//     const targetHosts = ['chat.openai.com', 'chatgpt.com', 'gemini.google.com', 'copilot.microsoft.com'];
+//     const targetHosts = ['chat.openai.com', 'chatgpt.com', 'gemini.google.com'];
 //     if (targetHosts.some(host => tab.url && tab.url.includes(host))) {
 //       const scriptPath = 'foldspace.js';
 //       const scriptUrl = chrome.runtime.getURL(scriptPath);

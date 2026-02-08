@@ -15,7 +15,6 @@
     'chatgpt.com',
     'www.chatgpt.com',
     'gemini.google.com',
-    'copilot.microsoft.com',
     'claude.ai'
   ]);
 
@@ -496,15 +495,6 @@
         document.querySelector('[contenteditable="true"][role="textbox"]') ||
         document.querySelector('textarea') ||
         document.querySelector('[contenteditable="true"]')
-      );
-    }
-
-    // Copilot
-    if (host === 'copilot.microsoft.com') {
-      return (
-        document.querySelector('textarea') ||
-        document.querySelector('[contenteditable="true"][role="textbox"]') ||
-        document.querySelector('[role="textbox"]')
       );
     }
 

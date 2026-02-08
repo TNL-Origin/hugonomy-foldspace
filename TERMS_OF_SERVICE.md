@@ -2,7 +2,7 @@
 
 **Version:** 1.0.0
 **Effective Date:** February 1, 2026
-**Status:** Beta Release
+**Status:** Release
 **Copyright:** © 2026 Joseph D. Tingling. All Rights Reserved.
 
 ---
@@ -11,15 +11,10 @@
 
 By installing and using VibeAI FoldSpace ("the Extension"), you agree to these Terms of Service. If you do not agree, do not install or use the Extension.
 
-## 2. Beta Software Disclaimer
+## 2. Software Disclaimer
 
-**VibeAI FoldSpace is BETA software.**
-
-- This software is experimental and may contain bugs
 - Features may change or be removed without notice
 - No guarantee of stability, accuracy, or availability
-- Intended for personal testing and feedback only
-- Not approved for commercial, mission-critical, or production use
 
 ## 3. License Grant
 
@@ -46,7 +41,7 @@ You may NOT:
 - Storage uses chrome.storage.local only (no cloud sync)
 
 **What the Extension Accesses:**
-- Visible conversation content on supported AI platforms (ChatGPT, Claude, Gemini, Copilot)
+- Visible conversation content on supported AI platforms (ChatGPT, Claude, Gemini)
 - Page metadata (URL, title) to detect platform
 - Local storage for UI preferences only
 
@@ -100,14 +95,13 @@ Joseph D. Tingling and affiliated entities SHALL NOT BE LIABLE for any:
 
 ## 9. Platform Compatibility
 
-**Supported Platforms (Beta):**
+**Supported Platforms:**
 - ChatGPT (Chrome, Edge, Firefox)
 - Claude.ai (Chrome, Edge, Firefox)
 - Google Gemini (Chrome, Edge, Firefox)
-- Microsoft Copilot (Chrome, Firefox)
 
 **Known Limitations:**
-- Microsoft Edge blocks extensions on copilot.microsoft.com (browser policy, not Extension bug)
+- Copilot is not supported in the Edge build
 - Firefox support is experimental
 - Platform updates may break compatibility temporarily
 
@@ -194,11 +188,11 @@ These Terms, together with the Privacy Policy and LICENSE.md, constitute the ent
 **BY INSTALLING AND USING VIBEAI FOLDSPACE™, YOU ACKNOWLEDGE THAT:**
 1. You have read and understood these Terms
 2. You agree to be bound by these Terms
-3. The Extension is beta software with no guarantees
+3. The Extension is provided “as is” with no guarantees
 4. You use the Extension at your own risk
 5. Joseph D. Tingling is not liable for any damages arising from use
 
 ---
 
 **Last Updated:** February 1, 2026
-**Version:** 1.0.0 (Beta)
+**Version:** 1.0.0

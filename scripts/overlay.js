@@ -117,9 +117,9 @@ function showConsentModal() {
   `;
 
   content.innerHTML = `
-    <h2 style="margin: 0 0 16px 0; color: #fff; font-size: 20px;">VibeAI FoldSpace Beta Agreement</h2>
+    <h2 style="margin: 0 0 16px 0; color: #fff; font-size: 20px;">VibeAI FoldSpace Consent</h2>
     <div style="max-height: 300px; overflow-y: auto; margin-bottom: 16px; font-size: 14px; line-height: 1.6;">
-      <p><strong>Version:</strong> 2.12.8 Beta</p>
+      <p><strong>Version:</strong> 2.15.1</p>
       <hr style="border: 0; border-top: 1px solid #333; margin: 12px 0;">
       <p><strong>Privacy Summary:</strong></p>
       <ul style="margin: 8px 0; padding-left: 20px;">
@@ -129,26 +129,25 @@ function showConsentModal() {
         <li>Stores UI preferences via Chrome storage</li>
         <li>You can clear all data anytime in settings</li>
       </ul>
-      <p><strong>Beta Terms:</strong></p>
+      <p><strong>Terms:</strong></p>
       <ul style="margin: 8px 0; padding-left: 20px;">
-        <li>This is experimental software (bugs may occur)</li>
-        <li>Features may change without notice</li>
-        <li>For personal testing only (no commercial use)</li>
+        <li>Features may change over time</li>
+        <li>You control when the HUD is active</li>
       </ul>
       <p style="margin-top: 12px; font-size: 12px; opacity: 0.8;">
-        Full details: <a href="https://tnl-origin.github.io/vibeai-foldspace/privacy.html" target="_blank" rel="noopener noreferrer" style="color: #66b3ff; text-decoration: underline;">Privacy Policy</a> | <a href="https://tnl-origin.github.io/vibeai-foldspace/beta-agreement.html" target="_blank" rel="noopener noreferrer" style="color: #66b3ff; text-decoration: underline;">Beta Agreement</a>
+        Full details: <a href="https://tnl-origin.github.io/vibeai-foldspace/privacy.html" target="_blank" rel="noopener noreferrer" style="color: #66b3ff; text-decoration: underline;">Privacy Policy</a>
       </p>
     </div>
     <label style="display: flex; align-items: center; margin-bottom: 16px; cursor: pointer; font-size: 14px;">
       <input type="checkbox" id="consent-checkbox" style="margin-right: 8px; cursor: pointer;">
-      <span>I have read and agree to the Privacy Policy and Beta Agreement</span>
+      <span>I have read and agree to the Privacy Policy</span>
     </label>
     <div style="display: flex; gap: 12px; justify-content: flex-end;">
       <button id="consent-decline" style="padding: 8px 16px; background: #333; border: 1px solid #555; color: #e0e0e0; border-radius: 4px; cursor: pointer;">
         Decline
       </button>
       <button id="consent-accept" disabled style="padding: 8px 16px; background: #444; border: 1px solid #555; color: #888; border-radius: 4px; cursor: not-allowed;">
-        I Accept and Understand
+        I Agree
       </button>
     </div>
   `;
@@ -186,7 +185,7 @@ function showConsentModal() {
   declineBtn.addEventListener('click', () => {
     modal.remove();
     void 0;
-    list.innerHTML = '<div style="padding: 20px; text-align: center; opacity: 0.6;">Beta agreement required to use VibeAI FoldSpace</div>';
+    list.innerHTML = '<div style="padding: 20px; text-align: center; opacity: 0.6;">Consent required to use VibeAI FoldSpace</div>';
   });
 
   // Links now open directly to hosted pages (no event handlers needed)
