@@ -1,4 +1,4 @@
-// CSP Bypass for CSP-Restricted Platforms (Claude, Copilot, M365)
+// CSP Bypass for CSP-Restricted Platforms (Claude)
 // Injects lightweight root for sandboxed iframe contexts
 (function injectSafeRoot() {
   try {
@@ -12,8 +12,7 @@
       root.style.left = "0";
       root.style.pointerEvents = "none";
       safeDoc.body.appendChild(root);
-      const platform = location.hostname.includes("claude") ? "Claude" :
-                       location.hostname.includes("copilot") ? "Copilot" : "M365";
+      const platform = location.hostname.includes("claude") ? "Claude" : "Unknown";
       void 0;
     }
   } catch (err) {
@@ -94,7 +93,7 @@
         }, 500);
 
       } else {
-        console.warn(`[VibeAI] ${isClaude ? 'Claude' : isCopilot ? 'Copilot' : 'M365'} container not found; fallback to body.`);
+        console.warn(`[VibeAI] Claude container not found; fallback to body.`);
         document.body.appendChild(root);
       }
     }, 100);

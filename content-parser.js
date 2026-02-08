@@ -1,6 +1,6 @@
 /* global chrome */
 // 🔍 VibeAI FoldSpace Universal Thread Parser (v2.11.9-ALPHA)
-// Supports ChatGPT, Gemini, and Copilot conversation scanning
+// Supports ChatGPT, Claude, and Gemini conversation scanning
 
 // v2.14.3: Privacy gate - disable content-bearing logs by default (pre-Steven hardening)
 // Use window property DIRECTLY to avoid const collision with unified-hud.js
@@ -399,11 +399,6 @@ function highlightThreadOnHost(threadId, tone, hue) {
       targetElement = nodes[index];
     } else if (platform === "gemini") {
       const nodes = document.querySelectorAll("[data-message-content], article, .response-container");
-      targetElement = nodes[index];
-    } else if (platform === "copilot") {
-      const nodes = document.querySelectorAll(
-        ".ac-textBlock, .cib-message-content, [class*='message'], [class*='response-message'], [data-content], .text-message-content"
-      );
       targetElement = nodes[index];
     } else if (platform === "claude") {
       const nodes = document.querySelectorAll(

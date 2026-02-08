@@ -593,7 +593,6 @@ const PLATFORM = (() => {
   if (hostname.includes('claude.ai')) return 'claude';
   if (hostname.includes('chatgpt') || hostname.includes('openai')) return 'chatgpt';
   if (hostname.includes('gemini.google')) return 'gemini';
-  if (hostname.includes('copilot')) return 'copilot';
   return 'unknown';
 })();
 
@@ -3077,11 +3076,6 @@ function scrollToThread(threadId) {
     targetElement = nodes[index];
   } else if (platform === 'gemini') {
     const nodes = document.querySelectorAll('[data-message-content], article, .response-container');
-    targetElement = nodes[index];
-  } else if (platform === 'copilot') {
-    const nodes = document.querySelectorAll(
-      '.ac-textBlock, .cib-message-content, [class*="message"], [class*="response-message"], [data-content], .text-message-content'
-    );
     targetElement = nodes[index];
   } else if (platform === 'claude') {
     // Use centralized selector list for easier updates

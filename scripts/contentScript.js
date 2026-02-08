@@ -56,10 +56,6 @@ function findMessageRoot(){
   if (/gemini\.google\.com/.test(host)){
     candidates.push('main', 'div[role="main"]', 'div:has(article)', 'c-wiz');
   }
-  // Copilot
-  if (/copilot\.microsoft\.com|m365\.cloud\.microsoft\.com/.test(host)){
-    candidates.push('main', 'div[role="main"]', 'section', 'div:has(article)');
-  }
 
   // Generic fallbacks
   candidates.push('div[role="main"]', 'main', 'section', 'article', 'div[aria-label*="conversation" i]');

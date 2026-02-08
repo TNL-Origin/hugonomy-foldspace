@@ -46,8 +46,7 @@
       'div[role="listitem"]',
       'mat-list-item',
       'conversation-list'
-    ],
-    copilot: ['[data-telemetry-id*="chat-thread"]', 'a[href*="/chats/"]', 'button[aria-label*="Chat"]']
+    ]
   };
 
   // ---- ChatGPT Three-Phase Delayed Scan ----
@@ -134,32 +133,6 @@
     return [];
   }
 
-  // ---- Copilot Scraper (URL Parsing Fallback) ----
-  function scrapeCopilot() {
-    for (const sel of selectors.copilot) {
-      const nodes = document.querySelectorAll(sel);
-      if (nodes.length) {
-        const chats = Array.from(nodes)
-          .map(el => el.innerText || el.textContent)
-          .filter(Boolean)
-          .map(t => t.trim());
-
-        if (chats.length) {
-          void 0;
-          return chats;
-        }
-      }
-    }
-
-    // URL fallback
-    if (window.location.pathname.includes('/chats/')) {
-      void 0;
-      return ['Microsoft Copilot (active chat)'];
-    }
-
-    return [];
-  }
-
   // ---- Unified Scraper Core ----
   let scrapeInProgress = false;
 
@@ -179,9 +152,6 @@
           break;
         case 'gemini':
           chats = scrapeGemini();
-          break;
-        case 'copilot':
-          chats = scrapeCopilot();
           break;
       }
 
