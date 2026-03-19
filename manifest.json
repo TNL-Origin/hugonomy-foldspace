@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "VibeAI FoldSpace",
-  "version": "2.19.2",
+  "version": "2.19.3",
   "description": "AI conversation awareness that helps you stay engaged, think critically, and reflect before you accept.",
   "background": {
     "service_worker": "background.js"

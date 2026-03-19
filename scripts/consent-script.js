@@ -31,48 +31,48 @@ function safeGetURL(path) {
     <style>
       :host { all: initial; }
       .backdrop {
-        position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
-        backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        position: fixed; bottom: 20px; right: 20px;
         z-index: 2147483648;
-        display: flex; align-items: center; justify-content: center;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
       }
       .card {
-        background: rgba(15, 15, 20, 0.95);
+        background: rgba(15, 15, 20, 0.97);
         border: 2px solid rgba(0, 212, 255, 0.5);
         border-radius: 16px;
-        padding: 32px 40px;
-        max-width: 520px;
-        box-shadow: 0 0 50px rgba(0, 170, 255, 0.6);
+        padding: 20px 24px;
+        max-width: 360px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 0 30px rgba(0, 170, 255, 0.5);
         color: #fff;
       }
       .title {
-        font-size: 1.6em; font-weight: bold; color: #00d4ff;
-        letter-spacing: 2px; margin-bottom: 8px; text-align: center;
+        font-size: 1.2em; font-weight: bold; color: #00d4ff;
+        letter-spacing: 1px; margin-bottom: 8px; text-align: center;
       }
       .body {
-        font-size: 0.85em; line-height: 1.6; color: #ccc; margin-bottom: 20px;
+        font-size: 0.78em; line-height: 1.5; color: #ccc; margin-bottom: 12px;
       }
-      .body p { margin-bottom: 14px; opacity: 0.9; }
+      .body p { margin-bottom: 8px; opacity: 0.9; }
       .body .section-title {
-        margin-bottom: 8px; color: #00d4ff; font-weight: 600; font-size: 0.95em;
+        margin-bottom: 4px; color: #00d4ff; font-weight: 600; font-size: 0.9em;
       }
       .body ul {
-        margin-left: 20px; margin-bottom: 14px; line-height: 1.7;
+        margin-left: 16px; margin-bottom: 8px; line-height: 1.5;
       }
       .disclaimer {
-        font-size: 0.8em; opacity: 0.65; font-style: italic;
-        padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 12px;
+        font-size: 0.75em; opacity: 0.65; font-style: italic;
+        padding: 6px 0; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 8px;
       }
       .kbd-hint {
-        font-size: 0.75em; opacity: 0.5; margin-top: 8px; text-align: center;
+        font-size: 0.7em; opacity: 0.5; margin-top: 6px; text-align: center;
       }
       .kbd-hint kbd {
-        background: rgba(255,255,255,0.1); padding: 2px 6px;
+        background: rgba(255,255,255,0.1); padding: 1px 4px;
         border-radius: 3px; font-family: monospace;
       }
       .checkbox-row {
-        margin-bottom: 16px;
+        margin-bottom: 10px;
       }
       .checkbox-label {
         display: flex; align-items: flex-start; gap: 10px;
@@ -213,12 +213,17 @@ function safeGetURL(path) {
     const root = host.attachShadow({ mode: "open" });
     root.innerHTML = CONSENT_HTML;
 
-    // Suppress unified-hud.js's own consent modal — it fires after 1000ms delay
-    // We are the primary consent UI; remove any duplicate that appears
-    setTimeout(() => {
+    // Continuously suppress unified-hud.js's consent modal while consent is pending
+    // One-shot timeout was too slow — unified-hud fires its modal after variable delay
+    // NOTE: Do NOT self-cancel on host disappearing — host may be temporarily wiped
+    // by ChatGPT/Claude React hydration. Heartbeat re-injects host; suppressor must persist.
+    // Suppressor is cleared only when accept or decline is clicked (see handlers below).
+    const suppressInterval = setInterval(() => {
       const dupModal = document.getElementById('vibeai-consent-modal');
-      if (dupModal) { dupModal.remove(); void 0; }
-    }, 1300);
+      if (dupModal) dupModal.remove();
+    }, 300);
+    // Store on window so accept/decline handlers can clear it
+    window.__vibeaiSuppressInterval = suppressInterval;
 
     // Checkbox requirement for accept button
     const checkbox = root.getElementById('vibeai-consent-checkbox');
@@ -230,11 +235,13 @@ function safeGetURL(path) {
     }
 
     root.getElementById(CONSENT_ACCEPT_ID)?.addEventListener("click", () => {
+      clearInterval(window.__vibeaiSuppressInterval);
       setConsentGiven(true);
       removeConsentDialog();
-  try { window.postMessage({ type: "VIBEAI_CONSENT_ACCEPTED" }, location.origin); } catch (err) { console.warn('[VibeAI] Consent persistence non-fatal:', err); }
+      try { window.postMessage({ type: "VIBEAI_CONSENT_ACCEPTED" }, location.origin); } catch (err) { console.warn('[VibeAI] Consent persistence non-fatal:', err); }
     });
     root.getElementById(CONSENT_DECLINE_ID)?.addEventListener("click", () => {
+      clearInterval(window.__vibeaiSuppressInterval);
       setConsentDeferred(true);
       clearInterval(consentHeartbeat);
       consentHeartbeat = null;
