@@ -14,7 +14,10 @@ class GeminiParser extends BaseParser {
    * Gemini-specific selectors
    */
   getSelectors() {
-    return '[data-message-content], article, .response-container';
+    // Gemini custom elements — confirmed live DOM (Mar 8, 2026 audit)
+    // user-query wraps user turns; model-response wraps AI turns
+    // getRoleForNode() uses node.closest('user-query'/'model-response') to assign role
+    return 'user-query, model-response';
   }
 
   /**
@@ -25,13 +28,34 @@ class GeminiParser extends BaseParser {
   }
 
   /**
-   * Gemini doesn't have mutation observer yet
-   * Relies on 2.5s polling interval
-   * TODO: Add observer if Gemini DOM structure is identified
+   * v2.18.x: Minimal MutationObserver for Gemini.
+   * Watches for model-response or user-query elements being added.
+   * Falls back to polling if observer fires too noisily.
    */
   setupObserver(callback) {
     void 0;
-    return null;
+
+    const observer = new MutationObserver((mutations) => {
+      const hasNewMessages = mutations.some(m =>
+        Array.from(m.addedNodes).some(n =>
+          n.nodeType === 1 &&
+          n.querySelector &&
+          (n.querySelector('model-response') ||
+           n.querySelector('user-query') ||
+           n.matches?.('model-response') ||
+           n.matches?.('user-query'))
+        )
+      );
+
+      if (hasNewMessages) {
+        void 0;
+        setTimeout(callback, 500);
+      }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+    void 0;
+    return observer;
   }
 }
 

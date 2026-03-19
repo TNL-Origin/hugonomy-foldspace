@@ -593,6 +593,7 @@ const PLATFORM = (() => {
   if (hostname.includes('claude.ai')) return 'claude';
   if (hostname.includes('chatgpt') || hostname.includes('openai')) return 'chatgpt';
   if (hostname.includes('gemini.google')) return 'gemini';
+  if (hostname.includes('copilot')) return 'copilot';
   return 'unknown';
 })();
 
@@ -865,9 +866,16 @@ class FoldSpaceCanvas {
   animate() {
     if (!this.isRunning) return;
 
-    // Skip if tab is hidden (performance)
+    // Power management: fully stop rAF when tab hidden, resume on visibility
     if (document.hidden) {
-      this.animationId = requestAnimationFrame(this.animate);
+      this.animationId = null;
+      const _resumeOrb = () => {
+        if (!document.hidden && this.isRunning) {
+          document.removeEventListener('visibilitychange', _resumeOrb);
+          this.animationId = requestAnimationFrame(this.animate);
+        }
+      };
+      document.addEventListener('visibilitychange', _resumeOrb);
       return;
     }
 
@@ -1010,9 +1018,9 @@ function calculateHRI(text, tone = 'calm') {
   if (lower.match(/harmony|resonance|aligned|flow|synergy|coherent/)) hri += 0.15;
   if (lower.match(/beautiful|elegant|graceful|smooth|clear/)) hri += 0.10;
 
-  // Urgent/action modifiers
-  if (lower.match(/urgent|now|critical|fast|immediately|asap/)) hri += 0.15;
-  if (lower.match(/important|priority|deadline|must|need/)) hri += 0.10;
+  // Time-pressure modifiers only — 'now', 'critical', 'important', 'need', 'must' removed
+  // (too broad: fire on analytical text and inflate HRI incorrectly)
+  if (lower.match(/\b(urgent|immediately|asap|deadline|emergency|overdue)\b/)) hri += 0.12;
 
   // Negative modifiers
   if (lower.match(/sad|confus|error|problem|difficult|struggle/)) hri -= 0.20;
@@ -1034,12 +1042,26 @@ function calculateHRI(text, tone = 'calm') {
 
 // Update HRI Bridge (connects parser → canvas/orb → intensity)
 // v2.14.1: Made orb-safe with pending state cache to prevent ReferenceError
+// v2.15.2: EMA smoothing + per-turn delta cap to prevent 45% single-turn jumps
+const HRI_EMA_ALPHA = 0.35;       // lower = smoother (0.35 = moderate responsiveness)
+const HRI_MAX_TURN_DELTA = 0.18;  // max 18% change per turn
+
 function updateHRIBridge(text) {
   if (!text) return;
 
-  // Detect tone and calculate HRI
+  // Detect tone and calculate raw HRI
   const tone = detectDominantTone(text);
-  const hri = calculateHRI(text, tone);
+  const rawHRI = calculateHRI(text, tone);
+
+  // EMA smoothing: blend raw reading with previous smoothed value
+  const prev = typeof window.VIBEAI_LAST_HRI === 'number' ? window.VIBEAI_LAST_HRI : rawHRI;
+  const emaHRI = HRI_EMA_ALPHA * rawHRI + (1 - HRI_EMA_ALPHA) * prev;
+
+  // Per-turn delta cap: prevent single message causing >18% swing
+  const delta = emaHRI - prev;
+  const cappedDelta = Math.sign(delta) * Math.min(Math.abs(delta), HRI_MAX_TURN_DELTA);
+  const hri = Math.min(1.0, Math.max(0.0, prev + cappedDelta));
+
   const intensity = hri; // HRI is already 0.0-1.0
 
   // Update global state (Phase VIII.0: dual compatibility)
@@ -1158,9 +1180,21 @@ function detectDominantTone(text) {
 
   const lower = text.toLowerCase();
 
+  // Analytical density guard: high-structure/reasoning text should not read as urgent
+  const analyticalMarkers = ['therefore', 'analysis', 'evaluate', 'examine', 'hypothesis',
+    'evidence', 'conclude', 'reasoning', 'argument', 'framework', 'structure',
+    'consider', 'compare', 'contrast', 'implications', 'methodology', 'approach'];
+  const analyticalScore = analyticalMarkers.filter(w => lower.includes(w)).length;
+
+  // Time-pressure words only — not broad analytical/technical terms
+  const timePressureWords = ['urgent', 'immediately', 'asap', 'emergency', 'hurry', 'deadline',
+    'overdue', 'time-sensitive', 'right away', 'as soon as possible'];
+  const hasTimePressure = timePressureWords.some(w => lower.includes(w));
+
   // Keyword maps for each tone
+  // 'now' and 'critical' removed — too broad, fire on analytical text constantly
   const toneKeywords = {
-    urgent: ['urgent', 'immediately', 'asap', 'critical', 'emergency', 'now', 'hurry', 'deadline'],
+    urgent: ['urgent', 'immediately', 'asap', 'emergency', 'hurry', 'deadline', 'overdue'],
     dissonant: ['error', 'problem', 'issue', 'bug', 'fail', 'broken', 'wrong', 'conflict'],
     resonant: ['perfect', 'excellent', 'amazing', 'brilliant', 'harmony', 'aligned', 'synergy'],
     reflective: ['think', 'consider', 'reflect', 'ponder', 'analyze', 'contemplate', 'perhaps'],
@@ -1171,6 +1205,13 @@ function detectDominantTone(text) {
   const scores = {};
   for (const [tone, keywords] of Object.entries(toneKeywords)) {
     scores[tone] = keywords.filter(keyword => lower.includes(keyword)).length;
+  }
+
+  // Analytical guard: if text is analytically dense and no real time-pressure words,
+  // suppress urgent classification and lean reflective
+  if (scores.urgent > 0 && analyticalScore >= 2 && !hasTimePressure) {
+    scores.urgent = 0;
+    scores.reflective = (scores.reflective || 0) + analyticalScore;
   }
 
   // Find highest scoring tone
@@ -1290,6 +1331,8 @@ function renderHUDContainer() {
     window.__VIBEAI__ = window.__VIBEAI__ || {};
     window.__VIBEAI__.hudMounted = true;
     window.__VIBEAI__.hudMounting = false;
+    // v2.18.0: Clear hudClosed on (re)mount so nudges are active for new HUD session
+    window.__VIBEAI__.hudClosed = false;
   } catch (e) {}
 
   // Header with controls (traditional browser-style top bar)
@@ -1306,7 +1349,8 @@ function renderHUDContainer() {
   `;
   header.innerHTML = `
     <div id="vibeai-header-title" style="flex: 1; text-align: center;">
-      <div style="font-size: 1.15em; font-weight: bold; color: #00d4ff; letter-spacing: 1.5px;">VibeAI Thread Inspector</div>
+      <div style="font-size: 1.15em; font-weight: bold; color: #00d4ff; letter-spacing: 1.5px;">VibeAI</div>
+      <div id="vibeai-engagement-header" style="font-size: 10px; color: rgba(180,210,210,0.55); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px;">Thinking Engagement: —</div>
     </div>
     <div style="display: flex; gap: 6px; align-items: center;">
       <button class="vibeai-icon-btn" id="vibeai-toggle-canvas" title="Hide Canvas" style="font-size: 18px; font-weight: bold; min-width: 32px; min-height: 32px;">—</button>
@@ -1379,18 +1423,22 @@ function renderHUDContainer() {
           <canvas class="hugo-orb-canvas" style="width: 100%; height: 100%; display: block;"></canvas>
         </div>
 
-        <!-- Subtitle below orb -->
+        <!-- THINKING ENGAGEMENT label + stage value — PRIMARY signal block -->
+        <div style="text-align: center; width: 130px; font-size: 9px; color: rgba(180,210,210,0.45); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px;">Thinking Engagement</div>
+        <div id="vibeai-orb-stage-label" style="text-align: center; width: 130px; font-size: 13px; font-weight: 700; color: rgba(0,212,255,0.9); letter-spacing: 0.5px; margin-bottom: 2px;">—</div>
+
+        <!-- Cognitive State + HRI — secondary caption -->
         <div class="hugo-orb-caption" style="text-align: center; width: 130px;">
-          <div class="hugo-orb-title" style="font-size: 13px; font-weight: 600; color: #00d4ff; letter-spacing: 0.5px; margin-bottom: 2px;">
-            Conversation Resonance
+          <div class="hugo-orb-title" style="font-size: 10px; font-weight: 500; color: rgba(180,210,210,0.45); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px;">
+            Cognitive State
           </div>
-          <div class="hugo-orb-subtitle" id="hri-label-output" style="font-size: 11px; color: var(--vibeai-orb-subtitle); font-style: italic; transition: color 0.3s ease;">
+          <div class="hugo-orb-subtitle" id="hri-label-output" style="font-size: 10px; color: var(--vibeai-orb-subtitle); font-style: italic; transition: color 0.3s ease;">
             Analyzing...
           </div>
         </div>
       </div>
 
-      <!-- RIGHT: Tone Strip (vertical list) -->
+      <!-- RIGHT: Tone Strip — SECONDARY signal -->
       <div class="vibeai-tone-strip-bar" style="
         display: flex;
         flex-direction: column;
@@ -1398,23 +1446,24 @@ function renderHUDContainer() {
         flex: 1;
         font-size: 12px;
       ">
-        <div class="tone-item" data-tone="calm" title="Calm tone detected in conversation (peaceful, relaxed language)" style="opacity: 0.9; transition: all 0.3s ease; cursor: pointer; padding: 6px 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; background: hsla(190, 70%, 55%, 0.12); border: 2px solid transparent;">
+        <div style="font-size: 9px; color: rgba(180,210,210,0.35); letter-spacing: 0.1em; text-transform: uppercase; padding: 0 4px 4px; border-bottom: 1px solid rgba(180,210,210,0.1); margin-bottom: 2px;">Emotional Context</div>
+        <div class="tone-item" data-tone="calm" title="Calm tone detected in conversation (peaceful, relaxed language)" style="opacity: 0.55; transition: all 0.3s ease; cursor: pointer; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; gap: 8px; background: hsla(190, 70%, 55%, 0.12); border: 2px solid transparent;">
           <span style="font-size: 18px;">🌊</span>
           <span style="font-weight: 500; color: var(--vibeai-tone-label); transition: color 0.3s ease;">Calm</span>
         </div>
-        <div class="tone-item" data-tone="urgent" title="Urgent tone detected in conversation (time-sensitive, immediate language)" style="opacity: 0.9; transition: all 0.3s ease; cursor: pointer; padding: 6px 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; background: hsla(25, 80%, 55%, 0.12); border: 2px solid transparent;">
+        <div class="tone-item" data-tone="urgent" title="Time pressure detected in conversation (deadline, urgency, or immediate action language)" style="opacity: 0.55; transition: all 0.3s ease; cursor: pointer; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; gap: 8px; background: hsla(25, 80%, 55%, 0.12); border: 2px solid transparent;">
           <span style="font-size: 18px;">⚡</span>
-          <span style="font-weight: 500; color: var(--vibeai-tone-label); transition: color 0.3s ease;">Urgent</span>
+          <span style="font-weight: 500; color: var(--vibeai-tone-label); transition: color 0.3s ease;">Time Pressure</span>
         </div>
-        <div class="tone-item" data-tone="reflective" title="Reflective tone detected in conversation (thoughtful, contemplative language)" style="opacity: 0.9; transition: all 0.3s ease; cursor: pointer; padding: 6px 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; background: hsla(270, 60%, 60%, 0.12); border: 2px solid transparent;">
+        <div class="tone-item" data-tone="reflective" title="Reflective tone detected in conversation (thoughtful, contemplative language)" style="opacity: 0.55; transition: all 0.3s ease; cursor: pointer; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; gap: 8px; background: hsla(270, 60%, 60%, 0.12); border: 2px solid transparent;">
           <span style="font-size: 18px;">🔮</span>
           <span style="font-weight: 500; color: var(--vibeai-tone-label); transition: color 0.3s ease;">Reflect</span>
         </div>
-        <div class="tone-item" data-tone="dissonant" title="Tension detected in conversation (conflicting or unclear language)" style="opacity: 0.9; transition: all 0.3s ease; cursor: pointer; padding: 6px 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; background: hsla(0, 20%, 50%, 0.12); border: 2px solid transparent;">
+        <div class="tone-item" data-tone="dissonant" title="Tension detected in conversation (conflicting or unclear language)" style="opacity: 0.55; transition: all 0.3s ease; cursor: pointer; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; gap: 8px; background: hsla(0, 20%, 50%, 0.12); border: 2px solid transparent;">
           <span style="font-size: 18px;">⚙️</span>
           <span style="font-weight: 500; color: var(--vibeai-tone-label); transition: color 0.3s ease;">Tension</span>
         </div>
-        <div class="tone-item" data-tone="resonant" title="Aligned tone detected in conversation (harmonious, flowing language)" style="opacity: 0.9; transition: all 0.3s ease; cursor: pointer; padding: 6px 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; background: hsla(150, 60%, 55%, 0.12); border: 2px solid transparent;">
+        <div class="tone-item" data-tone="resonant" title="Aligned tone detected in conversation (harmonious, flowing language)" style="opacity: 0.55; transition: all 0.3s ease; cursor: pointer; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; gap: 8px; background: hsla(150, 60%, 55%, 0.12); border: 2px solid transparent;">
           <span style="font-size: 18px;">✨</span>
           <span style="font-weight: 500; color: var(--vibeai-tone-label); transition: color 0.3s ease;">Aligned</span>
         </div>
@@ -1422,6 +1471,12 @@ function renderHUDContainer() {
     `;
 
     headerSection.appendChild(orbArea);
+
+    // TODO v2.17
+    // Add Conversation Ticker below orb
+    // Scrolling parser preview (Bloomberg-style thin strip) that links to Expand → Interaction Timeline
+    // Example ticker text: Prompt → Explanation → Follow-up → Stable Flow
+    // Clicking the ticker should trigger the same action as the Expand button
 
   } else {
     // ================================
@@ -1449,7 +1504,7 @@ function renderHUDContainer() {
 
     const tileMeta = {
       calm: { emoji: '🌊', label: 'Calm' },
-      urgent: { emoji: '⚡', label: 'Urgent' },
+      urgent: { emoji: '⚡', label: 'Time Pressure' },
       reflective: { emoji: '🔮', label: 'Reflective' },
       dissonant: { emoji: '⚙️', label: 'Tension' },
       resonant: { emoji: '✨', label: 'Aligned' }
@@ -1532,6 +1587,20 @@ function renderHUDContainer() {
       let destroyed = false;
       let animationFrameId = null;
 
+      // v2.18.0: Cognitive stage state (stage-detector.js → orb visual driver)
+      let currentStage = 'Exploring';
+      let displayHue = 190; // lerped toward stage target hue each frame
+
+      // Stage → visual parameter table (v2.18.0)
+      // pulsePeriod: ms per full cycle | swingPx: ±px core radius swing
+      // ringMode: none|thin|glow | particleScale: opacity multiplier | scaleY: vertical compression
+      const STAGE_PARAMS = {
+        'Exploring':  { hue: 190, pulsePeriod: 4000,  swingPx: 7, ringMode: 'none', particleScale: 1.00, scaleY: 1.00 },
+        'Evaluating': { hue: 220, pulsePeriod: 3000,  swingPx: 3, ringMode: 'thin', particleScale: 0.85, scaleY: 1.00 },
+        'Refining':   { hue: 270, pulsePeriod: 1500,  swingPx: 5, ringMode: 'glow', particleScale: 1.15, scaleY: 1.00 },
+        'Accepting':  { hue: 200, pulsePeriod: 20000, swingPx: 4, ringMode: 'none', particleScale: 0.30, scaleY: 0.92 }
+      };
+
       // Tone color mapping (HSL hue values)
       const toneHue = {
         calm: 190,        // Cyan-blue (tranquil waters)
@@ -1570,9 +1639,25 @@ function renderHUDContainer() {
         if (!running) return;
 
         ctx.clearRect(0, 0, size, size);
-        const tone = dominantTone();
-        const hue = toneHue[tone] || 190;
-        const pulse = Math.sin(timestamp * 0.001) * 0.1; // Gentle pulse
+
+        // v2.18.0: Stage-driven visual parameters
+        const params = STAGE_PARAMS[currentStage] || STAGE_PARAMS['Exploring'];
+
+        // Hue lerp: smooth color transition between stages (~300ms at 60fps)
+        displayHue += (params.hue - displayHue) * 0.05;
+        const hue = Math.round(displayHue);
+
+        // Stage-aware pulse: breathing for active states, heartbeat for Accepting
+        const cyclePos = (timestamp % params.pulsePeriod) / params.pulsePeriod;
+        let pulse;
+        if (currentStage === 'Accepting') {
+          // Heartbeat: near-still with one brief pulse per 20s cycle (first 4% = ~800ms)
+          const inPulseWindow = cyclePos < 0.04;
+          pulse = inPulseWindow ? Math.sin((cyclePos / 0.04) * Math.PI) : 0;
+        } else {
+          // Active states: full breathing/pulsing cycle
+          pulse = Math.sin(cyclePos * Math.PI * 2);
+        }
 
         // ================================
         // LAYER 1: Particle Halo (Ambient)
@@ -1582,7 +1667,7 @@ function renderHUDContainer() {
           const x = cx + Math.cos(p.angle) * p.radius;
           const y = cy + Math.sin(p.angle) * p.radius;
 
-          ctx.fillStyle = `hsla(${hue}, 70%, 70%, ${p.opacity * hri})`;
+          ctx.fillStyle = `hsla(${hue}, 70%, 70%, ${p.opacity * hri * params.particleScale})`;
           ctx.beginPath();
           ctx.arc(x, y, p.size, 0, Math.PI * 2);
           ctx.fill();
@@ -1591,7 +1676,8 @@ function renderHUDContainer() {
         // ================================
         // LAYER 2: Fluid Core (Radial Gradient)
         // ================================
-        const coreRadius = (size * 0.33) + pulse * 7; // Scale to canvas size (was 80 for 240px)
+        // v2.18.0: stage-driven swing (swingPx = ±pixel radius variation per stage)
+        const coreRadius = (size * 0.33) + pulse * params.swingPx;
         const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreRadius);
 
         // Core brightness tied to HRI
@@ -1600,37 +1686,68 @@ function renderHUDContainer() {
         gradient.addColorStop(0.6, `hsla(${hue}, 70%, 45%, ${coreAlpha * 0.6})`);
         gradient.addColorStop(1, `hsla(${hue}, 60%, 25%, 0.05)`);
 
+        // v2.18.0: Accepting compression — scaleY 0.92 squashes orb slightly vertically
+        ctx.save();
+        if (params.scaleY !== 1.0) {
+          ctx.translate(cx, cy);
+          ctx.scale(1.0, params.scaleY);
+          ctx.translate(-cx, -cy);
+        }
         ctx.fillStyle = gradient;
         ctx.beginPath();
         ctx.arc(cx, cy, coreRadius, 0, Math.PI * 2);
         ctx.fill();
+        ctx.restore();
 
         // ================================
-        // LAYER 3: Segmented Rings (Emotion Distribution)
+        // LAYER 3: Stage-Aware Ring System (v2.18.0)
         // ================================
-        const ringRadius = size * 0.44; // Scale to canvas size (was 105 for 240px)
-        const segmentWidth = 0.12; // Radians per segment
-        const segmentGap = 0.05;   // Gap between segments
-        let currentAngle = 0;
+        const ringRadius = size * 0.44;
 
-        // Draw segments for each emotion proportionally
-        Object.entries(emotionDist).forEach(([emotionTone, value]) => {
-          if (value <= 0) return;
-
-          const segmentCount = Math.round(value * 32); // Max 32 segments per emotion
-          const segmentHue = toneHue[emotionTone] || hue;
-
-          ctx.strokeStyle = `hsla(${segmentHue}, 85%, 65%, 0.8)`;
-          ctx.lineWidth = 6;
-          ctx.lineCap = 'round';
-
-          for (let i = 0; i < segmentCount; i++) {
-            ctx.beginPath();
-            ctx.arc(cx, cy, ringRadius, currentAngle, currentAngle + segmentWidth);
-            ctx.stroke();
-            currentAngle += segmentWidth + segmentGap;
+        if (params.ringMode === 'none') {
+          // Exploring: emotion texture segments at reduced opacity (ambient richness)
+          // Accepting: ring is silent — orb should feel still
+          if (currentStage !== 'Accepting') {
+            const segmentWidth = 0.12;
+            const segmentGap = 0.05;
+            let currentAngle = 0;
+            Object.entries(emotionDist).forEach(([emotionTone, value]) => {
+              if (value <= 0) return;
+              const segmentCount = Math.round(value * 32);
+              const segmentHue = toneHue[emotionTone] || hue;
+              ctx.strokeStyle = `hsla(${segmentHue}, 85%, 65%, 0.45)`;
+              ctx.lineWidth = 4;
+              ctx.lineCap = 'round';
+              for (let i = 0; i < segmentCount; i++) {
+                ctx.beginPath();
+                ctx.arc(cx, cy, ringRadius, currentAngle, currentAngle + segmentWidth);
+                ctx.stroke();
+                currentAngle += segmentWidth + segmentGap;
+              }
+            });
           }
-        });
+        } else if (params.ringMode === 'thin') {
+          // Evaluating: single thin continuous halo — reflection, watchfulness
+          ctx.save();
+          ctx.strokeStyle = `hsla(${hue}, 70%, 70%, 0.40)`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(cx, cy, ringRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        } else if (params.ringMode === 'glow') {
+          // Refining: glowing ring with shadow bloom — precision, intensity
+          ctx.save();
+          ctx.shadowColor = `hsla(${hue}, 90%, 70%, 0.9)`;
+          ctx.shadowBlur = 10;
+          ctx.strokeStyle = `hsla(${hue}, 90%, 72%, 0.75)`;
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(cx, cy, ringRadius, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+          ctx.restore();
+        }
 
         // ================================
         // LAYER 4: Outer Ring Glow
@@ -1663,6 +1780,18 @@ function renderHUDContainer() {
           }
           if (newDist && typeof newDist === 'object') {
             emotionDist = { ...emotionDist, ...newDist };
+          }
+        },
+
+        /**
+         * v2.18.0: Sets the cognitive engagement stage driving orb visuals.
+         * Called by stage poller every 2s when window.__VIBEAI__.currentStage changes.
+         * @param {string} stageName - 'Exploring'|'Evaluating'|'Refining'|'Accepting'
+         */
+        setStage(stageName) {
+          if (STAGE_PARAMS[stageName]) {
+            currentStage = stageName;
+            void 0;
           }
         },
 
@@ -1792,17 +1921,124 @@ function renderHUDContainer() {
   // END HUGO ORB ENGINE
   // ================================
 
-  // Thread feed container
+  // Phase 2 — Stage Indicator strip (cognitive awareness layer)
+  // v2.18.0: stageIndicator footer strip removed — Thinking Engagement state is now shown
+  // in the orb block (vibeai-orb-stage-label, primary) and header (vibeai-engagement-header, confirmation).
+  // vibeai-stage-value is intentionally not in the DOM; stage poller null-checks it safely.
+
+  // Phase 2 — Nudge Strip (transient; hidden until nudge fires)
+  const nudgeStrip = document.createElement('div');
+  nudgeStrip.id = 'vibeai-nudge-strip';
+  nudgeStrip.style.cssText = `
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    border-bottom: 1px solid rgba(100, 200, 180, 0.2);
+    background: rgba(100, 200, 180, 0.06);
+    font-size: 12px;
+    gap: 8px;
+  `;
+  nudgeStrip.innerHTML = `
+    <span id="vibeai-nudge-text" style="color:rgba(180,230,220,0.9);flex:1;line-height:1.4;"></span>
+    <button id="vibeai-nudge-dismiss"
+      style="background:none;border:1px solid rgba(100,200,180,0.3);color:rgba(100,200,180,0.7);
+      border-radius:4px;cursor:pointer;font-size:10px;padding:3px 8px;white-space:nowrap;">
+      Dismiss
+    </button>
+  `;
+  hud.appendChild(nudgeStrip);
+
+  // Thread feed container — Interaction Timeline (hidden by default; Expand reveals it)
   const threadFeed = document.createElement('div');
   threadFeed.id = 'vibeai-thread-feed-unified';
+  threadFeed.dataset.expanded = 'false';
   threadFeed.style.cssText = `
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
     padding: 12px 16px;
+    display: none;
   `;
   threadFeed.innerHTML = `<p style="text-align: center; color: var(--vibeai-empty-message); padding: 30px 20px; font-style: italic; transition: color 0.3s ease;">🧠 No threads detected yet. Send your first message in the chat — FoldSpace will map the conversation here and threads will appear.</p>`;
   hud.appendChild(threadFeed);
+
+  // Phase 2 — Interaction Controls Bar (always visible in full HUD)
+  const interactionControls = document.createElement('div');
+  interactionControls.id = 'vibeai-interaction-controls';
+  interactionControls.style.cssText = `
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    border-top: 1px solid rgba(0, 170, 255, 0.1);
+    background: var(--vibeai-hud-footer-bg);
+    transition: background 0.3s ease;
+    gap: 6px;
+  `;
+  interactionControls.innerHTML = `
+    <button id="vibeai-bookmark-btn" title="Bookmark current message"
+      style="background:none;border:1px solid rgba(0,212,255,0.25);color:rgba(0,212,255,0.7);
+      border-radius:6px;cursor:pointer;font-size:11px;padding:5px 9px;transition:all 0.2s ease;
+      display:flex;align-items:center;gap:4px;">
+      <span>⊹</span><span>Bookmark</span>
+    </button>
+    <button id="vibeai-nudge-toggle" title="Toggle nudges on/off"
+      style="background:none;border:1px solid rgba(0,212,255,0.25);color:rgba(0,212,255,0.7);
+      border-radius:6px;cursor:pointer;font-size:11px;padding:5px 9px;transition:all 0.2s ease;">
+      Nudge ●
+    </button>
+    <button id="vibeai-guide-btn" title="Guide my thinking — suggest a prompt"
+      style="background:none;border:1px solid rgba(100,200,180,0.3);color:rgba(100,200,180,0.8);
+      border-radius:6px;cursor:pointer;font-size:11px;padding:5px 9px;transition:all 0.2s ease;">
+      Guide ✦
+    </button>
+    <button id="vibeai-expand-btn" title="Show Interaction Timeline"
+      style="background:none;border:1px solid rgba(0,212,255,0.25);color:rgba(0,212,255,0.7);
+      border-radius:6px;cursor:pointer;font-size:11px;padding:5px 9px;transition:all 0.2s ease;">
+      Expand
+    </button>
+    <button id="vibeai-close-session-btn" title="Close session"
+      style="background:none;border:1px solid rgba(255,120,80,0.3);color:rgba(255,140,100,0.8);
+      border-radius:6px;cursor:pointer;font-size:11px;padding:5px 9px;transition:all 0.2s ease;">
+      Close Session
+    </button>
+  `;
+  hud.appendChild(interactionControls);
+
+  // Guide Panel — hidden until Guide button clicked
+  const guidePanel = document.createElement('div');
+  guidePanel.id = 'vibeai-guide-panel';
+  guidePanel.style.cssText = `
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 14px;
+    border-top: 1px solid rgba(100,200,180,0.15);
+    background: rgba(0,15,30,0.65);
+    max-height: 280px;
+    overflow-y: auto;
+  `;
+  const GUIDE_OPTS = [
+    { label: 'Reflect on this idea',    prompt: 'Help me reflect more deeply on this idea.' },
+    { label: 'Compare approaches',      prompt: 'Compare two different approaches to this.' },
+    { label: 'Explain the reasoning',   prompt: 'Explain the reasoning behind this.' },
+    { label: 'Explore alternatives',    prompt: 'What are some alternatives worth exploring?' },
+    { label: 'Challenge this answer',   prompt: 'What would challenge this answer? Give me a critical perspective.' },
+    { label: 'Ask for evidence',        prompt: 'What evidence supports this? What might contradict it?' },
+    { label: 'Add my own thinking',     prompt: 'I want to add my own perspective here: ' }
+  ];
+  guidePanel.innerHTML = `
+    <div id="vibeai-guide-header" style="font-size:9px;color:rgba(100,200,180,0.55);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px;">Guide My Thinking</div>
+    ${GUIDE_OPTS.map((o, i) => `
+      <div class="vibeai-guide-opt" data-idx="${i}"
+        style="cursor:pointer;padding:6px 10px;border-radius:6px;font-size:12px;
+        color:rgba(180,230,220,0.85);border:1px solid rgba(100,200,180,0.2);
+        background:rgba(100,200,180,0.05);transition:background 0.2s ease;">
+        ${o.label}
+      </div>`).join('')}
+  `;
+  hud.appendChild(guidePanel);
 
   // Footer with transparency slider (left) and theme toggle (right)
   const footer = document.createElement('div');
@@ -1832,6 +2068,11 @@ function renderHUDContainer() {
         style="background:none; border:none; color:#00d4ff; cursor:pointer; padding:4px 8px; font-size:0.8em; border-radius:4px; transition:all 0.2s ease;"
         title="Report a bug or issue">
         Report
+      </button>
+      <button id="vibeai-clear-data" class="footer-btn"
+        style="background:none; border:none; color:#ff9966; cursor:pointer; padding:4px 8px; font-size:0.8em; border-radius:4px; transition:all 0.2s ease;"
+        title="Clear all locally stored VibeAI data">
+        Reset
       </button>
     </div>
     <div style="display:flex; gap:6px; align-items:center;">
@@ -2063,7 +2304,8 @@ function renderHUDContainer() {
         const allowedHosts = [
           'chatgpt.com', 'www.chatgpt.com', 'chat.openai.com',
           'claude.ai', 'www.claude.ai',
-          'gemini.google.com'
+          'gemini.google.com',
+          'copilot.microsoft.com'
         ];
         if (!allowedHosts.includes(location.hostname)) {
           if (window.VIBEAI_HUD_DEBUG) console.warn('[VibeAI HRI] ⚠️ Message blocked: hostname not in allowlist');
@@ -2144,16 +2386,59 @@ function renderHUDContainer() {
     console.warn('[VibeAI HRI] ⚠️ postMessage listener already registered, skipping duplicate');
   }
 
-  document.addEventListener('vibeai:threadUpdate', (e) => {
-    if (window.VIBEAI_HUD_DEBUG) void 0;
-    if (e.detail && e.detail.content) {
-      updateHRIBridge(e.detail.content);
-      const target = ENABLE_HUGO_ORB ? 'Hugo Orb' : 'Canvas';
+  // v2.18.x: Guard against listener accumulation across HUD close/reopen cycles.
+  // Named handler stored in closure so removeEventListener works correctly.
+  if (!window.__VIBEAI_THREAD_EVENT_LISTENER_REGISTERED__) {
+    window.__VIBEAI_THREAD_EVENT_LISTENER_REGISTERED__ = true;
+
+    const __vibeai_threadUpdateHandler = (e) => {
+      // Schema validation — treat CustomEvent payloads as untrusted (page scripts can dispatch these)
+      const allowedHosts = [
+        'chatgpt.com', 'www.chatgpt.com', 'chat.openai.com',
+        'claude.ai', 'www.claude.ai',
+        'gemini.google.com', 'copilot.microsoft.com'
+      ];
+      if (!allowedHosts.includes(location.hostname)) return;
+
+      const detail = e?.detail;
+      if (!detail || typeof detail !== 'object') return;
+      if (typeof detail.count !== 'number' || !isFinite(detail.count)) return;
+      if (detail.threads) {
+        if (!Array.isArray(detail.threads)) return;
+        if (detail.threads.length > 200) return;
+        for (const t of detail.threads) {
+          if (typeof t.id !== 'string' || t.id.length > 120) return;
+          if (t.content && typeof t.content === 'string' && t.content.length > 2000) return;
+        }
+      }
+
       if (window.VIBEAI_HUD_DEBUG) void 0;
-    } else {
-      console.warn('[VibeAI HRI] ⚠️ threadUpdate event missing content', e.detail);
-    }
-  }, { capture: true });
+      if (detail.content) {
+        updateHRIBridge(detail.content);
+        // v2.17: CustomEvent carries threads array — call updateThreadFeed so stage detector
+        // gets user-tagged messages. The postMessage path is unreliable across Chrome's
+        // isolated-world boundary (e.source !== window gate fails).
+        if (detail.threads && Array.isArray(detail.threads) && detail.threads.length > 0) {
+          window.VIBEAI_LAST_THREADS = detail.threads;
+          if (typeof updateThreadFeed === 'function') updateThreadFeed(detail.threads);
+        }
+        const target = ENABLE_HUGO_ORB ? 'Hugo Orb' : 'Canvas';
+        if (window.VIBEAI_HUD_DEBUG) void 0;
+      } else {
+        console.warn('[VibeAI HRI] ⚠️ threadUpdate event missing content', detail);
+      }
+    };
+
+    document.addEventListener('vibeai:threadUpdate', __vibeai_threadUpdateHandler, { capture: true });
+
+    registerCleanup(() => {
+      document.removeEventListener('vibeai:threadUpdate', __vibeai_threadUpdateHandler, { capture: true });
+      window.__VIBEAI_THREAD_EVENT_LISTENER_REGISTERED__ = false;
+      void 0;
+    });
+  } else {
+    console.warn('[VibeAI HRI] ⚠️ threadUpdate listener already registered, skipping duplicate');
+  }
   void 0;
 
   // DEBUG FIX (v2.14.0): Expose safe debug hooks for testing
@@ -2271,6 +2556,7 @@ function injectUnifiedHUD(options = { observer: true }) {
       const shouldObserve = Boolean(options && options.observer) && PLATFORM === 'chatgpt';
       if (shouldObserve && !window.__vibeai_unified_observer_set) {
         let reinjectTimer = null;
+        let lastObserverCheck = 0; // throttle: avoid hammering getElementById on every mutation
         const scheduleReinject = () => {
           if (reinjectTimer) return;
           reinjectTimer = setTimeout(() => {
@@ -2282,6 +2568,10 @@ function injectUnifiedHUD(options = { observer: true }) {
           }, 500);
         };
         const observer = new MutationObserver(() => {
+          // Throttle: real check at most once every 2s to avoid CPU spike during ChatGPT streaming
+          const now = Date.now();
+          if (now - lastObserverCheck < 2000) return;
+          lastObserverCheck = now;
           try {
             if (!getUnifiedHudEl()) scheduleReinject();
           } catch { /* ignore */ }
@@ -2289,6 +2579,14 @@ function injectUnifiedHUD(options = { observer: true }) {
         observer.observe(document.documentElement || document.body, { childList: true, subtree: true });
         window.__vibeai_unified_observer_set = true;
         window.__vibeai_unified_observer = observer;
+        // Disconnect on HUD cleanup to prevent stale observer after close/reinject
+        registerCleanup(() => {
+          try {
+            observer.disconnect();
+            window.__vibeai_unified_observer_set = false;
+            window.__vibeai_unified_observer = null;
+          } catch (e) {}
+        });
         void 0;
       }
     } catch { /* ignore observer errors */ }
@@ -2620,6 +2918,13 @@ function attachEventListeners() {
           if (threadFeed) threadFeed.style.display = 'none';
           if (footer) footer.style.display = 'none';
           if (closeBtn) closeBtn.style.display = 'none';
+          // Phase 2: hide new strips on minimize
+          const stageEl = document.getElementById('vibeai-stage-indicator');
+          const nudgeEl = document.getElementById('vibeai-nudge-strip');
+          const ctrlEl  = document.getElementById('vibeai-interaction-controls');
+          if (stageEl) stageEl.style.display = 'none';
+          if (nudgeEl) nudgeEl.style.display = 'none';
+          if (ctrlEl)  ctrlEl.style.display  = 'none';
 
           // Phase VIII.0: Pause Hugo Orb animation when minimized
           if (ENABLE_HUGO_ORB && window.hugoOrb) {
@@ -2662,9 +2967,17 @@ function attachEventListeners() {
 
           if (utils) utils.style.display = 'flex';
           if (canvas) canvas.style.display = 'flex';
-          if (threadFeed) threadFeed.style.display = 'block';
+          // Phase 2: restore threadFeed only if user had it expanded
+          if (threadFeed) threadFeed.style.display = threadFeed.dataset.expanded === 'true' ? 'block' : 'none';
           if (footer) footer.style.display = 'flex';
           if (closeBtn) closeBtn.style.display = 'block';
+          // Phase 2: restore new strips on maximize
+          const stageElM = document.getElementById('vibeai-stage-indicator');
+          const nudgeElM = document.getElementById('vibeai-nudge-strip');
+          const ctrlElM  = document.getElementById('vibeai-interaction-controls');
+          if (stageElM) stageElM.style.display = 'flex';
+          if (nudgeElM && nudgeElM.dataset.active === 'true') nudgeElM.style.display = 'flex';
+          if (ctrlElM)  ctrlElM.style.display  = 'flex';
 
           // Phase VIII.0: Resume Hugo Orb animation when maximized
           if (ENABLE_HUGO_ORB && window.hugoOrb) {
@@ -2676,7 +2989,7 @@ function attachEventListeners() {
             headerTitle.style.display = 'block';
             headerTitle.style.flex = '1';
             headerTitle.style.textAlign = 'center';
-            headerTitle.innerHTML = '<div style="font-size: 1.15em; font-weight: bold; color: #00d4ff; letter-spacing: 1.5px;">VibeAI Thread Inspector</div>';
+            headerTitle.innerHTML = '<div style="font-size: 1.15em; font-weight: bold; color: #00d4ff; letter-spacing: 1.5px;">VibeAI FoldSpace</div>';
           }
 
           toggleCanvasBtn.textContent = '—';
@@ -2694,26 +3007,42 @@ function attachEventListeners() {
     closeBtn.addEventListener('click', () => {
       const hud = document.getElementById('vibeai-unified-hud');
       if (hud) {
-        hud.style.display = 'none';
-        void 0;
-
-        // Run registered cleanup functions (remove listeners, intervals, observers)
-        try {
-          runCleanup();
-        } catch (e) { console.warn('[VibeAI HUD] runCleanup failed', e); }
-
-        // Phase VIII.0: Cleanup Hugo Orb on close
-        // v2.14.1 FIX #1: Use window.hugoOrb reference
-        if (ENABLE_HUGO_ORB && window.hugoOrb) {
-          try { window.hugoOrb.destroy(); } catch (e) { console.warn('hugoOrb.destroy error', e); }
-          try { window.hugoOrb = null; } catch (e) {}
+        // Phase 2: run cleanup after session close flow (retrieval prompt)
+        function __vibeai_do_hud_close() {
+          hud.remove();
           void 0;
+
+          // Run registered cleanup functions (remove listeners, intervals, observers)
+          try {
+            runCleanup();
+          } catch (e) { console.warn('[VibeAI HUD] runCleanup failed', e); }
+
+          // v2.18.0: Flag HUD as closed — nudge engine will suppress prompts this session
+          try {
+            window.__VIBEAI__ = window.__VIBEAI__ || {};
+            window.__VIBEAI__.hudClosed = true;
+            void 0;
+          } catch (e) {}
+
+          // Phase VIII.0: Cleanup Hugo Orb on close
+          // v2.14.1 FIX #1: Use window.hugoOrb reference
+          if (ENABLE_HUGO_ORB && window.hugoOrb) {
+            try { window.hugoOrb.destroy(); } catch (e) { console.warn('hugoOrb.destroy error', e); }
+            try { window.hugoOrb = null; } catch (e) {}
+            void 0;
+          }
+
+          // Legacy: Cleanup FoldSpace canvas on close
+          if (foldSpaceCanvas) {
+            try { foldSpaceCanvas.destroy(); } catch (e) { console.warn('foldSpaceCanvas.destroy error', e); }
+            foldSpaceCanvas = null;
+          }
         }
 
-        // Legacy: Cleanup FoldSpace canvas on close
-        if (foldSpaceCanvas) {
-          try { foldSpaceCanvas.destroy(); } catch (e) { console.warn('foldSpaceCanvas.destroy error', e); }
-          foldSpaceCanvas = null;
+        if (window.VibeSessionManager && typeof window.VibeSessionManager.triggerCloseFlow === 'function') {
+          window.VibeSessionManager.triggerCloseFlow().then(__vibeai_do_hud_close).catch(__vibeai_do_hud_close);
+        } else {
+          __vibeai_do_hud_close();
         }
       }
     });
@@ -2737,6 +3066,28 @@ function attachEventListeners() {
     reportBugBtn.addEventListener('click', () => {
       void 0;
       window.open('https://github.com/TNL-Origin/hugonomy-foldspace/issues/new', '_blank');
+    });
+  }
+
+  // Clear/Reset Local Data button
+  const clearDataBtn = document.getElementById('vibeai-clear-data');
+  if (clearDataBtn) {
+    clearDataBtn.addEventListener('click', () => {
+      const existing = document.getElementById('vibeai-reset-confirm');
+      if (existing) { existing.remove(); return; }
+      const confirmModal = document.createElement('div');
+      confirmModal.id = 'vibeai-reset-confirm';
+      confirmModal.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;';
+      confirmModal.innerHTML = '<div style="background:#1a1f2e;border:1px solid rgba(0,170,255,0.3);border-radius:12px;padding:24px;max-width:360px;color:#e0e0e0;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.5);"><div style="font-size:15px;font-weight:600;color:#00d4ff;margin-bottom:12px;">Clear Local Data</div><p style="font-size:13px;line-height:1.5;margin:0 0 16px;color:#aab;">This will remove all locally stored VibeAI preferences, thread metadata, and bookmarks from this browser. No data is stored externally.</p><div style="display:flex;gap:10px;justify-content:center;"><button id="vibeai-reset-cancel" style="padding:8px 20px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:#ccc;cursor:pointer;font-size:13px;">Cancel</button><button id="vibeai-reset-confirm-btn" style="padding:8px 20px;border-radius:6px;border:none;background:#ff7744;color:#fff;cursor:pointer;font-size:13px;font-weight:600;">Clear Data</button></div></div>';
+      document.body.appendChild(confirmModal);
+      document.getElementById('vibeai-reset-cancel').addEventListener('click', () => confirmModal.remove());
+      document.getElementById('vibeai-reset-confirm-btn').addEventListener('click', () => {
+        try { if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) { chrome.storage.local.clear(() => { if (window.VIBEAI_HUD_DEBUG) console.info('[VibeAI] chrome.storage.local cleared'); }); } } catch (e) {}
+        try { const keys = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && (k.startsWith('vibeai') || k.startsWith('vibeAI') || k.startsWith('VibeAI') || k.startsWith('vibe_') || k === 'hudWidth' || k === 'consentGiven')) keys.push(k); } keys.forEach(k => localStorage.removeItem(k)); if (window.VIBEAI_HUD_DEBUG) console.info('[VibeAI] localStorage keys cleared:', keys); } catch (e) {}
+        confirmModal.querySelector('div > div').innerHTML = '<div style="font-size:15px;font-weight:600;color:#4ecdc4;margin-bottom:12px;">Data Cleared</div><p style="font-size:13px;line-height:1.5;margin:0 0 16px;color:#aab;">All local VibeAI data has been removed.</p><div style="display:flex;gap:10px;justify-content:center;"><button id="vibeai-reset-done" style="padding:8px 20px;border-radius:6px;border:none;background:rgba(0,170,255,0.3);color:#00d4ff;cursor:pointer;font-size:13px;">Done</button><button id="vibeai-reset-reload" style="padding:8px 20px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:#ccc;cursor:pointer;font-size:13px;">Reload Page</button></div>';
+        document.getElementById('vibeai-reset-done').addEventListener('click', () => confirmModal.remove());
+        document.getElementById('vibeai-reset-reload').addEventListener('click', () => { confirmModal.remove(); location.reload(); });
+      });
     });
   }
 
@@ -2776,6 +3127,197 @@ function attachEventListeners() {
         }, 5000);
       }
     };
+  }
+
+  // ── Phase 2: Interaction Controls ────────────────────────────────────────
+
+  // Guide — toggle suggestion panel + inject prompt into chat input
+  const guideBtn = document.getElementById('vibeai-guide-btn');
+  const guidePanelEl = document.getElementById('vibeai-guide-panel');
+
+  function toggleGuidePanel() {
+    if (!guidePanelEl) return;
+    const isOpen = guidePanelEl.style.display !== 'none';
+    guidePanelEl.style.display = isOpen ? 'none' : 'flex';
+    if (guideBtn) guideBtn.style.background = isOpen ? 'none' : 'rgba(100,200,180,0.1)';
+  }
+
+  // Nudge text ("VibeAI watches how you think...") also opens the guide
+  const nudgeTextEl = document.getElementById('vibeai-nudge-text');
+  if (nudgeTextEl) {
+    nudgeTextEl.style.cursor = 'pointer';
+    nudgeTextEl.title = 'Click to get thinking prompts';
+    nudgeTextEl.addEventListener('click', toggleGuidePanel);
+  }
+
+  if (guideBtn && guidePanelEl) {
+    guideBtn.addEventListener('click', () => {
+      const isOpen = guidePanelEl.style.display !== 'none';
+      guidePanelEl.style.display = isOpen ? 'none' : 'flex';
+      guideBtn.style.background = isOpen ? 'none' : 'rgba(100,200,180,0.1)';
+    });
+
+    const GUIDE_PROMPTS = [
+      'Help me reflect more deeply on this idea.',
+      'Compare two different approaches to this.',
+      'Explain the reasoning behind this.',
+      'What are some alternatives worth exploring?',
+      'What would challenge this answer? Give me a critical perspective.',
+      'What evidence supports this? What might contradict it?',
+      'I want to add my own perspective here: '
+    ];
+
+    guidePanelEl.querySelectorAll('.vibeai-guide-opt').forEach(function (el) {
+      el.addEventListener('mouseenter', function () { el.style.background = 'rgba(100,200,180,0.12)'; });
+      el.addEventListener('mouseleave', function () { el.style.background = 'rgba(100,200,180,0.05)'; });
+      el.addEventListener('click', function () {
+        const idx = parseInt(el.getAttribute('data-idx'), 10);
+        const prompt = GUIDE_PROMPTS[idx];
+        if (!prompt) return;
+
+        // Try to inject into chat textarea (cross-platform)
+        let injected = false;
+        const candidates = [
+          document.querySelector('#prompt-textarea'),
+          document.querySelector('div[contenteditable="true"].ProseMirror'),
+          document.querySelector('div[contenteditable="true"][data-lexical-editor]'),
+          document.querySelector('div[contenteditable="true"]'),
+          document.querySelector('textarea')
+        ].filter(Boolean);
+
+        for (const input of candidates) {
+          try {
+            if (input.tagName === 'TEXTAREA') {
+              input.value = prompt;
+              input.dispatchEvent(new Event('input', { bubbles: true }));
+            } else {
+              input.focus();
+              document.execCommand('selectAll', false, null);
+              document.execCommand('insertText', false, prompt);
+            }
+            input.focus();
+            injected = true;
+            break;
+          } catch (e) { /* try next */ }
+        }
+
+        // Fallback: clipboard
+        if (!injected) {
+          try { navigator.clipboard.writeText(prompt); } catch (e) {}
+        }
+
+        // Close guide panel
+        guidePanelEl.style.display = 'none';
+        guideBtn.style.background = 'none';
+      });
+    });
+  }
+
+  // Expand — toggle Interaction Timeline visibility
+  const expandBtn = document.getElementById('vibeai-expand-btn');
+  if (expandBtn) {
+    expandBtn.addEventListener('click', () => {
+      const timeline = document.getElementById('vibeai-thread-feed-unified');
+      if (!timeline) return;
+      const isExpanded = timeline.dataset.expanded === 'true';
+      timeline.dataset.expanded = isExpanded ? 'false' : 'true';
+      timeline.style.display = isExpanded ? 'none' : 'block';
+      expandBtn.textContent = isExpanded ? 'Expand' : 'Collapse';
+      expandBtn.title = isExpanded ? 'Show Interaction Timeline' : 'Hide Interaction Timeline';
+    });
+  }
+
+  // Close Session — retrieval prompt (standalone; ✕ button also calls this via its own handler)
+  const closeSessionBtn = document.getElementById('vibeai-close-session-btn');
+  if (closeSessionBtn) {
+    closeSessionBtn.addEventListener('click', () => {
+      if (window.VibeSessionManager && typeof window.VibeSessionManager.triggerCloseFlow === 'function') {
+        window.VibeSessionManager.triggerCloseFlow().catch(() => {});
+      } else {
+        console.warn('[VibeAI Phase2] VibeSessionManager not loaded');
+      }
+    });
+  }
+
+  // Bookmark — save current message context locally
+  const bookmarkBtn = document.getElementById('vibeai-bookmark-btn');
+  if (bookmarkBtn) {
+    bookmarkBtn.addEventListener('click', () => {
+      if (!window.VibeBookmarkManager || typeof window.VibeBookmarkManager.add !== 'function') {
+        console.warn('[VibeAI Phase2] VibeBookmarkManager not loaded');
+        return;
+      }
+      const threads = window.VIBEAI_LAST_THREADS;
+      const latest  = Array.isArray(threads) && threads.length > 0 ? threads[threads.length - 1] : null;
+      // Fix 1: no valid target → fail gracefully, no false "Saved" feedback
+      if (!latest || !latest.id) {
+        console.warn('[VibeAI Phase2] No bookmarkable message available');
+        return;
+      }
+      // Fix 1: pass message object matching bookmark-manager.js contract
+      // add(message) expects: { id, source, content, timestamp }
+      const message = {
+        id:        latest.id,
+        source:    latest.source || 'unknown',
+        content:   latest.content || '',
+        timestamp: latest.timestamp || Date.now()
+      };
+      // Fix 1: show "Saved" only on confirmed vibeai:bookmarkAdded (async; never show false positive)
+      const origHTML = bookmarkBtn.innerHTML;
+      function __vibeai_bookmark_confirm(e) {
+        window.removeEventListener('vibeai:bookmarkAdded', __vibeai_bookmark_confirm);
+        if (e.detail && e.detail.bookmark && e.detail.bookmark.messageId === message.id) {
+          bookmarkBtn.innerHTML = '<span>✓</span><span>Saved</span>';
+          setTimeout(() => { try { bookmarkBtn.innerHTML = origHTML; } catch (e2) {} }, 1200);
+        }
+      }
+      window.addEventListener('vibeai:bookmarkAdded', __vibeai_bookmark_confirm);
+      // Safety: detach confirm listener if event never fires (e.g. duplicate bookmark) + show feedback
+      setTimeout(() => {
+        window.removeEventListener('vibeai:bookmarkAdded', __vibeai_bookmark_confirm);
+        if (bookmarkBtn.innerHTML === origHTML) {
+          bookmarkBtn.innerHTML = '<span>⊹</span><span>Already saved</span>';
+          setTimeout(() => { try { bookmarkBtn.innerHTML = origHTML; } catch (e2) {} }, 1000);
+        }
+      }, 3000);
+      window.VibeBookmarkManager.add(message);
+    });
+  }
+
+  // Nudge toggle — enable / disable nudge strip
+  const nudgeToggleBtn = document.getElementById('vibeai-nudge-toggle');
+  if (nudgeToggleBtn) {
+    let nudgesEnabled = true;
+    nudgeToggleBtn.addEventListener('click', () => {
+      nudgesEnabled = !nudgesEnabled;
+      nudgeToggleBtn.textContent = nudgesEnabled ? 'Nudge ●' : 'Nudge ○';
+      nudgeToggleBtn.style.color = nudgesEnabled
+        ? 'rgba(0,212,255,0.7)'
+        : 'rgba(120,120,120,0.5)';
+      nudgeToggleBtn.title = nudgesEnabled ? 'Disable nudges' : 'Enable nudges';
+      try {
+        window.__VIBEAI__ = window.__VIBEAI__ || {};
+        window.__VIBEAI__.nudgesEnabled = nudgesEnabled;
+      } catch (e) {}
+    });
+  }
+
+  // Nudge dismiss — hide strip and start cooldown
+  const nudgeDismissBtn = document.getElementById('vibeai-nudge-dismiss');
+  if (nudgeDismissBtn) {
+    nudgeDismissBtn.addEventListener('click', () => {
+      const strip = document.getElementById('vibeai-nudge-strip');
+      if (strip) {
+        strip.style.display = 'none';
+        strip.removeAttribute('data-active');
+      }
+      // Reset Thinking Mirror header back to default
+      const guideHdr = document.getElementById('vibeai-guide-header');
+      if (guideHdr) guideHdr.textContent = 'Guide My Thinking';
+      if (window.VibeNudgeEngine && typeof window.VibeNudgeEngine.dismiss === 'function') {
+        try { window.VibeNudgeEngine.dismiss(); } catch (e) {}
+      }
+    });
   }
 
     // --- HUD Drag & Resize Handlers (user sovereignty) ---
@@ -2916,12 +3458,25 @@ function updateThreadFeed(threads) {
     return;
   }
 
-  // Phase VIII.0: Update HRI Bridge with latest thread
-  if (threads.length > 0) {
-    const latest = threads[threads.length - 1];
-    if (latest && latest.content) {
-      updateHRIBridge(latest.content);
-    }
+  // v2.17: Prefer user-tagged messages for stage classification.
+  // Falls back to last thread overall if parsers haven't produced source:'user' yet —
+  // ensures engagement always shows a value regardless of parser tagging support.
+  const userThreads = threads.filter(function(t) { return t.source === 'user'; });
+  const classifyFrom = userThreads.length > 0
+    ? userThreads[userThreads.length - 1]
+    : threads[threads.length - 1];
+
+  if (classifyFrom && classifyFrom.content) {
+    updateHRIBridge(classifyFrom.content);
+    // Phase 2: Feed content into stage detector + nudge engine
+    try {
+      if (window.VibeStageDetector && typeof window.VibeStageDetector.update === 'function') {
+        const stageResult = window.VibeStageDetector.update(classifyFrom.content);
+        if (window.VibeNudgeEngine && typeof window.VibeNudgeEngine.onStageUpdate === 'function') {
+          window.VibeNudgeEngine.onStageUpdate(stageResult);
+        }
+      }
+    } catch (e) { /* ignore — engine modules may not be loaded yet */ }
   }
 
   // Helper to render a small FoldSpace mini-canvas showing 1..N mood glyphs for the thread.
@@ -3072,10 +3627,16 @@ function scrollToThread(threadId) {
 
   // Get the corresponding DOM node based on platform
   if (platform === 'chatgpt') {
-    const nodes = document.querySelectorAll('.markdown, .text-base');
+    // v2.18.x: aligned to parser selector — same as ChatGPTParser.getSelectors()
+    const nodes = document.querySelectorAll('[data-message-author-role]');
     targetElement = nodes[index];
   } else if (platform === 'gemini') {
     const nodes = document.querySelectorAll('[data-message-content], article, .response-container');
+    targetElement = nodes[index];
+  } else if (platform === 'copilot') {
+    const nodes = document.querySelectorAll(
+      '.ac-textBlock, .cib-message-content, [class*="message"], [class*="response-message"], [data-content], .text-message-content'
+    );
     targetElement = nodes[index];
   } else if (platform === 'claude') {
     // Use centralized selector list for easier updates
@@ -3184,20 +3745,26 @@ function renderOnboardingHint() {
       <span style="font-size: 18px;">👋</span>
       <span>Welcome to VibeAI</span>
     </div>
+    <div style="font-size: 12px; opacity: 0.7; margin-bottom: 8px; font-style: italic;">See how you think with AI.</div>
     <div style="margin-bottom: 10px; line-height: 1.5;">
-      <strong>VibeAI</strong> tracks the <strong>emotional tone</strong> of your AI conversations in real-time, helping you <strong>communicate clearly</strong> and <strong>improve your prompts</strong> before frustration sets in.
-      <br><br>
+      VibeAI helps you stay mentally engaged when using AI — not just informed.
+      <div style="margin-top: 6px; opacity: 0.85; font-size: 12px;">
+        It shows when AI is doing too much of your thinking, so you can stay sharp and reclaim the reasoning.
+      </div>
       <div style="margin-top: 10px; padding: 8px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; border-left: 3px solid rgba(34, 211, 238, 0.7);">
-        <div style="font-weight: 600; margin-bottom: 6px; opacity: 0.95;">Features:</div>
-        <div style="font-size: 12px; opacity: 0.85; line-height: 1.7;">
-          <div><strong>📊 Live Mood Tracking:</strong> See emotional patterns as you chat</div>
-          <div style="margin-top: 4px;"><strong>🧠 Coach:</strong> Get post-send tips to improve urgent/confused prompts</div>
-          <div style="margin-top: 4px;"><strong>📚 Prompt Library:</strong> Copy proven templates for better responses</div>
-          <div style="margin-top: 4px;"><strong>🎓/💼 Tone Switch:</strong> Student-friendly or professional language</div>
+        <div style="font-weight: 600; margin-bottom: 6px; opacity: 0.95;">What it tracks</div>
+        <div style="font-size: 12px; opacity: 0.85; line-height: 1.8;">
+          <div><strong>🧭 Thinking Engagement</strong> — live signal showing whether you are actively engaged or drifting into passive acceptance</div>
+          <div style="margin-top: 4px;"><strong>💬 Nudge</strong> — a gentle prompt when passive acceptance is detected</div>
+          <div style="margin-top: 4px;"><strong>⊹ Bookmark</strong> — save meaningful moments for later reflection</div>
+          <div style="margin-top: 4px;"><strong>↕ Interaction Timeline</strong> — click Expand to see how the conversation unfolded</div>
+          <div style="margin-top: 4px;"><strong>🔮 Emotional Context</strong> — background signal supporting thinking engagement analysis.</div>
+          <div style="margin-top: 4px;"><strong>🧠 Coach</strong> — optional guidance for improving prompts and interaction clarity</div>
         </div>
       </div>
-      <br>
-      <span style="opacity: 0.85; font-size: 13px;">💡 <strong>Tip:</strong> Drag any panel header to reposition. Click 🧠 Coach for the full prompt library.</span>
+      <div style="margin-top: 10px; opacity: 0.85; font-size: 12px;">
+        💡 Watch the <strong>Thinking Engagement</strong> indicator. If <strong style="color:#fbbf24;">Passive Mode</strong> appears, VibeAI will nudge you to re-engage.
+      </div>
     </div>
     <button id="vibeai-first-time-hint-btn"
       style="
@@ -3379,7 +3946,7 @@ function showConsentModal() {
       color: #fff;
     ">
       <div style="font-size: 1.6em; font-weight: bold; color: #00d4ff; letter-spacing: 2px; margin-bottom: 8px; text-align: center;">
-        VibeAI: A Mirror for Conversations
+        VibeAI FoldSpace: A Mirror for Conversations
       </div>
       <div style="font-size: 0.85em; line-height: 1.6; color: #ccc; margin-bottom: 20px;">
         <p style="margin-bottom: 14px; opacity: 0.9;">
@@ -3482,6 +4049,8 @@ function showConsentModal() {
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         chrome.storage.local.set({ consentGiven: true }, () => {
           void 0;
+          // Mirror consent into window.__VIBEAI__ so engine modules have a synchronous truth source
+          try { window.__VIBEAI__ = window.__VIBEAI__ || {}; window.__VIBEAI__.consentGiven = true; } catch (e) {}
           modal.remove();
           renderHUDContainer();
           setTimeout(() => { showFirstTimeHint(); }, 500);
@@ -3489,6 +4058,8 @@ function showConsentModal() {
       } else {
         try { localStorage.setItem('vibeai_consentGiven', 'true'); } catch (err) { /* ignore */ }
         void 0;
+        // Mirror consent into window.__VIBEAI__ so engine modules have a synchronous truth source
+        try { window.__VIBEAI__ = window.__VIBEAI__ || {}; window.__VIBEAI__.consentGiven = true; } catch (e) {}
         modal.remove();
         renderHUDContainer();
         setTimeout(() => { showFirstTimeHint(); }, 500);
@@ -3751,6 +4322,169 @@ function vibeaiSafeInit() {
 
         if (data.consentGiven === true) {
           void 0;
+          // Mirror storage consent into window.__VIBEAI__ — authoritative runtime source for engine modules
+          try { window.__VIBEAI__ = window.__VIBEAI__ || {}; window.__VIBEAI__.consentGiven = true; } catch (e) {}
+
+          // Phase 2: Initialize engine modules on each consent confirmation.
+          // No outer guard here — window.__VIBEAI__ persists across extension reloads on
+          // the same page, so a one-time flag would permanently skip this block after the
+          // first injection. Inner flags are RESET at the top of this block for the same
+          // reason — stagePollerActive/nudgeListenerAttached from a previous injection would
+          // otherwise permanently block the poller and listener from restarting.
+          setTimeout(function () {
+              try {
+                // Reset per-injection flags so stale values from a previous extension
+                // reload don't block the poller or nudge listener from starting again.
+                // The old setInterval is already dead (torn down with the content script);
+                // only the flag survived on window.__VIBEAI__.
+                if (window.__VIBEAI__) {
+                  window.__VIBEAI__.stagePollerActive     = false;
+                  window.__VIBEAI__.nudgeListenerAttached = false;
+                }
+                // Reset stage detector for fresh session, then immediately re-populate
+                // from existing thread data so the stage poller has a value on first tick.
+                // Without this, reset() wipes currentStage and the poller shows "—" forever
+                // until the user sends a new message (because the parser only fires on new chat activity).
+                if (window.VibeStageDetector && typeof window.VibeStageDetector.reset === 'function') {
+                  window.VibeStageDetector.reset();
+                  try {
+                    const existingThreads = window.VIBEAI_LAST_THREADS;
+                    // v2.17: prefer user-tagged seed; fallback to last thread if parsers haven't tagged yet
+                    const existingUserThreads = Array.isArray(existingThreads)
+                      ? existingThreads.filter(function(t) { return t.source === 'user'; })
+                      : [];
+                    const seedThread = existingUserThreads.length > 0
+                      ? existingUserThreads[existingUserThreads.length - 1]
+                      : (Array.isArray(existingThreads) && existingThreads.length > 0 ? existingThreads[existingThreads.length - 1] : null);
+                    if (seedThread && seedThread.content && typeof window.VibeStageDetector.update === 'function') {
+                      window.VibeStageDetector.update(seedThread.content);
+                      void 0;
+                    } else if (typeof window.VibeStageDetector.seedSynthetic === 'function') {
+                      // Cold-start: no existing threads to seed from (extension loaded mid-session
+                      // or before any messages). Inject synthetic Exploring baseline so the first
+                      // "thanks" has a prior stage to transition from and triggers Thinking Mirror.
+                      window.VibeStageDetector.seedSynthetic('Exploring');
+                    }
+                  } catch (seedErr) { /* ignore */ }
+                  void 0;
+                }
+                // Trigger one-time onboarding nudge check
+                if (window.VibeNudgeEngine && typeof window.VibeNudgeEngine.checkAndShowOnboarding === 'function') {
+                  window.VibeNudgeEngine.checkAndShowOnboarding();
+                  void 0;
+                }
+                // Nudge listener — attach once; validates consent + pendingNudge (Chamlin contract)
+                // Fix 2: named function ref + registerCleanup for deterministic detach on close/reinject
+                if (!window.__VIBEAI__.nudgeListenerAttached) {
+                  window.__VIBEAI__.nudgeListenerAttached = true;
+                  function __vibeai_nudge_handler(e) {
+                    try {
+                      // CHAMLIN CONTRACT: validate consent + pendingNudge — never trust event alone
+                      if (!window.VibeConsentHelper || !window.VibeConsentHelper.isConsented()) return;
+                      if (window.__VIBEAI__ && window.__VIBEAI__.nudgesEnabled === false) return;
+                      const nudge = window.VibeNudgeEngine && window.VibeNudgeEngine.pendingNudge;
+                      if (!nudge) return;
+                      const strip    = document.getElementById('vibeai-nudge-strip');
+                      const nudgeTxt = document.getElementById('vibeai-nudge-text');
+                      if (!strip || !nudgeTxt) return;
+                      nudgeTxt.textContent = nudge;
+                      strip.style.display  = 'flex';
+                      strip.dataset.active = 'true';
+                      // MVI: Thinking Mirror — auto-open guide on passive nudge
+                      // Anti-spam: only auto-open once per unique thread context (keyed by thread count)
+                      if (e && e.detail && e.detail.isPassive) {
+                        const currentCount = (window.VIBEAI_LAST_THREADS && window.VIBEAI_LAST_THREADS.length) || 0;
+                        window.__VIBEAI__ = window.__VIBEAI__ || {};
+                        if (window.__VIBEAI__.__passiveMirrorLastCount !== currentCount) {
+                          window.__VIBEAI__.__passiveMirrorLastCount = currentCount;
+                          const guideHdr = document.getElementById('vibeai-guide-header');
+                          if (guideHdr) guideHdr.textContent = 'Thinking Mirror — add your own thinking:';
+                          const gpEl = document.getElementById('vibeai-guide-panel');
+                          if (gpEl) gpEl.style.display = 'flex';
+                          const gBtn = document.getElementById('vibeai-guide-btn');
+                          if (gBtn) gBtn.style.background = 'rgba(100,200,180,0.1)';
+                        }
+                      }
+                      void 0;
+                    } catch (err) {
+                      console.warn('[VibeAI Phase2] nudgeReady handler error', err);
+                    }
+                  }
+                  window.addEventListener('vibeai:nudgeReady', __vibeai_nudge_handler);
+                  // Fix 2: register for deterministic detach on HUD cleanup/close/reinject
+                  registerCleanup(function () {
+                    try {
+                      window.removeEventListener('vibeai:nudgeReady', __vibeai_nudge_handler);
+                      // Reset flag so a clean re-attach occurs after reinject
+                      if (window.__VIBEAI__) window.__VIBEAI__.nudgeListenerAttached = false;
+                    } catch (e) {}
+                  });
+                }
+                // Stage indicator polling (2s interval; lightweight)
+                if (!window.__VIBEAI__.stagePollerActive) {
+                  window.__VIBEAI__.stagePollerActive = true;
+                  const stagePoller = setInterval(function () {
+                    // Power management: skip when tab is hidden
+                    if (document.hidden) return;
+                    try {
+                      const stage = window.__VIBEAI__ && window.__VIBEAI__.currentStage;
+                      const stageEl      = document.getElementById('vibeai-stage-value');
+                      const engagementEl = document.getElementById('vibeai-engagement-header');
+                      const orbStageEl   = document.getElementById('vibeai-orb-stage-label');
+
+                      // READY state: no messages detected yet (empty conversation)
+                      const hasThreads = window.VIBEAI_LAST_THREADS && window.VIBEAI_LAST_THREADS.length > 0;
+                      if (!stage && !hasThreads) {
+                        if (stageEl) {
+                          stageEl.textContent = 'Ready';
+                          stageEl.style.color = 'rgba(120,200,160,0.85)';
+                        }
+                        if (engagementEl) {
+                          engagementEl.textContent = 'Thinking Engagement';
+                          engagementEl.style.color = 'rgba(120,200,160,0.55)';
+                        }
+                        if (orbStageEl) {
+                          orbStageEl.textContent = 'Ready';
+                          orbStageEl.style.color = 'rgba(120,200,160,0.85)';
+                        }
+                        return;
+                      }
+                      if (!stage) return;
+
+                      // Map internal stage → user-facing cognitive engagement labels
+                      const isPassive = stage === 'Accepting';
+                      const stageLabel      = isPassive ? 'Passive Mode' : 'Active — ' + stage;
+                      const engagementLabel = isPassive ? 'Passive Mode' : 'Active';
+                      const stageColor      = isPassive ? '#fbbf24' : 'rgba(0,212,255,0.9)';
+                      const engagementColor = isPassive ? '#fbbf24' : 'rgba(180,210,210,0.55)';
+
+                      if (stageEl) {
+                        stageEl.textContent   = stageLabel;
+                        stageEl.style.color   = stageColor;
+                      }
+                      if (engagementEl) {
+                        engagementEl.textContent = 'Thinking Engagement: ' + engagementLabel;
+                        engagementEl.style.color = engagementColor;
+                      }
+                      if (orbStageEl) {
+                        orbStageEl.textContent = stageLabel;
+                        orbStageEl.style.color = stageColor;
+                      }
+                      // v2.18.0: Drive orb visual from cognitive stage
+                      if (window.hugoOrb && typeof window.hugoOrb.setStage === 'function') {
+                        window.hugoOrb.setStage(stage);
+                      }
+                    } catch (e) {}
+                  }, 2000);
+                  registerCleanup(function () {
+                    clearInterval(stagePoller);
+                    try { if (window.__VIBEAI__) window.__VIBEAI__.stagePollerActive = false; } catch (e) {}
+                  });
+                }
+              } catch (e) {
+                console.warn('[VibeAI Phase2] Engine init error', e);
+              }
+            }, 1600);
 
           // mCopi audit fix: If timeout fired and showed modal, dismiss it now
           if (timeoutFired) {
@@ -3798,6 +4532,8 @@ function vibeaiSafeInit() {
           // v2.14.6: Treat both undefined AND false as "show consent modal"
           // This fixes the permanent brick state - false is no longer a dead end
           // If user previously had consentGiven:false, they'll now see the modal again
+          // Mirror explicit false so engine modules don't operate without consent
+          try { window.__VIBEAI__ = window.__VIBEAI__ || {}; window.__VIBEAI__.consentGiven = false; } catch (e) {}
           setTimeout(() => {
             showConsentModal();
           }, 1000);
@@ -3808,6 +4544,24 @@ function vibeaiSafeInit() {
             try {
               chrome.storage.local.remove('consentGiven');
             } catch (err) { /* ignore */ }
+          }
+
+          // v2.17: Fresh install fix — stage poller never starts if consent isn't stored yet
+          // when vibeaiSafeInit first runs. Watch for consent to be granted, then re-run init.
+          if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.onChanged
+              && !window.__VIBEAI_CONSENT_WATCHER__) {
+            window.__VIBEAI_CONSENT_WATCHER__ = true;
+            const __vibeai_consent_watcher = function(changes, area) {
+              if (area !== 'local') return;
+              if (changes.consentGiven && changes.consentGiven.newValue === true) {
+                chrome.storage.onChanged.removeListener(__vibeai_consent_watcher);
+                window.__VIBEAI_CONSENT_WATCHER__ = false;
+                // Reset idempotence guard so vibeaiSafeInit runs the full flow again
+                __vibeai_safe_init_called = false;
+                vibeaiSafeInit();
+              }
+            };
+            chrome.storage.onChanged.addListener(__vibeai_consent_watcher);
           }
         }
       });
@@ -3862,6 +4616,7 @@ if (window.VibeCoach && typeof window.VibeCoach.init === 'function') {
     'chatgpt.com',
     'www.chatgpt.com',
     'gemini.google.com',
+    'copilot.microsoft.com',
     'claude.ai'
   ]);
   const shouldInitCoach = coachHosts.has(location.hostname);

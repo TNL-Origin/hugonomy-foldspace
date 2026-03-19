@@ -1,8 +1,8 @@
 /* global chrome */
 /**
  * VibeAI FoldSpace - Consent Check Script
- * Phase VII.4 - Runtime Harmony & Consent Flow Stabilization
- * - DOMContentLoaded fallback for ChatGPT
+ * Phase VII.9.5 - Chrome + ChatGPT Consent Modal Fix
+ * - DOMContentLoaded for bootConsent() to inject BEFORE React hydration
  * - HUD persistence guard
  * - Safe chrome.runtime.getURL wrapper
  */
@@ -31,54 +31,131 @@ function safeGetURL(path) {
     <style>
       :host { all: initial; }
       .backdrop {
-        position: fixed; inset: 0; background: rgba(2,6,23,.6);
-        backdrop-filter: blur(2px); z-index: 2147483646;
-        display: grid; place-items: center; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+        position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        z-index: 2147483648;
+        display: flex; align-items: center; justify-content: center;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
       }
       .card {
-        width: min(420px, 92vw);
-        border-radius: 16px; padding: 20px 18px 16px;
-        background: radial-gradient(120% 120% at 10% 0%, #0b1221, #0a0f1d 48%, #080d18 100%);
-        color: #e7e9ff; box-shadow: 0 12px 40px rgba(0,0,0,.35), inset 0 0 0 1px rgba(121,127,255,.15);
+        background: rgba(15, 15, 20, 0.95);
+        border: 2px solid rgba(0, 212, 255, 0.5);
+        border-radius: 16px;
+        padding: 32px 40px;
+        max-width: 520px;
+        box-shadow: 0 0 50px rgba(0, 170, 255, 0.6);
+        color: #fff;
       }
-      .head { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
-      .head .logo { width:22px; height:22px; display:grid; place-items:center; border-radius:999px; background:#6c7bff22; }
-      .title { font-weight:700; letter-spacing:.2px; }
-      .body { font-size: 13px; line-height: 1.45; color: #cfd3ff; margin: 8px 0 14px; }
-      .row { display:flex; gap:8px; justify-content:flex-end; }
+      .title {
+        font-size: 1.6em; font-weight: bold; color: #00d4ff;
+        letter-spacing: 2px; margin-bottom: 8px; text-align: center;
+      }
+      .body {
+        font-size: 0.85em; line-height: 1.6; color: #ccc; margin-bottom: 20px;
+      }
+      .body p { margin-bottom: 14px; opacity: 0.9; }
+      .body .section-title {
+        margin-bottom: 8px; color: #00d4ff; font-weight: 600; font-size: 0.95em;
+      }
+      .body ul {
+        margin-left: 20px; margin-bottom: 14px; line-height: 1.7;
+      }
+      .disclaimer {
+        font-size: 0.8em; opacity: 0.65; font-style: italic;
+        padding: 8px 0; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 12px;
+      }
+      .kbd-hint {
+        font-size: 0.75em; opacity: 0.5; margin-top: 8px; text-align: center;
+      }
+      .kbd-hint kbd {
+        background: rgba(255,255,255,0.1); padding: 2px 6px;
+        border-radius: 3px; font-family: monospace;
+      }
+      .checkbox-row {
+        margin-bottom: 16px;
+      }
+      .checkbox-label {
+        display: flex; align-items: flex-start; gap: 10px;
+        cursor: pointer; font-size: 0.85em; color: #ccc;
+      }
+      .checkbox-label input {
+        margin-top: 3px; width: 16px; height: 16px; cursor: pointer;
+      }
+      .button-row {
+        display: flex; gap: 12px; justify-content: center;
+      }
       button {
-        all: unset; cursor: pointer; user-select:none;
-        padding: 9px 12px; border-radius: 10px; font-size: 13px; font-weight: 600;
-        border: 1px solid #7a81ff33;
-        background: #0c1330; color:#dfe3ff; transition: transform .06s ease;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
       }
-      button:hover { transform: translateY(-1px); }
-      button.primary { background: linear-gradient(180deg,#6f7eff,#5464ff); color: white; border-color: transparent; }
-      .note { font-size: 11px; color:#a9b0ff; margin-top:8px; opacity:.9 }
-      a { color:#9fb3ff; text-decoration: underline; }
+      button.accept {
+        background: rgba(0, 170, 255, 0.3);
+        color: #00d4ff;
+        border: 2px solid rgba(0, 170, 255, 0.5);
+      }
+      button.accept:disabled {
+        cursor: not-allowed;
+        opacity: 0.4;
+      }
+      button.accept:not(:disabled):hover {
+        background: rgba(0, 170, 255, 0.5);
+      }
+      button.decline {
+        background: rgba(255, 79, 79, 0.2);
+        color: #ff4f4f;
+        border: 2px solid rgba(255, 79, 79, 0.4);
+      }
+      button.decline:hover {
+        background: rgba(255, 79, 79, 0.3);
+      }
     </style>
-    <div class="backdrop" role="dialog" aria-modal="true" aria-labelledby="vibeai-consent-title">
+    <div class="backdrop" role="dialog" aria-modal="true">
       <div class="card">
-        <div class="head">
-          <div class="logo">🌀</div>
-          <div class="title" id="vibeai-consent-title">Enable VibeAI on this site?</div>
-        </div>
+        <div class="title">VibeAI FoldSpace: A Mirror for Conversations</div>
         <div class="body">
-          VibeAI overlays a sidebar to summarize emotional tone and create conversation bookmarks.
-          We do <b>not</b> transmit your content off-device. You can disable anytime in the HUD.
+          <p>VibeAI shows conversation resonance in real-time—how aligned an exchange feels as it unfolds.</p>
+          <p class="section-title">What it does:</p>
+          <ul>
+            <li>Reflects tone and coherence patterns using <strong>simple keyword matching</strong> (not AI or machine learning)</li>
+            <li>Visualizes through the Hugo Orb</li>
+            <li>Runs locally in your browser (no external servers, no connection to the LLM you're using)</li>
+          </ul>
+          <p class="section-title">What it doesn't do:</p>
+          <ul>
+            <li>Use AI or ML to analyze your conversations</li>
+            <li>Communicate with ChatGPT, Claude, Gemini, or any LLM</li>
+            <li>Evaluate you or your thinking</li>
+            <li>Suggest what to say</li>
+            <li>Store or transmit data externally</li>
+          </ul>
+          <p class="disclaimer">
+            <strong>Disclaimer:</strong> This is not a medical, mental health, therapeutic, or diagnostic tool. For informational purposes only.
+          </p>
+          <p class="kbd-hint">
+            💡 Press <kbd>Ctrl+Shift+V</kbd> anytime to show this prompt
+          </p>
         </div>
-        <div class="row">
-          <button id="${CONSENT_DECLINE_ID}" aria-label="Decline">Not now</button>
-          <button id="${CONSENT_ACCEPT_ID}" class="primary" aria-label="Accept & continue">Agree & Continue</button>
+        <div class="checkbox-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="vibeai-consent-checkbox">
+            <span>I understand VibeAI is a reflection tool, not an evaluation system.</span>
+          </label>
         </div>
-        <div class="note">Read our <a href="https://hugonomy.com/privacy" target="_blank" rel="noopener noreferrer">privacy</a>.</div>
+        <div class="button-row">
+          <button id="${CONSENT_ACCEPT_ID}" class="accept" disabled>Start Reflecting</button>
+          <button id="${CONSENT_DECLINE_ID}" class="decline">Maybe Later</button>
+        </div>
       </div>
     </div>
   `;
 
   function setConsentGiven(val) {
     try { chrome.storage?.local.set({ consentGiven: !!val }); } catch (err) { console.warn('[VibeAI] Consent persistence non-fatal:', err); }
-      try { window.postMessage({ type: "VIBEAI_CONSENT_STATE", given: !!val }, "*"); } catch (err) { console.warn('[VibeAI] Consent persistence non-fatal:', err); }
+      try { window.postMessage({ type: "VIBEAI_CONSENT_STATE", given: !!val }, location.origin); } catch (err) { console.warn('[VibeAI] Consent persistence non-fatal:', err); }
   }
   async function getConsentGiven() {
     return new Promise((resolve) => {
@@ -86,6 +163,46 @@ function safeGetURL(path) {
         chrome.storage?.local.get(["consentGiven"], (o) => resolve(!!o?.consentGiven));
       } catch { resolve(false); }
     });
+  }
+  function setConsentDeferred(val) {
+    try { chrome.storage?.local.set({ consentDeferred: !!val }); } catch (err) { console.warn('[VibeAI] Consent deferred non-fatal:', err); }
+  }
+  async function getConsentDeferred() {
+    return new Promise((resolve) => {
+      try {
+        chrome.storage?.local.get(["consentDeferred"], (o) => resolve(!!o?.consentDeferred));
+      } catch { resolve(false); }
+    });
+  }
+
+  const PAUSED_HUD_ID = "vibeai-paused-hud";
+  function showPausedHUD() {
+    if (document.getElementById(PAUSED_HUD_ID)) return;
+    const el = document.createElement("div");
+    el.id = PAUSED_HUD_ID;
+    el.style.cssText = `
+      position: fixed; bottom: 20px; right: 20px;
+      background: rgba(15, 15, 20, 0.92); color: #888;
+      padding: 8px 16px; border-radius: 20px;
+      border: 1px solid rgba(0, 212, 255, 0.25);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      font-size: 12px; z-index: 2147483640; cursor: pointer;
+      display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      user-select: none;
+    `;
+    el.innerHTML = `<span style="color:#00d4ff;font-size:10px">●</span> VibeAI <span style="color:#555">paused</span>`;
+    el.title = "Click to activate VibeAI";
+    el.addEventListener("click", () => {
+      el.remove();
+      setConsentDeferred(false);
+      // Remove any unified-hud.js consent modal that may have appeared
+      const dupModal = document.getElementById('vibeai-consent-modal');
+      if (dupModal) dupModal.remove();
+      injectConsentDialog();
+      startConsentHeartbeat();
+    });
+    document.documentElement.appendChild(el);
   }
 
   function injectConsentDialog() {
@@ -96,14 +213,34 @@ function safeGetURL(path) {
     const root = host.attachShadow({ mode: "open" });
     root.innerHTML = CONSENT_HTML;
 
+    // Suppress unified-hud.js's own consent modal — it fires after 1000ms delay
+    // We are the primary consent UI; remove any duplicate that appears
+    setTimeout(() => {
+      const dupModal = document.getElementById('vibeai-consent-modal');
+      if (dupModal) { dupModal.remove(); void 0; }
+    }, 1300);
+
+    // Checkbox requirement for accept button
+    const checkbox = root.getElementById('vibeai-consent-checkbox');
+    const acceptBtn = root.getElementById(CONSENT_ACCEPT_ID);
+    if (checkbox && acceptBtn) {
+      checkbox.addEventListener('change', () => {
+        acceptBtn.disabled = !checkbox.checked;
+      });
+    }
+
     root.getElementById(CONSENT_ACCEPT_ID)?.addEventListener("click", () => {
       setConsentGiven(true);
       removeConsentDialog();
-  try { window.postMessage({ type: "VIBEAI_CONSENT_ACCEPTED" }, "*"); } catch (err) { console.warn('[VibeAI] Consent persistence non-fatal:', err); }
+  try { window.postMessage({ type: "VIBEAI_CONSENT_ACCEPTED" }, location.origin); } catch (err) { console.warn('[VibeAI] Consent persistence non-fatal:', err); }
     });
     root.getElementById(CONSENT_DECLINE_ID)?.addEventListener("click", () => {
-      setConsentGiven(false);
+      setConsentDeferred(true);
+      clearInterval(consentHeartbeat);
+      consentHeartbeat = null;
       removeConsentDialog();
+      showPausedHUD();
+      void 0;
     });
   }
 
@@ -116,6 +253,8 @@ function safeGetURL(path) {
   function startConsentHeartbeat() {
     clearInterval(consentHeartbeat);
     consentHeartbeat = setInterval(async () => {
+      const deferred = await getConsentDeferred();
+      if (deferred) return; // user chose "Maybe Later" — do not pester them
       const given = await getConsentGiven();
       if (!given && !document.getElementById(CONSENT_HOST_ID)) {
         injectConsentDialog();
@@ -136,300 +275,66 @@ function safeGetURL(path) {
 
   async function bootConsent() {
     const given = await getConsentGiven();
-    if (!given) {
-      setTimeout(() => {
-        injectConsentDialog();
-        startConsentHeartbeat();
-        void 0;
-      }, 500);
-    } else {
+    const deferred = await getConsentDeferred();
+    if (given) {
       removeConsentDialog();
+      void 0;
+    } else if (deferred) {
+      // User previously chose "Maybe Later" — show paused badge, no modal
+      showPausedHUD();
+      void 0;
+    } else {
+      // Phase VII.9.5: Inject IMMEDIATELY (no delay) to beat ChatGPT React hydration
+      injectConsentDialog();
+      startConsentHeartbeat();
       void 0;
     }
   }
 
-  if (document.readyState === "complete") bootConsent();
-  else window.addEventListener("load", bootConsent, { once: true });
+  // Phase VII.9.5 - Fix Chrome + ChatGPT consent modal scrubbing
+  // Use DOMContentLoaded instead of window.load to inject BEFORE React hydration
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootConsent, { once: true });
+  } else {
+    bootConsent();
+  }
 })();
 // =================== /Phase VII.9.4a — Consent Persistence Patch ===================
 
 // Main consent check initialization
 function initConsentCheck() {
   void 0;
-
+  // The IIFE (Shadow DOM system) owns consent modal, deferred state, and paused badge.
+  // This function only activates VibeAI when consent is confirmed.
   chrome.storage.local.get(["consentGiven"], (result) => {
-    if (result.consentGiven === undefined) {
-      // First time user - show consent dialog
-      void 0;
-      showConsentModal();
-    } else if (result.consentGiven === true) {
-      // User has accepted - proceed with VibeAI
+    if (result.consentGiven === true) {
       void 0;
       initializeVibeAI();
-    } else {
-      // User declined - show pause message
-      void 0;
-      showPausedMessage();
     }
+    // All other states (undefined, false, deferred) are handled by the IIFE system
   });
 }
 
-function showConsentModal() {
-  // Don't show multiple modals
-  if (document.getElementById("vibeai-consent-overlay")) {
-    void 0;
-    return;
-  }
-
-  // Create modal overlay
-  const overlay = document.createElement("div");
-  overlay.id = "vibeai-consent-overlay";
-  overlay.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.85);
-    z-index: 2147483647;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(8px);
-  `;
-
-  // Create iframe with consent page
-  const iframe = document.createElement("iframe");
-  iframe.src = safeGetURL("docs_old/consent.html");
-  iframe.style.cssText = `
-    width: 90%;
-    max-width: 700px;
-    height: 80vh;
-    max-height: 700px;
-    border: none;
-    border-radius: 16px;
-    box-shadow: 0 16px 64px rgba(0, 0, 0, 0.8);
-  `;
-
-  overlay.appendChild(iframe);
-  document.documentElement.appendChild(overlay);
-
-  // Listen for postMessage from consent iframe
-  window.addEventListener("message", (event) => {
-    if (event.data?.source === "vibeai-consent" && event.data?.action === "accepted") {
-      void 0;
-      overlay.remove();
-      injectHUD();
-    }
-  });
-
-  // Also listen for consent decision via storage (fallback)
-  const checkConsent = setInterval(() => {
-    chrome.storage.local.get(["consentGiven"], (result) => {
-      if (result.consentGiven !== undefined) {
-        // User made a decision
-        clearInterval(checkConsent);
-        overlay.remove();
-
-        if (result.consentGiven === true) {
-          void 0;
-          injectHUD();
-        } else {
-          void 0;
-          showPausedMessage();
-        }
-      }
-    });
-  }, 500);
-}
-
-// Inject HUD directly into the current page using iframe
-function injectHUD() {
-  // Don't inject if already present
-  if (document.getElementById("vibeai-hud-frame")) {
-    void 0;
-    return;
-  }
-
-  try {
-    void 0;
-
-    // Create iframe for HUD (this properly executes scripts)
-    const hudFrame = document.createElement("iframe");
-    hudFrame.id = "vibeai-hud-frame";
-  hudFrame.src = safeGetURL("docs_old/foldspace.html");
-    hudFrame.setAttribute("title", "VibeAI FoldSpace HUD");
-
-    // Style the iframe to overlay on the page
-    hudFrame.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      border: none;
-      z-index: 2147483645;
-      pointer-events: auto;
-      background: transparent;
-    `;
-    // Ensure the iframe can run scripts and postMessage reliably
-    try {
-      hudFrame.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups');
-    } catch (errSet) { console.warn('[VibeAI] Could not set sandbox attribute on HUD iframe:', errSet); }
-
-    // Append to body
-    document.body.appendChild(hudFrame);
-
-    void 0;
-
-    // Phase VII.9.2 - Enforce HUD positioning for ChatGPT visibility
-    setTimeout(() => {
-      const hud = document.getElementById('vibeai-hud-frame');
-      if (hud) {
-  hud.style.position = 'fixed';
-  hud.style.top = '0';
-  hud.style.left = '0';
-  hud.style.width = '100vw';
-  hud.style.height = '100vh';
-  hud.style.zIndex = '2147483645';
-  hud.style.display = 'block';
-  hud.style.pointerEvents = 'auto';
-  void 0;
-      }
-    }, 100);
-
-    // Load content script to start analysis
-    loadContentScript();
-
-  } catch (error) {
-    console.error("[VibeAI] HUD injection failed:", error);
-  }
-}
-
-// Load content script after HUD is injected
-function loadContentScript() {
-  try {
-    const script = document.createElement('script');
-    script.src = safeGetURL('scripts/content-script.js');
-    script.type = 'module';
-    script.onload = () => {
-      void 0;
-    };
-    script.onerror = (error) => {
-      console.error("[VibeAI] Failed to load content script:", error);
-    };
-    document.documentElement.appendChild(script);
-  } catch (error) {
-    console.error("[VibeAI] Error loading content script:", error);
-  }
-}
-
-function showPausedMessage() {
-  // Don't show multiple notices
-  if (document.getElementById("vibeai-paused-notice")) {
-    return;
-  }
-
-  // Create minimal notification
-  const notice = document.createElement("div");
-  notice.id = "vibeai-paused-notice";
-  notice.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: rgba(26, 27, 51, 0.95);
-    color: #dbe7ff;
-    padding: 16px 24px;
-    border-radius: 12px;
-    border: 1px solid rgba(122, 162, 255, 0.3);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    z-index: 2147483647;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  `;
-  notice.innerHTML = `
-    <span style="font-size: 20px;">🌀</span>
-    <span>VibeAI paused until consent given</span>
-    <button id="vibeai-reopen-consent" style="
-      background: linear-gradient(135deg, #6e54d8, #9d5ce0);
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 12px;
-    ">Review</button>
-  `;
-
-  document.documentElement.appendChild(notice);
-
-  // Allow user to reopen consent dialog
-  const reviewBtn = document.getElementById("vibeai-reopen-consent");
-  if (reviewBtn) {
-    reviewBtn.addEventListener("click", () => {
-      notice.remove();
-      // Clear the declined state and show modal again
-      chrome.storage.local.remove("consentGiven", () => {
-        showConsentModal();
-      });
-    });
-  }
-
-  // Auto-hide after 10 seconds
-  setTimeout(() => {
-    if (notice && notice.parentElement) {
-      notice.style.transition = "opacity 0.5s ease";
-      notice.style.opacity = "0";
-      setTimeout(() => notice.remove(), 500);
-    }
-  }, 10000);
-}
+// Legacy showConsentModal, injectHUD, loadContentScript, showPausedMessage removed.
+// The IIFE Shadow DOM system above handles all consent UI and the paused badge.
 
 function initializeVibeAI() {
-  // Use the new direct HUD injection method
-  injectHUD();
-
-  // Phase VII.9.2a - Start self-healing HUD mount system
-  startSelfHealingSystem();
+  // Use the unified HUD (the real implementation from unified-hud.js)
+  if (typeof window.injectUnifiedHUD === 'function') {
+    void 0;
+    window.injectUnifiedHUD({ observer: true });
+  } else {
+    // unified-hud.js may not have loaded yet — re-try after it loads
+    void 0;
+    setTimeout(() => {
+      if (typeof window.injectUnifiedHUD === 'function') {
+        window.injectUnifiedHUD({ observer: true });
+      }
+    }, 800);
+  }
 }
 
-// --- 🧠 Self-Healing HUD Mount (Phase VII.9.2a) ---
-function startSelfHealingSystem() {
-  // Only start if consent was given
-  chrome.storage.local.get(["consentGiven"], (result) => {
-    if (result.consentGiven !== true) return;
-
-    // Heartbeat: verify HUD presence every 3 seconds
-    function ensureHUDAlive() {
-      const hud = document.getElementById("vibeai-hud-frame");
-      if (!hud) {
-        console.warn("[VibeAI] HUD missing — re-injecting...");
-        injectHUD();
-      }
-    }
-    setInterval(ensureHUDAlive, 3000);
-
-    // MutationObserver: instant re-injection on DOM changes
-    const rootObserver = new MutationObserver(() => {
-      const root = document.querySelector("div#__next");
-      const hud = document.getElementById("vibeai-hud-frame");
-      if (root && !hud) {
-        void 0;
-        injectHUD();
-      }
-    });
-
-    // Observe body for ChatGPT React re-hydration
-    if (document.body) {
-      rootObserver.observe(document.body, { childList: true, subtree: true });
-      void 0;
-    }
-  });
-}
+// Legacy startSelfHealingSystem removed — unified-hud.js handles HUD self-healing.
 
 // DOMContentLoaded fallback for ChatGPT and other strict CSP sites
 if (document.readyState === "loading") {
@@ -440,52 +345,16 @@ if (document.readyState === "loading") {
   initConsentCheck();
 }
 
-// ===================== Phase VII.9.4b — HUD Controls Activation Fix =====================
-// Ensure button listeners are bound after the HUD iframe is mounted (accounts for async injection and re-injection)
-const HANDSHAKE_TIMEOUT = 20000; // ms (vStable-2.4.0)
-
-function waitForHUD(attempt = 0) {
+// Activate VibeAI when the IIFE consent modal accept button is clicked
+window.addEventListener("message", (event) => {
   try {
-    const iframe = document.getElementById('vibeai-hud-frame');
-    if (iframe && iframe.contentWindow) {
-      // We must not access iframe.contentDocument directly (CSP / cross-origin).
-      // Always rely on postMessage handshake. Send a bind request and wait for HUD's ready ping.
+    if (event.source !== window) return; // reject cross-origin messages
+    if (event.data?.type === "VIBEAI_CONSENT_ACCEPTED") {
       void 0;
-      try { iframe.contentWindow.postMessage({ type: 'VIBEAI_BIND_REQUEST' }, '*'); } catch (errPost) { console.warn('[VibeAI] VIBEAI_BIND_REQUEST postMessage failed:', errPost); }
-
-      // Handshake fail-safe: if HUD doesn't respond within HANDSHAKE_TIMEOUT, log and keep waiting via polling
-      const timer = setTimeout(() => {
-        console.warn('[VibeAI] HUD did not respond to bind request within', HANDSHAKE_TIMEOUT, 'ms — continuing with postMessage-only bindings');
-      }, HANDSHAKE_TIMEOUT);
-
-      // We'll still rely on the existing message listener to trigger binding when HUD posts ready.
-      // Clear the timeout if HUD responds (the global message handler will manage this), but keep the timer to surface delays.
-      // Store timer on iframe element for potential cleanup (non-critical)
-  try { iframe._vibeai_handshake_timer = timer; } catch { /* ignore */ }
-      return;
+      initializeVibeAI();
     }
-  } catch (err) {
-    console.warn('[VibeAI] waitForHUD error (non-fatal):', err);
-  }
-
-  if (attempt < 40) {
-    setTimeout(() => waitForHUD(attempt + 1), 500);
-  } else {
-    console.warn('[VibeAI] waitForHUD timed out after multiple attempts');
-  }
-}
-
-// Bind once the HUD is up and on each injection
-window.addEventListener('message', (event) => {
-  try {
-    const data = event.data || {};
-    if (data && data.type === 'VIBEAI_HUD_READY') {
-      // HUD reports ready — attempt binding
-      setTimeout(() => waitForHUD(0), 150);
-    }
-  } catch (errMsg) { console.warn('[VibeAI] message handler error:', errMsg); }
+  } catch (err) { /* ignore */ }
 });
 
-// Kick off a passive binding attempt in case HUD is already present
-setTimeout(() => waitForHUD(0), 300);
-// =================== /Phase VII.9.4b ===================
+// Legacy Phase VII.9.4b (waitForHUD / VIBEAI_BIND_REQUEST) removed.
+// unified-hud.js handles all HUD binding internally.

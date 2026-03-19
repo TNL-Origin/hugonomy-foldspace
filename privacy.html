@@ -1,111 +1,333 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VibeAI Privacy Policy</title>
-    <style>
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            line-height: 1.6;
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background: #f9fafb;
-            color: #1f2937;
-        }
-        h1 {
-            color: #6366f1;
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        h2 {
-            color: #4f46e5;
-            font-size: 18px;
-            margin-top: 24px;
-            margin-bottom: 12px;
-        }
-        .badge {
-            display: inline-block;
-            background: #dcfce7;
-            color: #166534;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-        .highlight {
-            background: #fef3c7;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 16px 0;
-            border-left: 4px solid #f59e0b;
-        }
-        ul {
-            padding-left: 24px;
-        }
-        li {
-            margin: 8px 0;
-        }
-        .footer {
-            margin-top: 32px;
-            padding-top: 16px;
-            border-top: 1px solid #e5e7eb;
-            font-size: 14px;
-            color: #6b7280;
-        }
-        a {
-            color: #6366f1;
-            text-decoration: none;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="VibeAI FoldSpace Privacy Policy - Local-only data processing, no external servers, no telemetry.">
+  <title>VibeAI FoldSpace – Privacy Policy</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Inter", "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #1e1e2e, #3a3a8a);
+      color: #eee;
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: rgba(0, 0, 0, 0.4);
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    header {
+      margin-bottom: 30px;
+      border-bottom: 2px solid #66b3ff;
+      padding-bottom: 20px;
+    }
+
+    h1 {
+      color: #66b3ff;
+      font-size: 2.2em;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .meta {
+      color: #aaa;
+      font-size: 0.95em;
+      margin-bottom: 5px;
+    }
+
+    h2 {
+      color: #66b3ff;
+      font-size: 1.4em;
+      margin: 30px 0 12px;
+      font-weight: 600;
+    }
+
+    h3 {
+      color: #99ccff;
+      font-size: 1.1em;
+      margin: 20px 0 8px;
+      font-weight: 600;
+    }
+
+    p {
+      margin-bottom: 12px;
+      color: #ddd;
+    }
+
+    ul, ol {
+      padding-left: 24px;
+      margin-bottom: 12px;
+      color: #ddd;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    .highlight-box {
+      background: rgba(102, 179, 255, 0.1);
+      border-left: 4px solid #66b3ff;
+      padding: 16px 20px;
+      border-radius: 6px;
+      margin-bottom: 24px;
+    }
+
+    .highlight-box h2 {
+      margin-top: 0;
+      font-size: 1.2em;
+    }
+
+    .consent-box {
+      background: rgba(0, 200, 100, 0.1);
+      border-left: 4px solid #00c864;
+      padding: 16px 20px;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+
+    .warning-box {
+      background: rgba(255, 180, 0, 0.1);
+      border-left: 4px solid #ffb400;
+      padding: 16px 20px;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.95em;
+    }
+
+    th {
+      background: rgba(102, 179, 255, 0.2);
+      color: #66b3ff;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 9px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      color: #ddd;
+      vertical-align: top;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      color: #888;
+      font-size: 0.9em;
+      text-align: center;
+    }
+
+    a {
+      color: #66b3ff;
+    }
+  </style>
 </head>
 <body>
-    <h1>VibeAI Privacy Policy</h1>
-    <span class="badge">100% Local Processing</span>
-    <span class="badge">Zero Data Collection</span>
+  <div class="container">
+    <header>
+      <h1>VibeAI FoldSpace – Privacy Policy</h1>
+      <div class="meta"><strong>Version:</strong> 2.19.1 — Updated March 2026</div>
+      <div class="meta"><strong>Effective Date:</strong> March 2026</div>
+      <div class="meta"><strong>Developer:</strong> Hugonomy Systems</div>
+      <div class="meta"><strong>Extension Name:</strong> VibeAI FoldSpace — by Hugonomy Systems™</div>
+    </header>
 
-    <div class="highlight">
-        <strong>Core Principle:</strong> Your conversations stay private. VibeAI processes everything locally on your device. We never send, store, or access your data.
-    </div>
+    <main>
 
-    <h2>What VibeAI Does</h2>
-    <p>VibeAI analyzes the emotional tone of your AI conversations in real-time to help you understand conversational resonance. All analysis happens locally in your browser using the HugoScore emotional coherence engine.</p>
+      <div class="highlight-box">
+        <h2>Summary</h2>
+        <p><strong>VibeAI FoldSpace processes all data locally in your browser. Nothing is sent to external servers. No tracking. No profiling. No telemetry. All processing begins only after you provide explicit consent.</strong></p>
+      </div>
 
-    <h2>What Data We Access</h2>
-    <ul>
-        <li><strong>AI chat text:</strong> Read-only access to conversations on ChatGPT, Claude, and Gemini</li>
-        <li><strong>Local storage:</strong> Saves your consent preference and extension settings on your device only</li>
-    </ul>
+      <h2>1. Overview</h2>
+      <p>VibeAI FoldSpace is a browser extension that provides real-time cognitive awareness during AI conversations. It helps you stay mentally engaged while using AI tools by detecting passive acceptance patterns and surfacing optional reflection prompts.</p>
+      <p>The extension is built on a <strong>local-first architecture</strong>: all analysis occurs on-device, and no user data is ever transmitted to external servers.</p>
+      <p>Supported platforms: <strong>ChatGPT (chat.openai.com, chatgpt.com, www.chatgpt.com), Claude (claude.ai), Gemini (gemini.google.com)</strong>. VibeAI FoldSpace is not affiliated with OpenAI, Anthropic, or Google.</p>
 
-    <h2>What We DO NOT Do</h2>
-    <ul>
-        <li>No servers - we don't operate any backend infrastructure</li>
-        <li>No data collection - we don't log, store, or transmit your conversations</li>
-        <li>No tracking - no analytics, telemetry, or usage monitoring</li>
-        <li>No third parties - we don't share data with anyone (because we don't have any data to share)</li>
-    </ul>
+      <h2>2. User Consent</h2>
+      <div class="consent-box">
+        <p><strong>VibeAI FoldSpace does not activate parsing, observers, or storage behavior until the user has explicitly granted consent.</strong></p>
+        <p><strong>All analysis is performed locally in the browser, and no conversation data is transmitted to external servers.</strong></p>
+        <p>Before consent is given:</p>
+        <ul>
+          <li>No chat content is read or parsed</li>
+          <li>No observers are attached to the page</li>
+          <li>No data is processed or stored</li>
+          <li>No background scanning runs</li>
+        </ul>
+        <p>Consent is stored as a boolean flag in <code>chrome.storage.local</code>. You can withdraw consent at any time by clicking "Consent" in the extension footer and selecting "Revoke."</p>
+      </div>
 
-    <h2>Your Privacy Controls</h2>
-    <p><strong>Consent Required:</strong> VibeAI only activates after you explicitly grant permission. You can revoke consent at any time.</p>
-    <p><strong>To Disable:</strong> Remove the extension from Chrome, or click "Maybe Later" in the consent modal to pause analysis temporarily.</p>
-    <p><strong>To Delete Data:</strong> All data is local - simply uninstalling the extension removes everything.</p>
+      <h2>3. What Data Is Read</h2>
+      <p>After consent, VibeAI FoldSpace reads the following from supported AI chat pages:</p>
+      <ul>
+        <li><strong>Visible chat messages</strong> — on-screen text in the active conversation window, read locally to detect cognitive engagement patterns (e.g., message length, tone signals)</li>
+        <li><strong>Page URL</strong> — to detect which supported AI platform is active</li>
+        <li><strong>DOM structure</strong> — to inject the HUD overlay interface and detect conversation elements</li>
+      </ul>
+      <p>This reading occurs entirely within your browser. No content is transmitted externally.</p>
 
-    <h2>Open Source Commitment</h2>
-    <p>VibeAI's core emotional analysis engine is built on transparent, auditable code. While the HugoScore algorithm is patent-pending (USPTO #63/856,714), we maintain privacy-first architecture with no external dependencies.</p>
+      <h2>4. What Data Is Stored Locally</h2>
+      <p>All storage uses <code>chrome.storage.local</code> only — data never leaves your device.</p>
 
-    <h2>Questions or Concerns?</h2>
-    <p>Contact us: <a href="mailto:hugonomysystems@gmail.com">hugonomysystems@gmail.com</a></p>
-    <p>Website: <a href="https://sites.google.com/view/hugonomy-systems" target="_blank" rel="noopener">hugonomy-systems</a></p>
+      <table>
+        <tr>
+          <th>Storage Key</th>
+          <th>What It Contains</th>
+          <th>User Clearable</th>
+        </tr>
+        <tr>
+          <td><code>consentGiven</code></td>
+          <td>Boolean — whether you have consented</td>
+          <td>Yes (Reset button)</td>
+        </tr>
+        <tr>
+          <td><code>consentDeferred</code></td>
+          <td>Boolean — whether you chose "Maybe Later"</td>
+          <td>Yes (Reset button)</td>
+        </tr>
+        <tr>
+          <td><code>vibeai_onboarded</code></td>
+          <td>Boolean — whether onboarding has been shown</td>
+          <td>Yes (Reset button)</td>
+        </tr>
+        <tr>
+          <td><code>vibeai_bookmarks</code></td>
+          <td>Up to 100 user-created bookmarks of conversation moments. Contains message text snippets (max 500 chars each) saved explicitly by the user.</td>
+          <td>Yes (Reset button)</td>
+        </tr>
+        <tr>
+          <td><code>vibeai_session_log</code></td>
+          <td>Up to 50 session reflection entries (max 2000 chars each) saved explicitly by the user.</td>
+          <td>Yes (Reset button)</td>
+        </tr>
+        <tr>
+          <td><code>localStorage: vibeai-hud-width</code></td>
+          <td>HUD panel width preference (a number in pixels). UI state only — no conversation content.</td>
+          <td>Yes (Reset button)</td>
+        </tr>
+        <tr>
+          <td><code>localStorage: coach panel state</code></td>
+          <td>Coach panel and lexicon display preferences. UI state only — no conversation content.</td>
+          <td>Yes (Reset button)</td>
+        </tr>
+      </table>
 
-    <div class="footer">
-        <p><strong>VibeAI by Hugonomy Systems</strong></p>
-        <p>Version 2.15.1 | Patent Pending: USPTO #63/856,714</p>
-        <p>Last Updated: January 18, 2026</p>
-    </div>
+      <p>In addition to <code>chrome.storage.local</code>, the extension uses the browser's <code>localStorage</code> on supported AI chat pages for UI preferences only — specifically: HUD panel width, coach panel state, and lexicon display preferences. No conversation content is stored in <code>localStorage</code>. No <code>sessionStorage</code>, IndexedDB, or cookies are used.</p>
+
+      <h2>5. What Is NOT Stored</h2>
+      <ul>
+        <li>Full conversation transcripts</li>
+        <li>Message content beyond user-initiated bookmarks</li>
+        <li>Personal identity or account information</li>
+        <li>Browsing history outside supported AI chat pages</li>
+        <li>Any data from pages other than chatgpt.com, claude.ai, and gemini.google.com</li>
+      </ul>
+
+      <h2>6. No External Transmission</h2>
+      <div class="warning-box">
+        <p><strong>VibeAI FoldSpace makes zero external network requests.</strong></p>
+        <ul>
+          <li>No data is sent to Hugonomy Systems servers</li>
+          <li>No analytics or crash reporting services are used</li>
+          <li>No advertising networks are contacted</li>
+          <li>No remote code is loaded or executed</li>
+          <li>All extension code is packaged locally within the extension itself</li>
+        </ul>
+      </div>
+
+      <h2>7. Permissions Justification</h2>
+      <p>VibeAI FoldSpace requests the following permissions:</p>
+      <table>
+        <tr>
+          <th>Permission</th>
+          <th>Why It's Needed</th>
+        </tr>
+        <tr>
+          <td><code>storage</code></td>
+          <td>To store consent flags, user bookmarks, and session reflections locally in <code>chrome.storage.local</code></td>
+        </tr>
+        <tr>
+          <td>Host: <code>chatgpt.com</code></td>
+          <td>To inject the HUD overlay and read visible chat content on ChatGPT</td>
+        </tr>
+        <tr>
+          <td>Host: <code>claude.ai</code></td>
+          <td>To inject the HUD overlay and read visible chat content on Claude</td>
+        </tr>
+        <tr>
+          <td>Host: <code>gemini.google.com</code></td>
+          <td>To inject the HUD overlay and read visible chat content on Gemini</td>
+        </tr>
+      </table>
+      <p>No other permissions are requested. The extension does not request <code>tabs</code>, <code>cookies</code>, <code>scripting</code>, <code>webRequest</code>, <code>history</code>, or <code>&lt;all_urls&gt;</code>.</p>
+
+      <h2>8. User Control</h2>
+      <p>You are in full control of your data at all times:</p>
+      <ul>
+        <li><strong>Revoke consent</strong> — click "Consent" in the HUD footer at any time</li>
+        <li><strong>Clear all data</strong> — click "Reset" in the HUD footer to wipe all local storage</li>
+        <li><strong>Disable the extension</strong> — via Chrome's Extensions page (<code>chrome://extensions</code>)</li>
+        <li><strong>Remove the extension</strong> — uninstalling removes all associated data from your device</li>
+      </ul>
+
+      <h2>9. No Tracking or Profiling</h2>
+      <p>VibeAI FoldSpace does NOT:</p>
+      <ul>
+        <li>Track users across websites</li>
+        <li>Collect or infer personal identity</li>
+        <li>Build behavioral profiles</li>
+        <li>Sell, share, or transmit data to any third party</li>
+        <li>Use data for advertising purposes</li>
+        <li>Correlate your activity across sessions or devices</li>
+      </ul>
+
+      <h2>10. Third-Party Services</h2>
+      <p>VibeAI FoldSpace does not use any third-party analytics, crash reporting, A/B testing, or advertising services. No third-party SDKs are bundled.</p>
+
+      <h2>11. Children's Privacy</h2>
+      <p>VibeAI FoldSpace does not knowingly collect data from users under 13. If you believe a child has provided data through the extension, please contact us at the address below and we will take appropriate action.</p>
+
+      <h2>12. Changes to This Policy</h2>
+      <p>If we make material changes to this privacy policy, we will update the version number and date at the top of this page. Continued use of the extension after changes constitutes acceptance of the updated policy.</p>
+
+      <h2>13. Contact</h2>
+      <p>For privacy questions or data requests, contact:</p>
+      <p><strong>Hugonomy Systems</strong><br>
+      Developer: Joseph D. Tingling, MD/PhD<br>
+      Website: <a href="https://www.hugonomy.com" target="_blank" rel="noopener">hugonomy.com</a></p>
+
+    </main>
+
+    <footer>
+      <p>VibeAI FoldSpace — by Hugonomy Systems™ | Version 2.19.1 | March 2026</p>
+      <p>VibeAI FoldSpace is an independent product and is not affiliated with OpenAI, Anthropic, or Google.</p>
+    </footer>
+  </div>
 </body>
 </html>

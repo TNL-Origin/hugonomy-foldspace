@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "VibeAI FoldSpace",
-  "version": "2.15.1",
-  "description": "Real-time emotional tone analysis for AI conversations. Privacy-first HUD for ChatGPT, Claude, and Gemini.",
+  "version": "2.19.2",
+  "description": "AI conversation awareness that helps you stay engaged, think critically, and reflect before you accept.",
   "background": {
     "service_worker": "background.js"
   },
@@ -12,11 +12,10 @@
         "https://chat.openai.com/*",
         "https://chatgpt.com/*",
         "https://www.chatgpt.com/*",
-        "https://gemini.google.com/*",
-        "https://bing.com/chat/*",
-        "https://www.bing.com/chat/*"
+        "https://gemini.google.com/*"
       ],
       "js": [
+        "scripts/consent-script.js",
         "scripts/parsers/base-parser.js",
         "scripts/parsers/chatgpt-parser.js",
         "scripts/parsers/claude-parser.js",
@@ -26,6 +25,11 @@
         "scripts/vibeai-coach/heuristics.js",
         "scripts/vibeai-coach/lexicon-data.js",
         "scripts/vibeai-coach/coach-panel.js",
+        "scripts/engine/consent-helper.js",
+        "scripts/engine/stage-detector.js",
+        "scripts/engine/nudge-engine.js",
+        "scripts/engine/bookmark-manager.js",
+        "scripts/engine/session-manager.js",
         "scripts/unified-hud.js"
       ],
       "css": ["scripts/vibeai-coach/coach-styles.css"],
@@ -34,6 +38,7 @@
     {
       "matches": ["https://claude.ai/*"],
       "js": [
+        "scripts/consent-script.js",
         "scripts/platform-compatibility.js",
         "scripts/parsers/base-parser.js",
         "scripts/parsers/chatgpt-parser.js",
@@ -44,6 +49,11 @@
         "scripts/vibeai-coach/heuristics.js",
         "scripts/vibeai-coach/lexicon-data.js",
         "scripts/vibeai-coach/coach-panel.js",
+        "scripts/engine/consent-helper.js",
+        "scripts/engine/stage-detector.js",
+        "scripts/engine/nudge-engine.js",
+        "scripts/engine/bookmark-manager.js",
+        "scripts/engine/session-manager.js",
         "scripts/unified-hud.js"
       ],
       "css": ["scripts/vibeai-coach/coach-styles.css"],
@@ -59,12 +69,9 @@
     "https://chatgpt.com/*",
     "https://www.chatgpt.com/*",
     "https://gemini.google.com/*",
-    "https://bing.com/chat/*",
-    "https://www.bing.com/chat/*",
     "https://claude.ai/*"
   ],
   "permissions": [
-    "activeTab",
     "storage"
   ],
   "icons": {
@@ -95,8 +102,6 @@
         "https://chatgpt.com/*",
         "https://www.chatgpt.com/*",
         "https://gemini.google.com/*",
-        "https://bing.com/chat/*",
-        "https://www.bing.com/chat/*",
         "https://claude.ai/*"
       ]
     }

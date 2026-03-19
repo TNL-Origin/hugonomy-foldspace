@@ -1,11 +1,17 @@
 /* global chrome */
 // 🔍 VibeAI FoldSpace Universal Thread Parser (v2.11.9-ALPHA)
-// Supports ChatGPT, Claude, and Gemini conversation scanning
+// Supports ChatGPT, Gemini, and Copilot conversation scanning
 
 // v2.14.3: Privacy gate - disable content-bearing logs by default (pre-Steven hardening)
 // Use window property DIRECTLY to avoid const collision with unified-hud.js
 if (!window.VIBEAI_PARSER_DEBUG) window.VIBEAI_PARSER_DEBUG = false;
 
+// v2.18.x: Single-init guard — prevents zombie intervals/observers on SPA re-injection
+if (window.VIBEAI_PARSER_ACTIVE) {
+  void 0;
+  // Assign dummy so later code referencing activeParser doesn't crash
+  throw Object.assign(new Error('[VibeAI Parser] re-init suppressed'), { __vibeai_skip__: true });
+}
 window.VIBEAI_PARSER_ACTIVE = true; // Debug flag
 
 void 0;
@@ -251,6 +257,9 @@ async function enrichThreads(threads) {
 let __vibeai_parser_running = false;
 
 async function sendThreadsToBackground() {
+  // Power management: skip when tab is hidden — prevents keeping system awake
+  if (document.hidden) return;
+
   // Skip if previous analysis still running (prevents CPU spikes from overlapping calls)
   if (__vibeai_parser_running) {
     void 0;
@@ -307,7 +316,7 @@ async function sendThreadsToBackground() {
       // Attach bridge token for HUD authenticity check
       try { payload.bridgeToken = bridgeToken; } catch (tb) { /* ignore */ }
 
-      window.postMessage(payload, '*');
+      window.postMessage(payload, location.origin);
       void 0;
 
     } catch (e) {
@@ -319,51 +328,100 @@ async function sendThreadsToBackground() {
           source: 'vibeai-parser',
           ts: Date.now(),
           detail: { content: latest.content.slice(0, 500), count: threads.length, platform: platform }
-        }, '*');
+        }, location.origin);
       } catch (err) {
         console.error('[VibeAI Parser] ❌ Fallback postMessage also failed:', err);
       }
     }
 
-    // FALLBACK ONLY: CustomEvent (does not cross content-script boundary reliably)
+    // v2.17: CustomEvent now carries full threads array so unified-hud can call
+    // updateThreadFeed() via this path. The postMessage path is blocked by Chrome's
+    // isolated-world e.source !== window gate, making this the reliable transport.
     document.dispatchEvent(new CustomEvent('vibeai:threadUpdate', {
       detail: {
         content: latest.content,
         count: threads.length,
-        platform: platform
+        platform: platform,
+        threads: enrichedThreads.map(t => ({
+          id: t.id,
+          source: t.source,
+          content: t.content.slice(0, 500),
+          timestamp: t.timestamp,
+          emotionalTones: t.emotionalTones,
+          hri: t.hri,
+          tone: t.tone
+        }))
       },
       bubbles: true,
       composed: true
     }));
   }
 
-    chrome.runtime.sendMessage(
-      { type: "THREADS_EXTRACTED", payload: threads },
-      response => {
-        if (chrome.runtime.lastError) {
-          console.warn("[VibeAI Parser] ⚠️ Send failed:", chrome.runtime.lastError.message);
-        } else if (response && response.status === "OK") {
-          void 0;
-        }
+    try {
+      if (!chrome.runtime?.id) {
+        console.warn("[VibeAI Parser] Extension context lost — skipping sendMessage.");
+      } else if (document.visibilityState !== "hidden") {
+        chrome.runtime.sendMessage(
+          { type: "THREADS_EXTRACTED", payload: threads },
+          response => {
+            if (chrome.runtime.lastError) {
+              console.warn("[VibeAI Parser] ⚠️ Send failed:", chrome.runtime.lastError.message);
+            } else if (response && response.status === "OK") {
+              void 0;
+            }
+          }
+        );
       }
-    );
+    } catch (err) {
+      console.warn("[VibeAI Parser] Message skipped:", err.message);
+    }
   } finally {
     // mCopi audit fix: Always reset flag, even if error occurs
     __vibeai_parser_running = false;
   }
 }
 
-// Periodic scan every 2.5 seconds (v2.14.7: Reduced from 8s for faster mood updates)
-setInterval(sendThreadsToBackground, 2500);
+// v2.19.1: Consent gate — no parsing before explicit user consent (Codex audit fix)
+function startParserEngines() {
+  // v2.18.x: Dedup interval — clear any existing before starting (re-injection safety)
+  if (window.__VIBEAI_PARSER_INTERVAL_ID__) {
+    clearInterval(window.__VIBEAI_PARSER_INTERVAL_ID__);
+  }
+  window.__VIBEAI_PARSER_INTERVAL_ID__ = setInterval(sendThreadsToBackground, 2500);
 
-// Initial scan
-sendThreadsToBackground();
+  // Initial scan
+  sendThreadsToBackground();
 
-void 0;
+  void 0;
 
-// v2.14.8: Setup mutation observers using modular parsers
-// Each parser handles its own observer logic
-registry.setupObserver(sendThreadsToBackground);
+  // v2.14.8: Setup mutation observers using modular parsers
+  // Each parser handles its own observer logic — guard against duplicate setup
+  if (!window.__VIBEAI_PARSER_OBSERVER_SET__) {
+    window.__VIBEAI_PARSER_OBSERVER_SET__ = true;
+    registry.setupObserver(sendThreadsToBackground);
+  }
+}
+
+function startParserIfConsented() {
+  chrome.storage.local.get(['consentGiven'], (result) => {
+    if (result.consentGiven === true) {
+      void 0;
+      startParserEngines();
+    } else {
+      void 0;
+      // Watch for consent to be granted
+      chrome.storage.onChanged.addListener(function consentWatcher(changes, area) {
+        if (area === 'local' && changes.consentGiven && changes.consentGiven.newValue === true) {
+          chrome.storage.onChanged.removeListener(consentWatcher);
+          void 0;
+          startParserEngines();
+        }
+      });
+    }
+  });
+}
+
+startParserIfConsented();
 
 /**
  * Highlight a thread on the host page
@@ -394,11 +452,17 @@ function highlightThreadOnHost(threadId, tone, hue) {
     const index = parseInt(match[1], 10);
 
     // Get the corresponding DOM node
+    // v2.18.x: Use same selectors as the active parsers to prevent index drift
     if (platform === "chatgpt") {
-      const nodes = document.querySelectorAll(".markdown, .text-base");
+      const nodes = document.querySelectorAll("[data-message-author-role]");
       targetElement = nodes[index];
     } else if (platform === "gemini") {
       const nodes = document.querySelectorAll("[data-message-content], article, .response-container");
+      targetElement = nodes[index];
+    } else if (platform === "copilot") {
+      const nodes = document.querySelectorAll(
+        ".ac-textBlock, .cib-message-content, [class*='message'], [class*='response-message'], [data-content], .text-message-content"
+      );
       targetElement = nodes[index];
     } else if (platform === "claude") {
       const nodes = document.querySelectorAll(
@@ -451,10 +515,14 @@ function highlightThreadOnHost(threadId, tone, hue) {
 // Listen for highlight messages from HUD iframe
 window.addEventListener("message", (event) => {
   if (event.data.type === "HIGHLIGHT_THREAD") {
+    // v2.18.x: source validation + payload hardening
+    if (event.source !== window) return;
     const { threadId, tone, hue, cardRect } = event.data;
+    // Allowlist hue to safe CSS values only — prevents CSS injection via crafted messages
+    const safeHue = /^#[0-9a-fA-F]{3,6}$/.test(hue) ? hue : '#00d4ff';
     void 0;
 
-    const textRect = highlightThreadOnHost(threadId, tone, hue);
+    const textRect = highlightThreadOnHost(threadId, tone, safeHue);
 
     // Send rect back to HUD for trail drawing
     if (textRect) {
@@ -472,7 +540,7 @@ window.addEventListener("message", (event) => {
         cardRect,
         tone,
         hue
-      }, "*");
+      }, event.origin);
 
       void 0;
     }
@@ -487,7 +555,7 @@ window.addEventListener("message", (event) => {
     let targetElement = null;
 
     if (platform === "chatgpt") {
-      const nodes = document.querySelectorAll(".markdown, .text-base");
+      const nodes = document.querySelectorAll("[data-message-author-role]");
       targetElement = nodes[startIndex];
     } else if (platform === "gemini") {
       const nodes = document.querySelectorAll("[data-message-content], article, .response-container");

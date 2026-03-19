@@ -1,23 +1,36 @@
-# Known Issues - VibeAI FoldSpace v2.15.1
+# Known Issues — VibeAI FoldSpace v2.19.2
 
-## ChatGPT Consent Modal Refresh Workaround
+## Active Issues
 
-**Platform:** ChatGPT (chat.openai.com, chatgpt.com)
-**Issue:** In rare cases, the consent modal may not appear on first page load.
-**Workaround:** If the consent modal does not load when first visiting ChatGPT, **refresh the page** (F5 or Ctrl+R). The modal will appear correctly on the second load.
+### HUD Position on Page Refresh (Edge + Chrome)
 
-**Status:** This is a timing quirk related to ChatGPT's React hydration sequence. Does not affect functionality after consent is granted.
-
-**Frequency:** Occasional, typically only on first install or after clearing extension data.
+**Status:** Under investigation
+**Platforms:** Edge (more frequent), Chrome (occasional)
+After a page refresh, the HUD panel may render off-screen or partially clipped. Workaround: drag the HUD header to reposition it.
 
 ---
 
-## Microsoft Edge Copilot Disabled
+## Resolved Issues (recent)
 
-**Platform:** Microsoft Copilot (copilot.microsoft.com) in Edge
-**Status:** Disabled in the Edge build for store compliance.
-**Reason:** Edge policies can block extensions on Copilot; to avoid inconsistent behavior, Copilot is excluded from Edge targeting.
-**Workaround:** Use Chrome or another Chromium browser for Copilot.
+### ChatGPT Consent Modal — React Hydration (resolved v2.15.1)
+
+**Platform:** ChatGPT (chat.openai.com, chatgpt.com)
+**Status:** ✅ Fixed — Shadow DOM protection integrated to prevent React hydration interference.
+
+### Gemini Stage Detection (resolved v2.19.0)
+
+**Platform:** Gemini (gemini.google.com)
+**Status:** ✅ Fixed — selector corrected to `user-query / model-response` (live DOM confirmed).
+
+### Short User Message Classification (resolved v2.17.2)
+
+**All platforms**
+**Status:** ✅ Fixed — Short acknowledgments ("ok", "thanks") now correctly detected as user engagement signals. Role detection runs before length filtering.
+
+### Fresh Install Consent Flow (resolved v2.17.1)
+
+**All platforms**
+**Status:** ✅ Fixed — `chrome.storage.onChanged` watcher ensures stage poller starts correctly after first consent on a fresh install.
 
 ---
 

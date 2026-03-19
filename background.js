@@ -7,7 +7,7 @@ chrome.runtime.onInstalled.addListener(() => {
 // chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 //   if (changeInfo.status === 'complete') {
 //     // Match target hostnames
-//     const targetHosts = ['chat.openai.com', 'chatgpt.com', 'gemini.google.com'];
+//     const targetHosts = ['chat.openai.com', 'chatgpt.com', 'gemini.google.com', 'copilot.microsoft.com'];
 //     if (targetHosts.some(host => tab.url && tab.url.includes(host))) {
 //       const scriptPath = 'foldspace.js';
 //       const scriptUrl = chrome.runtime.getURL(scriptPath);
@@ -24,21 +24,10 @@ chrome.runtime.onInstalled.addListener(() => {
 //   }
 // });
 
-// 📘 Message Listener for Thread Parsing & Bookmark Management
+// 📘 Message Listener for Bookmark Management
+// v2.19.2: Removed THREADS_EXTRACTED + GET_THREADS + redactThread — legacy dead code,
+// privacy alignment (lastThreads auto-storage was undisclosed chat content persistence).
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  // Helper: produce redacted thread structure
-  function redactThread(t) {
-    try {
-      const id = t?.id || `thread-${Date.now()}`;
-      const platform = t?.source || t?.platform || 'unknown';
-      const title = t?.title || (t?.content ? (t.content.trim().split(/\s+/).slice(0,5).join(' ') + (t.content.trim().split(/\s+/).length>5 ? '...' : '')) : 'Untitled Thread');
-      const timestamp = t?.timestamp || Date.now();
-      const hugoScore = t?.hugoScore || (t?.hri ? Math.round(t.hri * 100) : undefined);
-      const content = t?.content ? String(t.content).slice(0,140) : undefined;
-      return { id, title, timestamp, platform, hugoScore, content };
-    } catch (e) { return { id: `thread-${Date.now()}`, title: 'Untitled Thread', timestamp: Date.now(), platform: 'unknown' }; }
-  }
-
   // Helper: produce redacted bookmark structure
   function redactBookmark(b) {
     try {
@@ -51,29 +40,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     } catch (e) { return { bookmarkId: `bm-${Date.now()}`, threadId: null, note: '', createdAt: Date.now(), platform: 'unknown' }; }
   }
 
-  // Handle thread extraction from content-parser.js — redact before persisting
-  if (msg.type === "THREADS_EXTRACTED") {
-    try {
-      const threads = Array.isArray(msg.payload) ? msg.payload : [];
-      const redacted = threads.map(redactThread);
-      chrome.storage.local.set({ lastThreads: redacted }, () => {
-        void 0;
-      });
-      sendResponse({ status: "OK" });
-    } catch (err) {
-      console.error('[VibeAI] Failed to redact/persist threads:', err);
-      sendResponse({ status: 'ERROR', message: String(err) });
-    }
-    return true;
-  }
-
   // Handle bookmark retrieval requests
   if (msg.type === "GET_BOOKMARKS") {
     chrome.storage.local.get(["bookmarks"], data => {
       const list = Array.isArray(data.bookmarks) ? data.bookmarks.map(redactBookmark) : [];
       sendResponse({ status: "OK", bookmarks: list });
     });
-    return true; // Keep channel open for async response
+    return true;
   }
 
   // Handle bookmark additions
@@ -82,21 +55,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       const existing = Array.isArray(data.bookmarks) ? data.bookmarks : [];
       const redacted = redactBookmark(msg.payload || {});
       const updated = existing.concat(redacted);
-      // Overwrite stored bookmarks with redacted-only records (migration-safe)
       chrome.storage.local.set({ bookmarks: updated }, () => {
-        void 0;
         sendResponse({ status: "OK" });
       });
     });
-    return true; // Keep channel open for async response
-  }
-
-  // Handle thread retrieval requests
-  if (msg.type === "GET_THREADS") {
-    chrome.storage.local.get(["lastThreads"], data => {
-      const threads = Array.isArray(data.lastThreads) ? data.lastThreads.map(redactThread) : [];
-      sendResponse({ status: "OK", threads });
-    });
-    return true; // Keep channel open for async response
+    return true;
   }
 });

@@ -2,7 +2,10 @@
  * ChatGPT Parser
  * Handles chatgpt.com, www.chatgpt.com, chat.openai.com
  *
- * v2.14.8: Extracted from monolithic content-parser.js
+ * v2.17: Switched to data-message-author-role container selector.
+ * Previous selector (.markdown, .text-base) only matched AI response content divs —
+ * user messages live in .whitespace-pre-wrap and were never collected.
+ * Root cause of the user-engagement classifier always getting AI text.
  */
 
 class ChatGPTParser extends BaseParser {
@@ -11,11 +14,33 @@ class ChatGPTParser extends BaseParser {
   }
 
   /**
-   * ChatGPT-specific selectors
-   * Targets message content divs
+   * v2.17: Target the role-tagged message container, not the inner content div.
+   * This matches BOTH user messages (.whitespace-pre-wrap inside) and
+   * assistant messages (.markdown inside) with a single stable selector.
    */
   getSelectors() {
-    return '.markdown, .text-base';
+    return '[data-message-author-role]';
+  }
+
+  /**
+   * v2.17: Role is directly on the container node — no ancestor traversal needed.
+   * Returns 'user' or 'assistant' from the DOM attribute.
+   */
+  getRoleForNode(node) {
+    return node.getAttribute('data-message-author-role') || this.platformName;
+  }
+
+  /**
+   * v2.17: Extract text from the correct inner content div.
+   * User messages:     .whitespace-pre-wrap
+   * Assistant messages: .markdown (or .prose fallback)
+   * Fallback:           node.innerText (catches future DOM shape changes)
+   */
+  extractText(node) {
+    const inner = node.querySelector('.whitespace-pre-wrap') ||
+                  node.querySelector('.markdown') ||
+                  node.querySelector('[class*="prose"]');
+    return (inner || node).innerText?.trim() || null;
   }
 
   /**
@@ -28,8 +53,8 @@ class ChatGPTParser extends BaseParser {
   }
 
   /**
-   * Setup mutation observer for instant updates (v2.14.7)
-   * Called by parser-registry.js after parser is selected
+   * Setup mutation observer for instant updates (v2.17)
+   * Watches for role-tagged containers being added (catches both user + AI turns).
    */
   setupObserver(callback) {
     void 0;
@@ -38,9 +63,8 @@ class ChatGPTParser extends BaseParser {
       const hasNewMessages = mutations.some(m =>
         Array.from(m.addedNodes).some(n =>
           n.nodeType === 1 &&
-          (n.classList?.contains('markdown') ||
-           n.classList?.contains('text-base') ||
-           n.querySelector?.('.markdown, .text-base'))
+          (n.hasAttribute?.('data-message-author-role') ||
+           n.querySelector?.('[data-message-author-role]'))
         )
       );
 

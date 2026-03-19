@@ -66,10 +66,17 @@ class BaseParser {
         text = this.cleanText(text);
       }
 
-      if (this.isValidMessage(text)) {
+      // v2.17.2: Compute role before length check so user acknowledgments
+      // ("ok", "thanks", "hi") are not silently dropped by the 15-char noise
+      // filter. Short user messages ARE valid engagement signals. Assistant
+      // messages keep the full minimum to suppress UI noise.
+      const role = this.getRoleForNode(node);
+      const minLen = role === 'user' ? 1 : this.minMessageLength;
+
+      if (text && text.length >= minLen) {
         messages.push({
           id: `${this.platformName}-${idx}`,
-          source: this.platformName,
+          source: role,
           content: text.slice(0, this.maxMessageLength),
           timestamp: Date.now(),
           element: node // Store reference for click-to-scroll
@@ -94,6 +101,38 @@ class BaseParser {
       seen.add(fingerprint);
       return true;
     });
+  }
+
+  /**
+   * Determine whether a DOM node belongs to a user or assistant message.
+   * Tries cross-platform attribute/class detection before falling back to
+   * the platform name (legacy value — treated as non-user by consumers).
+   *
+   * Supported platforms:
+   *   ChatGPT: data-message-author-role="user|assistant" on ancestor article
+   *   Claude:  font-user-message class on node or ancestor
+   *   Gemini:  user-query / model-response custom elements
+   *
+   * @param {HTMLElement} node
+   * @returns {string} 'user', 'assistant', or this.platformName as fallback
+   */
+  getRoleForNode(node) {
+    try {
+      // ChatGPT / OpenAI: data-message-author-role on ancestor article
+      const roleEl = node.closest('[data-message-author-role]');
+      if (roleEl) return roleEl.getAttribute('data-message-author-role'); // 'user' or 'assistant'
+
+      // Claude.ai: class-based role detection
+      if (node.closest('[class*="font-user-message"]')) return 'user';
+      if (node.closest('.font-claude-message, [class*="font-claude"]')) return 'assistant';
+
+      // Gemini: custom element wrappers
+      if (node.closest('user-query')) return 'user';
+      if (node.closest('model-response')) return 'assistant';
+    } catch (e) { /* ignore — DOM queries can fail if page is changing */ }
+
+    // Fallback: platform name (pre-v2.17 behavior, no regression)
+    return this.platformName;
   }
 
   /**

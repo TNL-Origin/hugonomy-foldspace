@@ -106,6 +106,5 @@ if (typeof window !== 'undefined') {
   if (window.ChatGPTParser) window.__vibeai_parser_registry.register(ChatGPTParser);
   if (window.ClaudeParser) window.__vibeai_parser_registry.register(ClaudeParser);
   if (window.GeminiParser) window.__vibeai_parser_registry.register(GeminiParser);
-
   void 0;
 }
