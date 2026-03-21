@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "VibeAI FoldSpace",
-  "version": "2.19.3",
+  "version": "2.19.4",
   "description": "AI conversation awareness that helps you stay engaged, think critically, and reflect before you accept.",
   "background": {
     "service_worker": "background.js"
@@ -32,11 +32,15 @@
         "scripts/engine/session-manager.js",
         "scripts/unified-hud.js"
       ],
-      "css": ["scripts/vibeai-coach/coach-styles.css"],
+      "css": [
+        "scripts/vibeai-coach/coach-styles.css"
+      ],
       "run_at": "document_end"
     },
     {
-      "matches": ["https://claude.ai/*"],
+      "matches": [
+        "https://claude.ai/*"
+      ],
       "js": [
         "scripts/consent-script.js",
         "scripts/platform-compatibility.js",
@@ -56,7 +60,9 @@
         "scripts/engine/session-manager.js",
         "scripts/unified-hud.js"
       ],
-      "css": ["scripts/vibeai-coach/coach-styles.css"],
+      "css": [
+        "scripts/vibeai-coach/coach-styles.css"
+      ],
       "run_at": "document_end"
     }
   ],

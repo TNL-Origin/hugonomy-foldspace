@@ -83,19 +83,19 @@ See [privacy.html](privacy.html) for full privacy policy.
 └── assembly/                  # AssemblyScript WebAssembly source
 ```
 
-### ⚠️ HugoScore Engine — Proprietary Algorithm
+### HugoScore Engine — Protected Intellectual Property
 
-`scripts/hugoscore-engine.js` is distributed in **protected (obfuscated) form**.
+`scripts/hugoscore-engine.js` is human-readable and verifiable per Chrome Web Store policy.
 
-The HugoScore algorithm is the proprietary intellectual property of Hugonomy Systems and Joseph D. Tingling. It is not open source. Distribution of this file in protected form is intentional and does not affect your ability to use, fork, or build on all other parts of this repository.
+The HugoScore scoring algorithm is the proprietary intellectual property of Hugonomy Systems and Joseph D. Tingling (Patent-pending: US Application No. 63/856,714). While the file is readable, the algorithm logic, lexicon weights, and scoring methodology may not be reproduced, adapted, or used in other products without written permission.
 
-All other source files are plain, readable JavaScript under the MIT License (see [LICENSE.md](LICENSE.md)).
+All source files in this repository are plain, readable JavaScript. See [LICENSE.md](LICENSE.md) for full terms.
 
 ---
 
 ## Version
 
-**Current: v2.19.2** — Published March 18, 2026
+**Current: v2.19.4** — Published March 2026
 
 See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for known issues and current status.
 
