@@ -30,6 +30,25 @@
     dismissCooldownMinutes: 60
   };
 
+  // D6 — Coach Intensity (off | minimal | standard | active)
+  const COACH_LEVEL_KEY = 'vibeai_coach_level';
+  let cachedCoachLevel = 'standard';
+  let coachLevelCachedAt = 0;
+  const COACH_LEVEL_TTL = 10_000;
+
+  function getCoachLevel(cb) {
+    if (Date.now() - coachLevelCachedAt < COACH_LEVEL_TTL) { cb(cachedCoachLevel); return; }
+    try {
+      chrome.storage.local.get([COACH_LEVEL_KEY], (res) => {
+        if (!chrome.runtime.lastError) {
+          cachedCoachLevel = res[COACH_LEVEL_KEY] || 'standard';
+          coachLevelCachedAt = Date.now();
+        }
+        cb(cachedCoachLevel);
+      });
+    } catch (e) { cb(cachedCoachLevel); }
+  }
+
   function now() { return Date.now(); }
 
   function getJSON(key, fallback) {
@@ -199,35 +218,39 @@
   }
 
   /**
-   * Calculate smart position for popup to avoid HUD and stay on-screen
+   * Calculate smart position for popup to avoid HUD and stay on-screen.
+   * Anchors relative to HUD rect with viewport boundary clamping.
    */
   function getSmartPosition(popupWidth) {
     const hud = document.getElementById('vibeai-unified-hud');
     const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const padding = 24;
+    const padding = 8;
 
-    let position = { left: null, right: null, bottom: padding };
+    let left = padding;
 
     if (hud) {
       const hudRect = hud.getBoundingClientRect();
-      const hudCenter = hudRect.left + (hudRect.width / 2);
+      // Prefer left of HUD
+      const preferLeft = hudRect.left - popupWidth - padding;
+      // Fallback right of HUD
+      const fallbackRight = hudRect.right + padding;
 
-      // If HUD is on left half of screen, show popup on right
-      if (hudCenter < viewportWidth / 2) {
-        position.right = padding;
-        position.left = null;
+      if (preferLeft >= padding) {
+        left = preferLeft;
+      } else if (fallbackRight + popupWidth <= viewportWidth - padding) {
+        left = fallbackRight;
       } else {
-        // HUD is on right, show popup on left
-        position.left = padding;
-        position.right = null;
+        // Last resort: clamp to viewport
+        left = Math.max(padding, viewportWidth - popupWidth - padding);
       }
     } else {
-      // No HUD found, default to left (HUD usually on right)
-      position.left = padding;
+      left = Math.max(padding, viewportWidth - popupWidth - padding);
     }
 
-    return position;
+    // Hard clamp — never off either edge
+    left = Math.max(padding, Math.min(left, viewportWidth - popupWidth - padding));
+
+    return { left, right: null, bottom: padding };
   }
 
   function showPanel(result, prefs) {
@@ -236,15 +259,10 @@
     const panel = document.createElement("div");
     panel.className = "vibeai-coach-panel";
 
-    // Apply smart positioning
+    // Apply smart positioning — always left-anchored with boundary clamp
     const pos = getSmartPosition(340);
-    if (pos.left !== null) {
-      panel.style.left = `${pos.left}px`;
-      panel.style.right = 'auto';
-    } else {
-      panel.style.right = `${pos.right}px`;
-      panel.style.left = 'auto';
-    }
+    panel.style.left = `${pos.left}px`;
+    panel.style.right = 'auto';
     panel.style.bottom = `${pos.bottom}px`;
 
     const { confidence, reason, visuals, script } = result;
@@ -274,7 +292,10 @@
           <div class="vibeai-confidence" title="${escapeHtml(reason)}">${escapeHtml(confText)}</div>
         </div>
 
-        <div class="vibeai-insight"><strong>${escapeHtml(script.title)}:</strong> ${escapeHtml(script.insight)}</div>
+        <div class="vibeai-insight"><strong>${escapeHtml(script.title)}:</strong> ${escapeHtml(script.insight)}
+          <span class="vibeai-why-link" style="cursor:pointer;opacity:0.55;font-size:9px;margin-left:5px;text-decoration:underline;color:rgba(0,212,255,0.8);">Why?</span>
+          <div class="vibeai-why-detail" style="display:none;margin-top:5px;font-size:9px;opacity:0.8;font-style:italic;padding:4px 6px;background:rgba(0,0,0,0.2);border-radius:4px;line-height:1.4;">This appeared because your interaction looked more passive — short acknowledgment or quick acceptance detected.</div>
+        </div>
 
         <div class="vibeai-suggestions">
           <ul>
@@ -304,6 +325,11 @@
     }
 
     panel.querySelector(".vibeai-x")?.addEventListener("click", () => removePanel());
+
+    panel.querySelector(".vibeai-why-link")?.addEventListener("click", () => {
+      const detail = panel.querySelector(".vibeai-why-detail");
+      if (detail) detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+    });
 
     panel.querySelector('[data-action="snooze"]')?.addEventListener("click", () => {
       const t = trendGet();
@@ -335,7 +361,7 @@
       <div class="pattern-item">
         <button class="pattern-toggle" data-pattern="${key}">
           ${key === 'urgency' ? '⏱️' : key === 'frustration' ? '🔄' : key === 'confusion' ? '❓' : '✅'}
-          ${key === 'urgency' ? 'Under Time Pressure?' : key === 'frustration' ? 'Stuck in a Loop?' : key === 'confusion' ? 'Feeling Confused?' : 'Want More Clarity?'}
+          ${key === 'urgency' ? 'Feeling Rushed?' : key === 'frustration' ? 'Stuck in a Loop?' : key === 'confusion' ? 'Feeling Confused?' : 'Want More Clarity?'}
         </button>
         <div class="pattern-content" style="display: none;">
           <p><strong>Issue:</strong> ${escapeHtml(pattern.issue)}</p>
@@ -380,15 +406,10 @@
       </div>
     `;
 
-    // Apply smart positioning to avoid HUD
+    // Apply smart positioning — always left-anchored with boundary clamp
     const lexPos = getSmartPosition(400);
-    if (lexPos.left !== null) {
-      panel.style.left = `${lexPos.left}px`;
-      panel.style.right = 'auto';
-    } else {
-      panel.style.right = `${lexPos.right}px`;
-      panel.style.left = 'auto';
-    }
+    panel.style.left = `${lexPos.left}px`;
+    panel.style.right = 'auto';
     panel.style.bottom = `${lexPos.bottom}px`;
 
     document.documentElement.appendChild(panel);
@@ -562,33 +583,70 @@
   }
 
   function handlePostSend(draftText) {
-    const prefs = getPrefs();
-    const t = trendGet();
+    // Suppress coach during onboarding walkthrough to prevent collision
+    if (window.__vibeai_onboard_active) return;
 
-    if (!canCoach(t, prefs)) return;
+    getCoachLevel((level) => {
+      // Phase 3: Focus Mode — time-based override, overrides all gates
+      try {
+        const snoozeUntil = localStorage.getItem('vibeai_snooze_until');
+        if (snoozeUntil && Date.now() < Number(snoozeUntil)) return;
+        if (snoozeUntil && Date.now() >= Number(snoozeUntil)) {
+          localStorage.removeItem('vibeai_snooze_until'); // auto-clear expired
+        }
+      } catch (e) { void e; }
 
-    const promptText = (draftText || '').trim() || extractLatestUserText() || (lastDraft.text || '').trim();
-    if (!promptText || promptText.length < 5) return;
+      // D6: off = never coach
+      if (level === 'off') return;
 
-    // Build history context
-    const history = {
-      avgPromptLen: t.avgPromptLen || 0,
-      rapidFire: t.rapidFire || false
-    };
+      const prefs = getPrefs();
+      const t = trendGet();
+      if (!canCoach(t, prefs)) return;
 
-    const result = window.VibeHeuristics.analyze(promptText, history);
+      const promptText = (draftText || '').trim() || extractLatestUserText() || (lastDraft.text || '').trim();
+      if (!promptText || promptText.length < 5) return;
 
-    // Record prompt
-    recordPrompt(t, promptText, result.state);
+      // D5: detect context mode
+      const contextMode = (window.VibeHeuristics && window.VibeHeuristics.detectContext)
+        ? window.VibeHeuristics.detectContext(promptText)
+        : 'DEFAULT';
 
-    // Only coach when needed
-    if (result.shouldCoach) {
-      t.lastCoachedAt = now();
-      trendSet(t);
-      showPanel(result, prefs);
-    } else {
-      trendSet(t);
-    }
+      const history = { avgPromptLen: t.avgPromptLen || 0, rapidFire: t.rapidFire || false };
+      const result = window.VibeHeuristics.analyze(promptText, history);
+
+      recordPrompt(t, promptText, result.state);
+
+      // Base gate: heuristic confidence threshold
+      let shouldShow = result.shouldCoach; // confidence >= 0.6
+
+      // D5: DEBUG mode — only surface high-confidence friction/urgency
+      if (contextMode === 'DEBUG') {
+        shouldShow = shouldShow &&
+          result.confidence >= 0.78 &&
+          (result.state === 'FRUSTRATION' || result.state === 'URGENCY');
+      }
+
+      // D6: intensity layer
+      if (level === 'minimal') {
+        shouldShow = shouldShow &&
+          result.confidence >= 0.80 &&
+          (result.state === 'FRUSTRATION' || result.state === 'URGENCY');
+        // Double the cooldown for minimal
+        const minMs = (prefs.minSecondsBetweenCoaching || 45) * 2 * 1000;
+        if (t.lastCoachedAt && now() - t.lastCoachedAt < minMs) shouldShow = false;
+      } else if (level === 'active') {
+        // Lower threshold — show at 0.50 confidence for any state
+        shouldShow = result.confidence >= 0.50;
+      }
+
+      if (shouldShow) {
+        t.lastCoachedAt = now();
+        trendSet(t);
+        showPanel(result, prefs);
+      } else {
+        trendSet(t);
+      }
+    });
   }
 
   // Export for external wiring
@@ -607,6 +665,15 @@
       return true;
     },
     showLexiconPanel: showLexiconPanel,
-    removePanel: removePanel
+    removePanel: removePanel,
+    // D6: intensity control
+    setLevel: (level) => {
+      const valid = ['off', 'minimal', 'standard', 'active'];
+      if (!valid.includes(level)) return;
+      cachedCoachLevel = level;
+      coachLevelCachedAt = Date.now();
+      try { chrome.storage.local.set({ [COACH_LEVEL_KEY]: level }); } catch (e) { void e; }
+    },
+    getLevel: () => cachedCoachLevel
   };
 })();

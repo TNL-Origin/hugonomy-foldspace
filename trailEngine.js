@@ -23,7 +23,7 @@ class TrailEngine {
     this.resizeCanvas();
     window.addEventListener('resize', () => this.resizeCanvas());
 
-    void 0;
+    console.log('[TrailEngine] ✨ Initialized with canvas:', canvasId);
   }
 
   resizeCanvas() {
@@ -61,7 +61,7 @@ class TrailEngine {
     };
 
     this.activeTrails.set(id, trail);
-    void 0;
+    console.log(`[TrailEngine] 🌊 Trail spawned: ${id} (${tone} → ${hue})`);
 
     // Start animation loop if not already running
     if (this.activeTrails.size === 1) {
@@ -87,7 +87,7 @@ class TrailEngine {
     trail.startTime = Date.now(); // Restart animation
     trail.opacity = 0;
 
-    void 0;
+    console.log(`[TrailEngine] 🩵 Trail refreshed: ${id} (${newTone} → ${newHue})`);
   }
 
   /**
@@ -96,7 +96,7 @@ class TrailEngine {
    */
   removeTrail(id) {
     if (this.activeTrails.delete(id)) {
-      void 0;
+      console.log(`[TrailEngine] ❌ Trail removed: ${id}`);
     }
   }
 
@@ -122,7 +122,7 @@ class TrailEngine {
 
     // Log throttle stats if frames were skipped
     if (this.frameSkipCount > 0) {
-      void 0;
+      console.log(`[VibeAI] 🌀 Render deferred Δ=${Math.round(deltaTime)} ms (skipped ${this.frameSkipCount} frames)`);
       this.frameSkipCount = 0;
     }
 
@@ -207,7 +207,7 @@ class TrailEngine {
     if (this.ctx && this.canvas) {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
-    void 0;
+    console.log('[TrailEngine] 🧹 All trails cleared');
   }
 }
 

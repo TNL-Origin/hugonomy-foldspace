@@ -8,13 +8,13 @@ if (!window.VIBEAI_PARSER_DEBUG) window.VIBEAI_PARSER_DEBUG = false;
 
 // v2.18.x: Single-init guard — prevents zombie intervals/observers on SPA re-injection
 if (window.VIBEAI_PARSER_ACTIVE) {
-  void 0;
+  console.log('[VibeAI Parser] Already active on this page — skipping re-init');
   // Assign dummy so later code referencing activeParser doesn't crash
   throw Object.assign(new Error('[VibeAI Parser] re-init suppressed'), { __vibeai_skip__: true });
 }
 window.VIBEAI_PARSER_ACTIVE = true; // Debug flag
 
-void 0;
+console.log("[VibeAI Parser] Universal mode active (v2.14.8 - Modular)");
 
 // v2.14.8: Initialize parser registry and detect platform
 const registry = window.__vibeai_parser_registry;
@@ -53,7 +53,7 @@ function getBridgeToken() {
         bubbles: true,
         composed: true
       }));
-      void 0;
+      console.log('[VibeAI Parser] 🔐 Bridge token initialized and dispatched');
     } catch (err) {
       console.warn('[VibeAI Parser] ⚠️ Could not dispatch bridge token', err);
     }
@@ -163,7 +163,7 @@ async function getHugoScoreAnalyzer() {
     // Log which implementation is active
     const info = module.getImplementationInfo();
     if (window.VIBEAI_PARSER_DEBUG) {
-      void 0;
+      console.log('[Parser] HugoScore integration loaded:', info);
     }
 
     return module;
@@ -196,7 +196,7 @@ async function analyzeThreadContent(text, idx) {
       const tone = moodToTone[analysis.mood] || 'reflective';
 
       if (window.VIBEAI_PARSER_DEBUG) {
-        void 0;
+        console.log(`[Parser] Thread ${idx} (WASM): tone="${tone}", hri=${analysis.hri.toFixed(3)}, sentiment=${analysis.sentiment}`);
       }
 
       return {
@@ -215,7 +215,7 @@ async function analyzeThreadContent(text, idx) {
   const hri = calculateHRI(text, tone);
 
   if (window.VIBEAI_PARSER_DEBUG) {
-    void 0;
+    console.log(`[Parser] Thread ${idx} (lightweight): tone="${tone}", hri=${hri.toFixed(3)}`);
   }
 
   return {
@@ -262,7 +262,7 @@ async function sendThreadsToBackground() {
 
   // Skip if previous analysis still running (prevents CPU spikes from overlapping calls)
   if (__vibeai_parser_running) {
-    void 0;
+    console.log('[VibeAI Parser] ⏭️ Skipping scan (previous analysis still running)');
     return;
   }
 
@@ -272,7 +272,7 @@ async function sendThreadsToBackground() {
 
     // Claude-specific logging
     if (platform === "claude") {
-      if (window.VIBEAI_PARSER_DEBUG) void 0;
+      if (window.VIBEAI_PARSER_DEBUG) console.log(`[VibeAI Parser] 🔄 Starting Claude thread extraction...`);
     }
 
     const threads = extractMessages();
@@ -281,9 +281,9 @@ async function sendThreadsToBackground() {
   if (threads.length > 0) {
     // v2.14.2: Enrich threads with HRI + tone data (MAKES MOOD ICONS ALIVE!)
     // v2.14.4: Now async to support optional WASM-enhanced analysis
-    if (window.VIBEAI_PARSER_DEBUG) void 0;
+    if (window.VIBEAI_PARSER_DEBUG) console.log(`[Parser] 🧬 Enriching ${threads.length} threads with tone detection...`);
     const enrichedThreads = await enrichThreads(threads);
-    if (window.VIBEAI_PARSER_DEBUG) void 0;
+    if (window.VIBEAI_PARSER_DEBUG) console.log(`[Parser] ✅ Enriched threads:`, enrichedThreads.map(t => ({ tone: t.tone, preview: t.content.slice(0, 40) })));
     const latest = enrichedThreads[enrichedThreads.length - 1];
 
     // v2.14.1: Enhanced postMessage bridge (PRIMARY transport mechanism)
@@ -317,7 +317,7 @@ async function sendThreadsToBackground() {
       try { payload.bridgeToken = bridgeToken; } catch (tb) { /* ignore */ }
 
       window.postMessage(payload, location.origin);
-      void 0;
+      console.log(`[VibeAI Parser] 📤 postMessage sent (type: ${payload.type}, platform: ${platform}, count: ${threads.length})`);
 
     } catch (e) {
       console.error('[VibeAI Parser] ❌ postMessage failed:', e);
@@ -367,7 +367,7 @@ async function sendThreadsToBackground() {
             if (chrome.runtime.lastError) {
               console.warn("[VibeAI Parser] ⚠️ Send failed:", chrome.runtime.lastError.message);
             } else if (response && response.status === "OK") {
-              void 0;
+              console.log(`[VibeAI Parser] ✅ Sent ${threads.length} messages (${detectPlatform()})`);
             }
           }
         );
@@ -392,7 +392,7 @@ function startParserEngines() {
   // Initial scan
   sendThreadsToBackground();
 
-  void 0;
+  console.log(`[VibeAI Parser] 🔄 Monitoring ${detectPlatform()} threads (scan every 2.5s)`);
 
   // v2.14.8: Setup mutation observers using modular parsers
   // Each parser handles its own observer logic — guard against duplicate setup
@@ -405,15 +405,15 @@ function startParserEngines() {
 function startParserIfConsented() {
   chrome.storage.local.get(['consentGiven'], (result) => {
     if (result.consentGiven === true) {
-      void 0;
+      console.log('[VibeAI Parser] ✅ Consent verified — starting parser engines');
       startParserEngines();
     } else {
-      void 0;
+      console.log('[VibeAI Parser] ⏸ Consent not given — parser on standby');
       // Watch for consent to be granted
       chrome.storage.onChanged.addListener(function consentWatcher(changes, area) {
         if (area === 'local' && changes.consentGiven && changes.consentGiven.newValue === true) {
           chrome.storage.onChanged.removeListener(consentWatcher);
-          void 0;
+          console.log('[VibeAI Parser] ✅ Consent granted — starting parser engines');
           startParserEngines();
         }
       });
@@ -491,7 +491,7 @@ function highlightThreadOnHost(threadId, tone, hue) {
     // Store for cleanup
     currentHighlightElement = targetElement;
 
-    void 0;
+    console.log(`[VibeAI Parser] ✨ Highlighted thread: ${threadId} (${tone} → ${hue})`);
 
     // Auto-remove highlight after 2 seconds
     setTimeout(() => {
@@ -499,7 +499,7 @@ function highlightThreadOnHost(threadId, tone, hue) {
         targetElement.style.outline = "";
         targetElement.style.boxShadow = "";
         currentHighlightElement = null;
-        void 0;
+        console.log(`[VibeAI Parser] 🌊 Highlight faded: ${threadId}`);
       }
     }, 2000);
 
@@ -520,7 +520,7 @@ window.addEventListener("message", (event) => {
     const { threadId, tone, hue, cardRect } = event.data;
     // Allowlist hue to safe CSS values only — prevents CSS injection via crafted messages
     const safeHue = /^#[0-9a-fA-F]{3,6}$/.test(hue) ? hue : '#00d4ff';
-    void 0;
+    console.log(`[VibeAI Parser] 🎯 Received highlight request: ${threadId}`);
 
     const textRect = highlightThreadOnHost(threadId, tone, safeHue);
 
@@ -542,14 +542,14 @@ window.addEventListener("message", (event) => {
         hue
       }, event.origin);
 
-      void 0;
+      console.log(`[VibeAI Parser] 🌊 Trail coordinates sent for: ${threadId}`);
     }
   }
 
   // 📖 Phase V: Chapter Navigation - Scroll to chapter on glyph click
   if (event.data.type === "SCROLL_TO_CHAPTER") {
     const { chapterId, startIndex } = event.data;
-    void 0;
+    console.log(`[VibeAI Parser] 📖 Scrolling to chapter: ${chapterId} (index: ${startIndex})`);
 
     const platform = detectPlatform();
     let targetElement = null;
@@ -573,7 +573,7 @@ window.addEventListener("message", (event) => {
         block: "start",
         inline: "nearest"
       });
-      void 0;
+      console.log(`[VibeAI Parser] ✅ Scrolled to chapter ${chapterId}`);
     } else {
       console.warn(`[VibeAI Parser] ⚠️ Chapter element not found at index ${startIndex}`);
     }

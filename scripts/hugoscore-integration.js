@@ -38,7 +38,7 @@ async function loadWasmAnalyzer() {
   wasmLoadAttempted = true;
 
   if (!ENABLE_WASM_HUGOSCORE) {
-    void 0;
+    console.log('[HugoScore] WASM disabled by feature flag, using JS implementation');
     return null;
   }
 
@@ -47,7 +47,7 @@ async function loadWasmAnalyzer() {
     const wasmModule = await import(chrome.runtime.getURL('scripts/hugoscore-wasm-loader.js'));
     wasmAnalyzer = wasmModule;
     wasmAvailable = true;
-    void 0;
+    console.log('[HugoScore] ✅ WASM integration loaded successfully');
     return wasmAnalyzer;
   } catch (error) {
     console.warn('[HugoScore] ⚠️ WASM loader failed, falling back to JS:', error.message);
@@ -71,7 +71,7 @@ async function loadJsAnalyzer() {
   try {
     const jsModule = await import(chrome.runtime.getURL('scripts/hugoscore-engine.js'));
     jsAnalyzer = jsModule;
-    void 0;
+    console.log('[HugoScore] JS implementation loaded (fallback)');
     return jsAnalyzer;
   } catch (error) {
     console.error('[HugoScore] ❌ Failed to load JS implementation:', error);

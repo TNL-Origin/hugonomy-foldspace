@@ -53,7 +53,7 @@ class ClaudeParser extends BaseParser {
    * Claude already had this in original code
    */
   setupObserver(callback) {
-    void 0;
+    console.log("[VibeAI Parser] 👁️ Setting up Claude mutation observer");
 
     const observer = new MutationObserver((mutations) => {
       const hasNewMessages = mutations.some(m =>
@@ -65,7 +65,7 @@ class ClaudeParser extends BaseParser {
       );
 
       if (hasNewMessages) {
-        void 0;
+        console.log("[VibeAI Parser] 🔄 Claude DOM changed, re-scanning...");
         setTimeout(callback, 500);
       }
     });
@@ -75,7 +75,7 @@ class ClaudeParser extends BaseParser {
       subtree: true
     });
 
-    void 0;
+    console.log("[VibeAI Parser] ✅ Claude mutation observer active");
     return observer;
   }
 }

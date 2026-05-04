@@ -32,7 +32,7 @@ class ParserRegistry {
       const parser = new ParserClass();
       if (parser.matchesHostname(hostname)) {
         this.activeParser = parser;
-        void 0;
+        console.log(`[VibeAI Parser] ✅ Activated ${parser.platformName} parser`);
         return parser;
       }
     }
@@ -106,5 +106,5 @@ if (typeof window !== 'undefined') {
   if (window.ChatGPTParser) window.__vibeai_parser_registry.register(ChatGPTParser);
   if (window.ClaudeParser) window.__vibeai_parser_registry.register(ClaudeParser);
   if (window.GeminiParser) window.__vibeai_parser_registry.register(GeminiParser);
-  void 0;
+  console.log('[VibeAI Parser] Registry initialized with', window.__vibeai_parser_registry.parsers.length, 'parsers');
 }

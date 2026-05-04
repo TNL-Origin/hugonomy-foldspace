@@ -13,8 +13,8 @@
         traits: ['Specific questions', 'Patient tone', 'Open to exploration']
       },
       {
-        id: 'urgent',
-        name: 'Urgent',
+        id: 'rushed',
+        name: 'Rushed',
         icon: '⚡',
         color: '#F5A623',
         description: 'Time-sensitive needs requiring quick answers',

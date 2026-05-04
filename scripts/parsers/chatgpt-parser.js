@@ -57,7 +57,7 @@ class ChatGPTParser extends BaseParser {
    * Watches for role-tagged containers being added (catches both user + AI turns).
    */
   setupObserver(callback) {
-    void 0;
+    console.log("[VibeAI Parser] 👁️ Setting up ChatGPT mutation observer");
 
     const observer = new MutationObserver((mutations) => {
       const hasNewMessages = mutations.some(m =>
@@ -69,7 +69,7 @@ class ChatGPTParser extends BaseParser {
       );
 
       if (hasNewMessages) {
-        void 0;
+        console.log("[VibeAI Parser] 🔄 ChatGPT DOM changed, re-scanning...");
         setTimeout(callback, 300);
       }
     });
@@ -79,7 +79,7 @@ class ChatGPTParser extends BaseParser {
       subtree: true
     });
 
-    void 0;
+    console.log("[VibeAI Parser] ✅ ChatGPT mutation observer active");
     return observer;
   }
 }

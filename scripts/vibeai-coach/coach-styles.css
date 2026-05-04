@@ -1,16 +1,17 @@
 /* coach-styles.css — Cybernetic Glassmorphism, calm + premium */
+/* v2.20.0: All panels reduced ~20% — width, padding, font sizes, icons */
 
 .vibeai-coach-panel {
   position: fixed;
   right: auto;
   left: 24px; /* Position on left side (HUD is on right) */
   bottom: 24px;
-  width: 340px;
+  width: 272px; /* was 340px */
   z-index: 2147483648; /* Above HUD (HUD is 2147483647) */
   background: rgba(12, 12, 18, 0.88);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 16px;
+  border-radius: 13px; /* was 16px */
   box-shadow: 0 14px 40px rgba(0,0,0,0.45);
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   color: #fff;
@@ -27,26 +28,26 @@
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding: 12px 12px 8px 12px;
-  cursor: move; /* Draggable header */
-  -webkit-user-select: none; /* Safari */
-  user-select: none; /* Prevent text selection while dragging */
-  background: rgba(255,255,255,0.03); /* Subtle contrast for draggable area */
-  border-radius: 16px 16px 0 0; /* Match panel border radius */
+  padding: 10px 10px 6px 10px; /* was 12px 12px 8px 12px */
+  cursor: move;
+  -webkit-user-select: none;
+  user-select: none;
+  background: rgba(255,255,255,0.03);
+  border-radius: 13px 13px 0 0; /* was 16px */
   transition: background 0.2s ease;
 }
 
 .vibeai-top:hover {
-  background: rgba(255,255,255,0.06); /* Brighten on hover */
+  background: rgba(255,255,255,0.06);
 }
 
 .vibeai-brand {
-  display:flex; align-items:center; gap:10px;
+  display:flex; align-items:center; gap:8px; /* was 10px */
 }
 
 .vibeai-badge {
-  width: 30px; height: 30px;
-  border-radius: 10px;
+  width: 24px; height: 24px; /* was 30px */
+  border-radius: 8px; /* was 10px */
   background: linear-gradient(135deg, #2bb3ff, #8a5bff);
   display:flex; align-items:center; justify-content:center;
   font-weight:800;
@@ -54,19 +55,19 @@
 }
 
 .vibeai-title {
-  font-size: 13px;
+  font-size: 11px; /* was 13px */
   font-weight: 800;
   line-height: 1.1;
 }
 
 .vibeai-sub {
-  font-size: 11px;
+  font-size: 9px; /* was 11px */
   opacity: 0.72;
   margin-top: 2px;
 }
 
 .drag-hint {
-  font-size: 10px;
+  font-size: 9px; /* was 10px */
   opacity: 0.4;
   margin-left: 4px;
   letter-spacing: -2px;
@@ -84,81 +85,81 @@
   color:#fff;
   opacity:0.7;
   cursor:pointer;
-  font-size: 18px;
+  font-size: 15px; /* was 18px */
   line-height: 1;
 }
 .vibeai-x:hover { opacity: 1; }
 
 .vibeai-body {
-  padding: 10px 12px 12px 12px;
+  padding: 8px 10px 10px 10px; /* was 10px 12px 12px 12px */
 }
 
 .vibeai-state {
   display:flex; align-items:center; justify-content:space-between;
   border-left: 4px solid rgba(255,255,255,0.2);
-  padding: 10px 10px;
-  border-radius: 12px;
+  padding: 8px 8px; /* was 10px 10px */
+  border-radius: 10px; /* was 12px */
   background: rgba(255,255,255,0.06);
 }
 
 .vibeai-state-left {
-  display:flex; align-items:center; gap:8px;
+  display:flex; align-items:center; gap:6px; /* was 8px */
   font-weight: 800;
-  font-size: 12px;
+  font-size: 10px; /* was 12px */
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .vibeai-confidence {
-  font-size: 11px;
+  font-size: 9px; /* was 11px */
   opacity: 0.8;
 }
 
 .vibeai-insight {
-  margin-top: 10px;
-  font-size: 12px;
+  margin-top: 8px; /* was 10px */
+  font-size: 10px; /* was 12px */
   line-height: 1.35;
   color: rgba(255,255,255,0.88);
 }
 
 .vibeai-suggestions {
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 12px;
+  margin-top: 8px; /* was 10px */
+  padding: 8px; /* was 10px */
+  border-radius: 10px; /* was 12px */
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.08);
 }
 
 .vibeai-suggestions ul {
   margin: 0;
-  padding-left: 18px;
-  font-size: 12px;
+  padding-left: 15px; /* was 18px */
+  font-size: 10px; /* was 12px */
   line-height: 1.35;
   color: rgba(255,255,255,0.85);
 }
 
 .vibeai-example {
-  margin-top: 10px;
-  font-size: 11px;
+  margin-top: 8px; /* was 10px */
+  font-size: 9px; /* was 11px */
   opacity: 0.85;
   font-style: italic;
-  padding: 8px 10px;
+  padding: 6px 8px; /* was 8px 10px */
   border-left: 2px solid rgba(255,255,255,0.18);
   background: rgba(0,0,0,0.18);
-  border-radius: 10px;
+  border-radius: 8px; /* was 10px */
 }
 
 .vibeai-actions {
   display:flex;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 6px; /* was 8px */
+  margin-top: 10px; /* was 12px */
 }
 
 .vibeai-btn {
   flex:1;
-  border-radius: 12px;
-  padding: 9px 10px;
-  font-size: 12px;
+  border-radius: 10px; /* was 12px */
+  padding: 7px 8px; /* was 9px 10px */
+  font-size: 10px; /* was 12px */
   cursor:pointer;
 }
 
@@ -178,24 +179,24 @@
 .vibeai-btn-primary:hover { filter: brightness(1.05); }
 
 .vibeai-footer {
-  margin-top: 10px;
-  font-size: 10px;
+  margin-top: 8px; /* was 10px */
+  font-size: 9px; /* was 10px */
   opacity: 0.65;
 }
 
 /* Lexicon Panel Styles */
 .vibeai-lexicon-panel {
   position: fixed;
-  right: 78px;
+  right: 62px; /* was 78px */
   bottom: 24px;
-  width: 400px;
+  width: 320px; /* was 400px */
   max-height: 80vh;
   overflow-y: auto;
-  z-index: 2147483649; /* Above everything (HUD is 2147483647, Coach is 2147483648) */
+  z-index: 2147483649;
   background: rgba(12, 12, 18, 0.92);
   backdrop-filter: blur(14px);
   border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 16px;
+  border-radius: 13px; /* was 16px */
   box-shadow: 0 16px 48px rgba(0,0,0,0.50);
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   color: #fff;
@@ -206,23 +207,23 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
+  padding: 11px 13px; /* was 14px 16px */
   border-bottom: 1px solid rgba(255,255,255,0.08);
-  cursor: move; /* Draggable header */
-  -webkit-user-select: none; /* Safari */
-  user-select: none; /* Prevent text selection while dragging */
-  background: rgba(255,255,255,0.04); /* Slightly more contrast than Coach header */
-  border-radius: 16px 16px 0 0; /* Match panel border radius */
+  cursor: move;
+  -webkit-user-select: none;
+  user-select: none;
+  background: rgba(255,255,255,0.04);
+  border-radius: 13px 13px 0 0; /* was 16px */
   transition: background 0.2s ease;
 }
 
 .lexicon-header:hover {
-  background: rgba(255,255,255,0.08); /* Brighten more on hover */
+  background: rgba(255,255,255,0.08);
 }
 
 .lexicon-header h3 {
   margin: 0;
-  font-size: 15px;
+  font-size: 12px; /* was 15px */
   font-weight: 800;
 }
 
@@ -232,22 +233,22 @@
   color: #fff;
   opacity: 0.7;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 16px; /* was 20px */
   line-height: 1;
 }
 .lexicon-close:hover { opacity: 1; }
 
 .lexicon-content {
-  padding: 16px;
+  padding: 13px; /* was 16px */
 }
 
 .lexicon-content section {
-  margin-bottom: 20px;
+  margin-bottom: 16px; /* was 20px */
 }
 
 .lexicon-content h4 {
-  margin: 0 0 10px 0;
-  font-size: 13px;
+  margin: 0 0 8px 0; /* was 10px */
+  font-size: 10px; /* was 13px */
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -256,15 +257,15 @@
 
 .tile-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); /* was 80px */
+  gap: 8px; /* was 10px */
 }
 
 .mood-tile {
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 12px;
-  padding: 12px 8px;
+  border-radius: 10px; /* was 12px */
+  padding: 10px 6px; /* was 12px 8px */
   text-align: center;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -278,13 +279,13 @@
 
 .mood-icon {
   display: block;
-  font-size: 24px;
-  margin-bottom: 6px;
+  font-size: 19px; /* was 24px */
+  margin-bottom: 5px; /* was 6px */
 }
 
 .mood-name {
   display: block;
-  font-size: 11px;
+  font-size: 9px; /* was 11px */
   font-weight: 600;
   opacity: 0.9;
 }
@@ -292,13 +293,13 @@
 .pattern-accordion {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px; /* was 8px */
 }
 
 .pattern-item {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 10px;
+  border-radius: 8px; /* was 10px */
   overflow: hidden;
 }
 
@@ -308,13 +309,13 @@
   border: none;
   color: #fff;
   text-align: left;
-  padding: 10px 12px;
-  font-size: 12px;
+  padding: 8px 10px; /* was 10px 12px */
+  font-size: 10px; /* was 12px */
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px; /* was 8px */
 }
 
 .pattern-toggle:hover {
@@ -322,24 +323,24 @@
 }
 
 .pattern-content {
-  padding: 0 12px 12px 12px;
-  font-size: 12px;
+  padding: 0 10px 10px 10px; /* was 0 12px 12px 12px */
+  font-size: 10px; /* was 12px */
   line-height: 1.4;
 }
 
 .pattern-content p {
-  margin: 6px 0;
+  margin: 5px 0; /* was 6px */
 }
 
 .pattern-content code {
   display: block;
   background: rgba(0,0,0,0.3);
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 6px;
-  padding: 8px 10px;
-  font-size: 11px;
+  border-radius: 5px; /* was 6px */
+  padding: 6px 8px; /* was 8px 10px */
+  font-size: 9px; /* was 11px */
   font-family: 'Courier New', monospace;
-  margin: 8px 0;
+  margin: 6px 0; /* was 8px */
   white-space: pre-wrap;
   word-break: break-word;
 }
@@ -348,12 +349,12 @@
   background: linear-gradient(135deg, #2bb3ff, #8a5bff);
   border: none;
   color: #fff;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 11px;
+  padding: 5px 10px; /* was 6px 12px */
+  border-radius: 5px; /* was 6px */
+  font-size: 9px; /* was 11px */
   font-weight: 700;
   cursor: pointer;
-  margin-top: 6px;
+  margin-top: 5px; /* was 6px */
 }
 
 .copy-template:hover {
@@ -362,25 +363,25 @@
 
 .quick-tips ul {
   margin: 0;
-  padding-left: 18px;
-  font-size: 12px;
+  padding-left: 15px; /* was 18px */
+  font-size: 10px; /* was 12px */
   line-height: 1.5;
   opacity: 0.88;
 }
 
 .lexicon-footer {
-  padding: 12px 16px;
+  padding: 10px 13px; /* was 12px 16px */
   border-top: 1px solid rgba(255,255,255,0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 9px; /* was 11px */
 }
 
 .lexicon-footer label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px; /* was 6px */
   cursor: pointer;
   opacity: 0.75;
 }
@@ -393,12 +394,175 @@
   background: transparent;
   border: 1px solid rgba(255,255,255,0.14);
   color: rgba(255,255,255,0.88);
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 11px;
+  padding: 5px 10px; /* was 6px 12px */
+  border-radius: 6px; /* was 8px */
+  font-size: 9px; /* was 11px */
   cursor: pointer;
 }
 
 .lexicon-back:hover {
   border-color: rgba(255,255,255,0.28);
 }
+
+/* Phase 3 — Contextual Tooltips (data-tooltip) */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10,16,26,0.97);
+  color: rgba(0,212,255,0.92);
+  border: 1px solid rgba(0,212,255,0.22);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 9px;
+  font-family: system-ui, -apple-system, sans-serif;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease 0.4s;
+  z-index: 2147483650;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
+/* Phase 3 — Walkthrough popup anchor dot */
+#vibeai-walkthrough-popup {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Phase 3 — Why? link in coach insight */
+.vibeai-why-link:hover {
+  opacity: 1 !important;
+}
+
+/* Phase 4 — Bookmark Panel */
+.vibeai-bookmark-panel {
+  position: fixed;
+  z-index: 2147483648;
+  width: 272px;
+  max-height: 70vh;
+  background: rgba(12, 12, 18, 0.93);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(0,212,255,0.15);
+  border-radius: 13px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.5);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: vibeaiSlideIn 160ms ease-out;
+}
+
+.vibeai-bm-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 8px 12px;
+  border-bottom: 1px solid rgba(0,212,255,0.1);
+  background: rgba(255,255,255,0.03);
+  flex-shrink: 0;
+}
+
+.vibeai-bm-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(0,212,255,0.9);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.vibeai-bm-close {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+.vibeai-bm-close:hover { color: #fff; }
+
+.vibeai-bm-list {
+  overflow-y: auto;
+  flex: 1;
+  padding: 6px 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,212,255,0.2) transparent;
+}
+
+.vibeai-bm-empty {
+  padding: 24px 12px;
+  text-align: center;
+  color: rgba(255,255,255,0.35);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.vibeai-bm-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,212,255,0.08);
+  background: rgba(255,255,255,0.03);
+  margin-bottom: 5px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.vibeai-bm-item:hover {
+  background: rgba(0,212,255,0.06);
+  border-color: rgba(0,212,255,0.2);
+}
+
+.vibeai-bm-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.vibeai-bm-preview {
+  font-size: 10px;
+  color: rgba(255,255,255,0.82);
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vibeai-bm-meta {
+  font-size: 9px;
+  color: rgba(0,212,255,0.45);
+  margin-top: 3px;
+  letter-spacing: 0.02em;
+}
+
+.vibeai-bm-missing {
+  font-size: 9px;
+  color: rgba(255,165,60,0.7);
+  margin-top: 3px;
+  font-style: italic;
+}
+
+.vibeai-bm-delete {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.25);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 1px;
+}
+.vibeai-bm-delete:hover { color: rgba(255,100,80,0.8); }

@@ -33,7 +33,7 @@ class GeminiParser extends BaseParser {
    * Falls back to polling if observer fires too noisily.
    */
   setupObserver(callback) {
-    void 0;
+    console.log("[VibeAI Parser] 👁️ Setting up Gemini mutation observer");
 
     const observer = new MutationObserver((mutations) => {
       const hasNewMessages = mutations.some(m =>
@@ -48,13 +48,13 @@ class GeminiParser extends BaseParser {
       );
 
       if (hasNewMessages) {
-        void 0;
+        console.log("[VibeAI Parser] 🔄 Gemini DOM changed, re-scanning...");
         setTimeout(callback, 500);
       }
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
-    void 0;
+    console.log("[VibeAI Parser] ✅ Gemini mutation observer active");
     return observer;
   }
 }

@@ -32,9 +32,9 @@
 
   // Key format: "fromStage->toStage"
   const NUDGE_COPY = {
-    'Exploring->Accepting':  'You accepted the AI response quickly. Short acknowledgment detected — would you like to add your own thinking?',
-    'Evaluating->Accepting': 'You were comparing options — does this answer fully match what you intended?',
-    'Refining->Accepting':   'You accepted after revising. Are you satisfied with this result, or is there more to explore?',
+    'Exploring->Accepting':  'Quick accept — add your own thinking?',
+    'Evaluating->Accepting': 'Does this fully match what you intended?',
+    'Refining->Accepting':   'Satisfied, or is there more to explore?',
     'Exploring->Refining':   'What\'s driving the revision?',
     // Fallback for any other unexpected skip
     'default':               'Pause — does this feel right?'
@@ -71,7 +71,9 @@
   // ─── Nudge emission ────────────────────────────────────────────────────────
 
   function emitNudge(message, type, stage) {
-    lastNudgeTime = Date.now();
+    // v2.20.1: Onboarding nudge is informational — don't start cooldown.
+    // Only stage-skip nudges should block subsequent nudges.
+    if (type !== 'onboarding') lastNudgeTime = Date.now();
     pendingNudgeMessage = message;
 
     const detail = {
@@ -84,7 +86,7 @@
 
     try {
       window.dispatchEvent(new CustomEvent('vibeai:nudgeReady', { detail }));
-      void 0;
+      console.log('[VibeAI NudgeEngine] Nudge emitted:', type, '|', message);
     } catch (e) {
       console.warn('[VibeAI NudgeEngine] Failed to emit nudge event', e);
     }
@@ -168,19 +170,31 @@
 
     // Consent is a hard precondition for all nudges
     if (!isConsentGiven()) {
-      void 0;
+      console.log('[VibeAI NudgeEngine] Suppressed — no consent');
       return;
     }
 
+    // Phase 3: Focus Mode — time-based override, suppresses nudges
+    try {
+      const snoozeUntil = localStorage.getItem('vibeai_snooze_until');
+      if (snoozeUntil && Date.now() < Number(snoozeUntil)) {
+        console.log('[VibeAI NudgeEngine] Suppressed — Focus Mode active');
+        return;
+      }
+      if (snoozeUntil && Date.now() >= Number(snoozeUntil)) {
+        localStorage.removeItem('vibeai_snooze_until'); // auto-clear expired snooze
+      }
+    } catch (e) { /* ignore */ }
+
     // v2.18.0: HUD closed this session — user opted out of this surface
     if (window.__VIBEAI__ && window.__VIBEAI__.hudClosed) {
-      void 0;
+      console.log('[VibeAI NudgeEngine] Suppressed — HUD closed');
       return;
     }
 
     // Skip nudge if in cooldown
     if (isInCooldown()) {
-      void 0;
+      console.log('[VibeAI NudgeEngine] Suppressed — cooldown active');
       return;
     }
 
@@ -211,7 +225,7 @@
       }));
     } catch (e) { /* ignore */ }
 
-    void 0;
+    console.log('[VibeAI NudgeEngine] Nudge dismissed. Cooldown:', COOLDOWN_MS / 1000, 's');
   }
 
   /**
@@ -245,5 +259,5 @@
     enumerable: true
   });
 
-  void 0;
+  console.log('[VibeAI NudgeEngine] Loaded v2.16.0');
 })();

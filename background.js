@@ -1,6 +1,6 @@
 // 🪐 VibeAI FoldSpace Auto-Injector + Bookmark Core (vStable-2.5.0-RC1)
 chrome.runtime.onInstalled.addListener(() => {
-  void 0;
+  console.log("[VibeAI] Background service worker initialized.");
 });
 
 // 🚫 DISABLED: Old iframe HUD injection (replaced by unified-hud.js in v2.11.10)

@@ -67,7 +67,7 @@ window.addEventListener('vibeai:setBridgeToken', (ev) => {
     const t = ev?.detail?.token;
     if (typeof t === 'string' && t.length >= 8) {
       __VIBEAI_BRIDGE_TOKEN_LOCAL = String(t);
-      void 0;
+      console.log('[VibeAI HRI] 🔐 Bridge token set');
       // best-effort: remove any global window token if it exists
       try { if (window.__VIBEAI_BRIDGE_TOKEN__) delete window.__VIBEAI_BRIDGE_TOKEN__; } catch (e) {}
     }
@@ -138,7 +138,7 @@ function getUnifiedHudEl() {
   return document.getElementById('vibeai-unified-hud');
 }
 
-void 0;
+console.log('[VibeAI UniHUD] 🧱 Initializing Unified HUD Container...');
 
 /**
  * Phase VIII.0.2: Draggable HUD System (Steven Beta Feedback - Priority 2)
@@ -214,7 +214,7 @@ function initDraggableHUD(hudElement, headerElement) {
           vibeai_hud_position_x: currentLeft,
           vibeai_hud_position_y: currentTop
         }, () => {
-          void 0;
+          console.log(`[VibeAI HUD] Position saved: ${currentLeft}, ${currentTop}`);
         });
       }
     } catch (e) {
@@ -399,7 +399,7 @@ function initResizableHUD(hudElement) {
           vibeai_hud_width: currentWidth,
           vibeai_hud_height: currentHeight
         }, () => {
-          void 0;
+          console.log(`[VibeAI HUD] Size saved: ${currentWidth} × ${currentHeight}`);
         });
       }
     } catch (e) {
@@ -445,7 +445,7 @@ function applyTheme(theme) {
     document.documentElement.classList.remove('theme-switching');
   }, 600);
 
-  void 0;
+  console.log(`[VibeAI HUD] 🌗 Theme set to ${theme.toUpperCase()}`);
 }
 
 // Toggle theme (manual override)
@@ -458,7 +458,7 @@ function toggleTheme() {
   try {
     chrome.storage.local.set({ vibeaiTheme: newTheme });
   } catch (e) {
-    void 0;
+    console.log('[VibeAI Theme] Could not save preference:', e);
   }
 }
 
@@ -480,7 +480,7 @@ async function loadToneMap(lexicon = ACTIVE_LEXICON) {
     const url = chrome.runtime.getURL(`src/data/toneMap_${lexicon}.json`);
     const res = await fetch(url);
     ACTIVE_TONE_MAP = await res.json();
-    void 0;
+    console.log(`[VibeAI Lexicon] ✅ Loaded tone map: ${lexicon}`, ACTIVE_TONE_MAP);
     return true;
   } catch (err) {
     console.error(`[VibeAI Lexicon] ❌ Failed to load tone map: ${lexicon}`, err);
@@ -497,7 +497,7 @@ async function switchLexicon(newLexicon) {
     return false;
   }
 
-  void 0;
+  console.log(`[VibeAI Lexicon] 🔄 Switching to ${newLexicon} lexicon...`);
   ACTIVE_LEXICON = newLexicon;
   const loaded = await loadToneMap(newLexicon);
 
@@ -506,7 +506,7 @@ async function switchLexicon(newLexicon) {
     try {
       await chrome.storage.local.set({ vibeaiLexicon: newLexicon });
     } catch (e) {
-      void 0;
+      console.log('[VibeAI Lexicon] Could not save preference:', e);
     }
 
     // Phase Δ9.2: Force tooltip refresh on active canvas instances
@@ -518,7 +518,7 @@ async function switchLexicon(newLexicon) {
     const canvasEvent = new CustomEvent('vibeai:lexiconChanged', { detail: { lexicon: newLexicon } });
     document.dispatchEvent(canvasEvent);
 
-    void 0;
+    console.log(`[VibeAI Lexicon] ✅ Switched to ${newLexicon} lexicon`);
     return true;
   }
   return false;
@@ -530,10 +530,10 @@ async function loadLexiconPreference() {
     const stored = await chrome.storage.local.get('vibeaiLexicon');
     if (stored.vibeaiLexicon) {
       ACTIVE_LEXICON = stored.vibeaiLexicon;
-      void 0;
+      console.log(`[VibeAI Lexicon] 📖 Restored preference: ${ACTIVE_LEXICON}`);
     }
   } catch {
-    void 0;
+    console.log('[VibeAI Lexicon] Using default lexicon (youth)');
   }
 }
 
@@ -541,7 +541,7 @@ async function loadLexiconPreference() {
 // SECURITY: Only expose in debug mode to prevent page scripts from manipulating extension
 if (window.VIBEAI_HUD_DEBUG) {
   window.__vibeai_switchLexicon = switchLexicon;
-  void 0;
+  console.log('[VibeAI] Debug API enabled: window.__vibeai_switchLexicon');
 }
 
 // 🎨 Phase Δ.8 - FoldSpace Canvas Mood Field
@@ -667,7 +667,7 @@ class FoldSpaceCanvas {
       this.tooltip.style.top = `${this.mouse.y}px`;
     }, 16); // ~60fps
 
-    void 0;
+    console.log('[VibeAI Canvas] Initialized');
   }
 
   // Phase VIII.0: Set intensity (HRI-driven)
@@ -703,13 +703,13 @@ class FoldSpaceCanvas {
 
     // Start animation loop
     this.animate();
-    void 0;
+    console.log('[VibeAI Canvas] Started successfully');
   }
 
   setActiveTone(tone) {
     if (this.activeTone !== tone) {
       this.activeTone = tone;
-      void 0;
+      console.log(`[VibeAI Canvas] Active tone: ${tone}`);
 
       // Activate particles on tone change
       this.particles.forEach((p, i) => {
@@ -825,7 +825,7 @@ class FoldSpaceCanvas {
         this.tooltip.style.opacity = '1';
         this.tooltip.style.transform = 'translateY(0px) scale(1)';
 
-        void 0;
+        console.log(`[VibeAI Lexicon] Tooltip active for tone: ${tone} | ${String(lex.title)}`);
       } else {
         // Fallback if lexicon data missing
         console.warn(`[VibeAI Lexicon] ⚠️ No lexicon data for tone: ${tone}`, ACTIVE_TONE_MAP);
@@ -841,7 +841,7 @@ class FoldSpaceCanvas {
 
   handleClick(e) {
     if (this.hoveredEmoji) {
-      void 0;
+      console.log(`[VibeAI Canvas] Clicked tone: ${this.hoveredEmoji}`);
       this.setActiveTone(this.hoveredEmoji);
 
       // Create ripple effect
@@ -991,7 +991,7 @@ class FoldSpaceCanvas {
       this.tooltip = null;
     }
 
-    void 0;
+    console.log('[VibeAI Canvas] Destroyed');
   }
 }
 
@@ -1077,7 +1077,7 @@ function updateHRIBridge(text) {
     // v2.14.1 FIX #2: If orb not ready yet, cache state for replay after mount
     if (!orb || typeof orb.updateState !== 'function') {
       window.__VIBEAI_PENDING_ORB_STATE__ = { text, tone, hri, intensity };
-      void 0;
+      console.log('[VibeAI HRI] ⏳ Orb not ready yet, state cached for replay');
 
       // Safe subtitle update (minimal)
       const hriLabel = document.getElementById('hri-label-output');
@@ -1171,7 +1171,7 @@ function updateHRIBridge(text) {
     }
   }
 
-  void 0;
+  console.log(`[HRI Bridge] Tone: ${tone} | HRI: ${hri.toFixed(3)} | Intensity: ${intensity.toFixed(2)}`);
 }
 
 // Tone Detection Heuristic (Phase Δ.8 - enhanced in Phase VIII.0 with HRI)
@@ -1234,21 +1234,21 @@ let foldSpaceCanvas = null;
 // 1. Create unified HUD container
 function renderHUDContainer() {
   if (getUnifiedHudEl()) {
-    void 0;
+    console.log('[VibeAI UniHUD] Container already exists');
     return getUnifiedHudEl();
   }
 
   const hud = document.createElement('div');
   hud.id = 'vibeai-unified-hud';
 
-  // v2.14.17: Load saved width or use default (360px)
-  const savedWidth = localStorage.getItem('vibeai-hud-width') || '360';
-  const hudWidth = Math.max(280, Math.min(520, parseInt(savedWidth))); // Min: 280px, Max: 520px
+  // v2.20.0: Default width reduced ~20% (360→290). User can still resize via drag handle.
+  const savedWidth = localStorage.getItem('vibeai-hud-width') || '290';
+  const hudWidth = Math.max(200, Math.min(520, parseInt(savedWidth))); // Min: 200px, Max: 520px
 
   hud.style.cssText = `
     position: fixed;
     top: 50%;
-    right: 20px;
+    right: 8px;
     transform: translateY(-50%);
     width: ${hudWidth}px;
     max-height: 85vh;
@@ -1309,7 +1309,7 @@ function renderHUDContainer() {
     if (!isResizing) return;
 
     const delta = startX - e.clientX; // Left drag = increase width
-    const newWidth = Math.max(280, Math.min(520, startWidth + delta));
+    const newWidth = Math.max(200, Math.min(520, startWidth + delta));
     hud.style.width = `${newWidth}px`;
   });
 
@@ -1321,7 +1321,7 @@ function renderHUDContainer() {
       // Save width to localStorage
       const finalWidth = hud.offsetWidth;
       localStorage.setItem('vibeai-hud-width', finalWidth.toString());
-      void 0;
+      console.log(`[VibeAI HUD] Width saved: ${finalWidth}px`);
     }
   });
 
@@ -1349,8 +1349,11 @@ function renderHUDContainer() {
   `;
   header.innerHTML = `
     <div id="vibeai-header-title" style="flex: 1; text-align: center;">
-      <div style="font-size: 1.15em; font-weight: bold; color: #00d4ff; letter-spacing: 1.5px;">VibeAI</div>
-      <div id="vibeai-engagement-header" style="font-size: 10px; color: rgba(180,210,210,0.55); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px;">Thinking Engagement: —</div>
+      <div style="font-size: 0.85em; font-weight: bold; color: #00d4ff; letter-spacing: 1px; white-space: nowrap;">Vibe<span style="color:#ff2244;">AI</span> FoldSpace&#8482;</div>
+      <div style="font-size: 0.72em; font-weight: 400; color: rgba(180,210,210,0.55); letter-spacing: 0.06em; white-space: nowrap; margin-top: 1px;">by Hugonomy Systems&#8482;</div>
+      <div id="vibeai-engagement-header" style="display:none;"></div>
+      <div id="vibeai-focus-indicator" style="display:none;font-size:9px;color:rgba(100,220,160,0.9);letter-spacing:0.05em;margin-top:2px;">🌙 Focus Mode active</div>
+      <div id="vibeai-load-msg" style="display:none;"></div>
     </div>
     <div style="display: flex; gap: 6px; align-items: center;">
       <button class="vibeai-icon-btn" id="vibeai-toggle-canvas" title="Hide Canvas" style="font-size: 18px; font-weight: bold; min-width: 32px; min-height: 32px;">—</button>
@@ -1371,7 +1374,7 @@ function renderHUDContainer() {
   const headerSection = document.createElement('div');
   headerSection.id = ENABLE_HUGO_ORB ? 'vibeai-hugo-orb-section' : 'vibeai-foldspace-header';
   headerSection.style.cssText = `
-    padding: 12px 16px;
+    padding: 8px 12px;
     background: var(--vibeai-hud-header-bg);
     border-bottom: 1px solid rgba(0, 170, 255, 0.12);
     display: flex;
@@ -1411,24 +1414,44 @@ function renderHUDContainer() {
         border-radius: 50%;
         background: radial-gradient(circle at center, rgba(0, 212, 255, 0.08) 0%, transparent 70%);
       ">
-        <!-- Hugo Orb Canvas (optimized size: 130px for vertical space) -->
-        <div class="hugo-orb-wrapper" style="
-          width: 130px;
-          height: 130px;
-          border-radius: 50%;
-          overflow: hidden;
-          position: relative;
-          animation: vibeai-orb-glow 3s ease-in-out infinite;
-        ">
-          <canvas class="hugo-orb-canvas" style="width: 100%; height: 100%; display: block;"></canvas>
+        <!-- Hugo Orb Canvas (v2.20.0: reduced 130→104px, ~20% smaller) -->
+        <!-- Phase 4: Load Awareness arc — outside the orb, wraps around its circumference -->
+        <!-- SVG is sibling to orb-wrapper (not inside overflow:hidden), positioned absolute on the block -->
+        <div style="position:relative;width:104px;height:104px;">
+          <div id="vibeai-orb-wrapper" class="hugo-orb-wrapper" style="
+            width: 104px;
+            height: 104px;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+            animation: vibeai-orb-glow 3s ease-in-out infinite;
+          ">
+            <canvas class="hugo-orb-canvas" style="width: 100%; height: 100%; display: block;"></canvas>
+          </div>
+          <!-- Short label ABOVE the arc — positioned above the orb, no overlap -->
+          <div id="vibeai-load-arc-label" style="
+            position:absolute;top:-28px;left:0;width:104px;
+            text-align:center;font-size:7px;font-weight:700;
+            letter-spacing:0.1em;font-family:system-ui,-apple-system,sans-serif;
+            color:rgba(255,165,60,0.9);opacity:0;pointer-events:none;
+            text-transform:uppercase;transition:opacity 0.3s ease;
+          "></div>
+          <!-- Arc sits OUTSIDE the orb (r=58, orb r=52) — clear gap -->
+          <svg id="vibeai-load-arc" viewBox="0 0 128 128"
+            style="position:absolute;top:-12px;left:-12px;width:128px;height:128px;pointer-events:none;z-index:10;overflow:visible;">
+            <path id="vibeai-load-arc-path"
+              d="M 13.8 35 A 58 58 0 0 1 114.2 35"
+              fill="none" stroke="rgba(255,165,60,0.8)" stroke-width="2.5"
+              stroke-linecap="round" style="opacity:0;"/>
+          </svg>
         </div>
 
-        <!-- THINKING ENGAGEMENT label + stage value — PRIMARY signal block -->
-        <div style="text-align: center; width: 130px; font-size: 9px; color: rgba(180,210,210,0.45); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px;">Thinking Engagement</div>
-        <div id="vibeai-orb-stage-label" style="text-align: center; width: 130px; font-size: 13px; font-weight: 700; color: rgba(0,212,255,0.9); letter-spacing: 0.5px; margin-bottom: 2px;">—</div>
+        <!-- THINKING STATE label + stage value — PRIMARY signal block -->
+        <div style="text-align: center; width: 104px; font-size: 9px; color: rgba(180,210,210,0.45); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 3px;">Thinking State</div>
+        <div id="vibeai-orb-stage-label" style="text-align: center; width: 104px; font-size: 13px; font-weight: 700; color: rgba(0,212,255,0.9); letter-spacing: 0.5px; margin-bottom: 2px;">—</div>
 
         <!-- Cognitive State + HRI — secondary caption -->
-        <div class="hugo-orb-caption" style="text-align: center; width: 130px;">
+        <div class="hugo-orb-caption" style="text-align: center; width: 104px;">
           <div class="hugo-orb-title" style="font-size: 10px; font-weight: 500; color: rgba(180,210,210,0.45); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px;">
             Cognitive State
           </div>
@@ -1438,33 +1461,33 @@ function renderHUDContainer() {
         </div>
       </div>
 
-      <!-- RIGHT: Tone Strip — SECONDARY signal -->
+      <!-- RIGHT: Tone Strip — SECONDARY signal (v2.20.0: ~20% smaller) -->
       <div class="vibeai-tone-strip-bar" style="
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 4px;
         flex: 1;
-        font-size: 12px;
+        font-size: 10px;
       ">
-        <div style="font-size: 9px; color: rgba(180,210,210,0.35); letter-spacing: 0.1em; text-transform: uppercase; padding: 0 4px 4px; border-bottom: 1px solid rgba(180,210,210,0.1); margin-bottom: 2px;">Emotional Context</div>
-        <div class="tone-item" data-tone="calm" title="Calm tone detected in conversation (peaceful, relaxed language)" style="opacity: 0.55; transition: all 0.3s ease; cursor: pointer; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; gap: 8px; background: hsla(190, 70%, 55%, 0.12); border: 2px solid transparent;">
-          <span style="font-size: 18px;">🌊</span>
+        <div style="font-size: 8px; color: rgba(180,210,210,0.35); letter-spacing: 0.1em; text-transform: uppercase; padding: 0 4px 3px; border-bottom: 1px solid rgba(180,210,210,0.1); margin-bottom: 1px;">Emotional Context</div>
+        <div class="tone-item" data-tone="calm" title="Calm tone detected in conversation (peaceful, relaxed language)" style="opacity: 0.55; transition: all 0.3s ease; cursor: pointer; padding: 3px 6px; border-radius: 6px; display: flex; align-items: center; gap: 6px; background: hsla(190, 70%, 55%, 0.12); border: 2px solid transparent;">
+          <span style="font-size: 14px;">🌊</span>
           <span style="font-weight: 500; color: var(--vibeai-tone-label); transition: color 0.3s ease;">Calm</span>
         </div>
-        <div class="tone-item" data-tone="urgent" title="Time pressure detected in conversation (deadline, urgency, or immediate action language)" style="opacity: 0.55; transition: all 0.3s ease; cursor: pointer; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; gap: 8px; background: hsla(25, 80%, 55%, 0.12); border: 2px solid transparent;">
-          <span style="font-size: 18px;">⚡</span>
-          <span style="font-weight: 500; color: var(--vibeai-tone-label); transition: color 0.3s ease;">Time Pressure</span>
+        <div class="tone-item" data-tone="urgent" title="Time pressure detected in conversation (deadline, urgency, or immediate action language)" style="opacity: 0.55; transition: all 0.3s ease; cursor: pointer; padding: 3px 6px; border-radius: 6px; display: flex; align-items: center; gap: 6px; background: hsla(25, 80%, 55%, 0.12); border: 2px solid transparent;">
+          <span style="font-size: 14px;">⚡</span>
+          <span style="font-weight: 500; color: var(--vibeai-tone-label); transition: color 0.3s ease;">Rushed</span>
         </div>
-        <div class="tone-item" data-tone="reflective" title="Reflective tone detected in conversation (thoughtful, contemplative language)" style="opacity: 0.55; transition: all 0.3s ease; cursor: pointer; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; gap: 8px; background: hsla(270, 60%, 60%, 0.12); border: 2px solid transparent;">
-          <span style="font-size: 18px;">🔮</span>
+        <div class="tone-item" data-tone="reflective" title="Reflective tone detected in conversation (thoughtful, contemplative language)" style="opacity: 0.55; transition: all 0.3s ease; cursor: pointer; padding: 3px 6px; border-radius: 6px; display: flex; align-items: center; gap: 6px; background: hsla(270, 60%, 60%, 0.12); border: 2px solid transparent;">
+          <span style="font-size: 14px;">🔮</span>
           <span style="font-weight: 500; color: var(--vibeai-tone-label); transition: color 0.3s ease;">Reflect</span>
         </div>
-        <div class="tone-item" data-tone="dissonant" title="Tension detected in conversation (conflicting or unclear language)" style="opacity: 0.55; transition: all 0.3s ease; cursor: pointer; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; gap: 8px; background: hsla(0, 20%, 50%, 0.12); border: 2px solid transparent;">
-          <span style="font-size: 18px;">⚙️</span>
+        <div class="tone-item" data-tone="dissonant" title="Tension detected in conversation (conflicting or unclear language)" style="opacity: 0.55; transition: all 0.3s ease; cursor: pointer; padding: 3px 6px; border-radius: 6px; display: flex; align-items: center; gap: 6px; background: hsla(0, 20%, 50%, 0.12); border: 2px solid transparent;">
+          <span style="font-size: 14px;">⚙️</span>
           <span style="font-weight: 500; color: var(--vibeai-tone-label); transition: color 0.3s ease;">Tension</span>
         </div>
-        <div class="tone-item" data-tone="resonant" title="Aligned tone detected in conversation (harmonious, flowing language)" style="opacity: 0.55; transition: all 0.3s ease; cursor: pointer; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; gap: 8px; background: hsla(150, 60%, 55%, 0.12); border: 2px solid transparent;">
-          <span style="font-size: 18px;">✨</span>
+        <div class="tone-item" data-tone="resonant" title="Aligned tone detected in conversation (harmonious, flowing language)" style="opacity: 0.55; transition: all 0.3s ease; cursor: pointer; padding: 3px 6px; border-radius: 6px; display: flex; align-items: center; gap: 6px; background: hsla(150, 60%, 55%, 0.12); border: 2px solid transparent;">
+          <span style="font-size: 14px;">✨</span>
           <span style="font-weight: 500; color: var(--vibeai-tone-label); transition: color 0.3s ease;">Aligned</span>
         </div>
       </div>
@@ -1504,7 +1527,7 @@ function renderHUDContainer() {
 
     const tileMeta = {
       calm: { emoji: '🌊', label: 'Calm' },
-      urgent: { emoji: '⚡', label: 'Time Pressure' },
+      urgent: { emoji: '⚡', label: 'Rushed' },
       reflective: { emoji: '🔮', label: 'Reflective' },
       dissonant: { emoji: '⚙️', label: 'Tension' },
       resonant: { emoji: '✨', label: 'Aligned' }
@@ -1564,7 +1587,7 @@ function renderHUDContainer() {
     function createHugoOrb(canvas) {
       const ctx = canvas.getContext('2d');
       const dpr = window.devicePixelRatio || 1;
-      const size = 130; // Match wrapper size (Tier-1 Polish: optimized for vertical space)
+      const size = 104; // v2.20.0: reduced 130→104px (~20% smaller)
 
       // Set canvas resolution for crisp rendering
       canvas.width = size * dpr;
@@ -1791,7 +1814,7 @@ function renderHUDContainer() {
         setStage(stageName) {
           if (STAGE_PARAMS[stageName]) {
             currentStage = stageName;
-            void 0;
+            console.log('[VibeAI Orb] Stage →', stageName);
           }
         },
 
@@ -1853,12 +1876,12 @@ function renderHUDContainer() {
     if (orbCanvas) {
       // v2.14.1 FIX #1: Store orb globally at window.hugoOrb (single source of truth)
       window.hugoOrb = createHugoOrb(orbCanvas);
-      void 0;
+      console.log('[VibeAI] 🌀 Hugo Orb initialized (window.hugoOrb available)');
 
       // v2.14.1 FIX #3: Replay pending state if updates arrived before orb was ready
       const pending = window.__VIBEAI_PENDING_ORB_STATE__;
       if (pending?.text) {
-        void 0;
+        console.log('[VibeAI HRI] 🔄 Replaying pending state after orb mount');
         updateHRIBridge(pending.text);
         window.__VIBEAI_PENDING_ORB_STATE__ = null;
       }
@@ -1976,48 +1999,20 @@ function renderHUDContainer() {
     transition: background 0.3s ease;
     gap: 6px;
   `;
-  interactionControls.innerHTML = `
-    <button id="vibeai-bookmark-btn" title="Bookmark current message"
-      style="background:none;border:1px solid rgba(0,212,255,0.25);color:rgba(0,212,255,0.7);
-      border-radius:6px;cursor:pointer;font-size:11px;padding:5px 9px;transition:all 0.2s ease;
-      display:flex;align-items:center;gap:4px;">
-      <span>⊹</span><span>Bookmark</span>
-    </button>
-    <button id="vibeai-nudge-toggle" title="Toggle nudges on/off"
-      style="background:none;border:1px solid rgba(0,212,255,0.25);color:rgba(0,212,255,0.7);
-      border-radius:6px;cursor:pointer;font-size:11px;padding:5px 9px;transition:all 0.2s ease;">
-      Nudge ●
-    </button>
-    <button id="vibeai-guide-btn" title="Guide my thinking — suggest a prompt"
-      style="background:none;border:1px solid rgba(100,200,180,0.3);color:rgba(100,200,180,0.8);
-      border-radius:6px;cursor:pointer;font-size:11px;padding:5px 9px;transition:all 0.2s ease;">
-      Guide ✦
-    </button>
-    <button id="vibeai-expand-btn" title="Show Interaction Timeline"
-      style="background:none;border:1px solid rgba(0,212,255,0.25);color:rgba(0,212,255,0.7);
-      border-radius:6px;cursor:pointer;font-size:11px;padding:5px 9px;transition:all 0.2s ease;">
-      Expand
-    </button>
-    <button id="vibeai-close-session-btn" title="Close session"
-      style="background:none;border:1px solid rgba(255,120,80,0.3);color:rgba(255,140,100,0.8);
-      border-radius:6px;cursor:pointer;font-size:11px;padding:5px 9px;transition:all 0.2s ease;">
-      Close Session
-    </button>
-  `;
-  hud.appendChild(interactionControls);
-
-  // Guide Panel — hidden until Guide button clicked
+  // v2.20.0 D1: Guide Panel moved ABOVE button bar — visible without scrolling
   const guidePanel = document.createElement('div');
   guidePanel.id = 'vibeai-guide-panel';
   guidePanel.style.cssText = `
     display: none;
     flex-direction: column;
-    gap: 6px;
-    padding: 10px 14px;
+    gap: 5px;
+    padding: 8px 12px;
     border-top: 1px solid rgba(100,200,180,0.15);
     background: rgba(0,15,30,0.65);
     max-height: 280px;
     overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100,200,180,0.3) transparent;
   `;
   const GUIDE_OPTS = [
     { label: 'Reflect on this idea',    prompt: 'Help me reflect more deeply on this idea.' },
@@ -2029,10 +2024,13 @@ function renderHUDContainer() {
     { label: 'Add my own thinking',     prompt: 'I want to add my own perspective here: ' }
   ];
   guidePanel.innerHTML = `
-    <div id="vibeai-guide-header" style="font-size:9px;color:rgba(100,200,180,0.55);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px;">Guide My Thinking</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div id="vibeai-guide-header" style="font-size:9px;color:rgba(100,200,180,0.55);text-transform:uppercase;letter-spacing:0.1em;">Guide My Thinking</div>
+      <button id="vibeai-guide-close" style="background:none;border:none;color:rgba(100,200,180,0.6);font-size:11px;cursor:pointer;padding:0 2px;line-height:1;" title="Close">▲ close</button>
+    </div>
     ${GUIDE_OPTS.map((o, i) => `
       <div class="vibeai-guide-opt" data-idx="${i}"
-        style="cursor:pointer;padding:6px 10px;border-radius:6px;font-size:12px;
+        style="cursor:pointer;padding:5px 8px;border-radius:6px;font-size:11px;
         color:rgba(180,230,220,0.85);border:1px solid rgba(100,200,180,0.2);
         background:rgba(100,200,180,0.05);transition:background 0.2s ease;">
         ${o.label}
@@ -2040,60 +2038,112 @@ function renderHUDContainer() {
   `;
   hud.appendChild(guidePanel);
 
-  // Footer with transparency slider (left) and theme toggle (right)
+  // v2.20.0 D3: 4-button primary bar — Thinking Mirror | Bookmark | Coach | •••
+  interactionControls.innerHTML = `
+    <button id="vibeai-guide-btn" title="Open Thinking Mirror" data-tooltip="Optional prompts to keep you engaged"
+      style="background:none;border:1px solid rgba(100,200,180,0.35);color:rgba(100,200,180,0.9);
+      border-radius:6px;cursor:pointer;font-size:10px;padding:4px 8px;transition:all 0.2s ease;
+      display:flex;align-items:center;gap:3px;font-weight:600;">
+      🔮 Thinking Mirror
+    </button>
+    <button id="vibeai-bookmark-btn" title="Bookmark current message" data-tooltip="Save this moment for later"
+      style="background:none;border:1px solid rgba(0,212,255,0.25);color:rgba(0,212,255,0.7);
+      border-radius:6px;cursor:pointer;font-size:10px;padding:4px 8px;transition:all 0.2s ease;
+      display:flex;align-items:center;gap:3px;">
+      ⊹ Bookmark
+    </button>
+    <button id="vibeai-coach-btn"
+      title="VibeAI Coach: Post-send reflection & prompt library" data-tooltip="Post-prompt coaching &amp; prompt library"
+      style="background:rgba(255,255,255,0.1);border:none;cursor:pointer;font-size:10px;padding:4px 8px;
+      border-radius:6px;transition:all 0.3s ease;font-weight:700;color:white;
+      display:flex;align-items:center;gap:3px;">
+      🧠 Coach
+    </button>
+    <button id="vibeai-overflow-btn" title="More options" data-tooltip="Intensity, Focus Mode &amp; settings"
+      style="background:none;border:1px solid rgba(0,212,255,0.2);color:rgba(0,212,255,0.6);
+      border-radius:6px;cursor:pointer;font-size:11px;padding:4px 8px;transition:all 0.2s ease;
+      letter-spacing:2px;">
+      •••
+    </button>
+  `;
+
+  // v2.20.0 D4: Overflow menu — slides up on ••• click
+  const overflowMenu = document.createElement('div');
+  overflowMenu.id = 'vibeai-overflow-menu';
+  overflowMenu.style.cssText = `
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 4px);
+    right: 0;
+    background: rgba(10,16,26,0.97);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 8px;
+    padding: 6px 0;
+    min-width: 190px;
+    max-height: 70vh;
+    overflow-y: auto;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+    z-index: 2147483640;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  `;
+  overflowMenu.innerHTML = `
+    <button id="vibeai-nudge-toggle" style="display:block;width:100%;background:none;border:none;color:rgba(0,212,255,0.75);cursor:pointer;padding:7px 14px;font-size:11px;text-align:left;transition:background 0.15s ease;" title="Toggle nudges on/off">Nudge ●</button>
+    <button id="vibeai-expand-btn" style="display:block;width:100%;background:none;border:none;color:rgba(0,212,255,0.75);cursor:pointer;padding:7px 14px;font-size:11px;text-align:left;transition:background 0.15s ease;" title="Show Interaction Timeline">Expand Timeline</button>
+    <button id="vibeai-bookmarks-btn" style="display:block;width:100%;background:none;border:none;color:rgba(0,212,255,0.75);cursor:pointer;padding:7px 14px;font-size:11px;text-align:left;transition:background 0.15s ease;" title="View bookmarks">📌 Bookmarks</button>
+    <div style="border-top:1px solid rgba(0,212,255,0.1);margin:4px 0;"></div>
+    <a href="mailto:joseph@hugonomy.com?subject=VibeAI FoldSpace Feedback" style="display:block;color:rgba(100,200,180,0.8);padding:7px 14px;font-size:11px;text-decoration:none;cursor:pointer;transition:background 0.15s ease;">📧 Send Feedback</a>
+    <button id="vibeai-report-bug" style="display:block;width:100%;background:none;border:none;color:rgba(0,212,255,0.75);cursor:pointer;padding:7px 14px;font-size:11px;text-align:left;transition:background 0.15s ease;" title="Report a bug">🐛 Report Bug</button>
+    <div style="border-top:1px solid rgba(0,212,255,0.1);margin:4px 0;"></div>
+    <div style="padding:5px 14px 7px;">
+      <div style="font-size:9px;color:rgba(0,212,255,0.5);margin-bottom:5px;letter-spacing:0.06em;text-transform:uppercase;">🎚️ Coach Intensity</div>
+      <div id="vibeai-coach-level-btns" style="display:flex;gap:3px;">
+        <button data-level="off" style="flex:1;background:none;border:1px solid rgba(0,212,255,0.18);color:rgba(0,212,255,0.6);border-radius:4px;padding:3px 0;font-size:9px;cursor:pointer;transition:all 0.15s ease;">Off</button>
+        <button data-level="minimal" style="flex:1;background:none;border:1px solid rgba(0,212,255,0.18);color:rgba(0,212,255,0.6);border-radius:4px;padding:3px 0;font-size:9px;cursor:pointer;transition:all 0.15s ease;">Min</button>
+        <button data-level="standard" style="flex:1;background:none;border:1px solid rgba(0,212,255,0.18);color:rgba(0,212,255,0.6);border-radius:4px;padding:3px 0;font-size:9px;cursor:pointer;transition:all 0.15s ease;">Std</button>
+        <button data-level="active" style="flex:1;background:none;border:1px solid rgba(0,212,255,0.18);color:rgba(0,212,255,0.6);border-radius:4px;padding:3px 0;font-size:9px;cursor:pointer;transition:all 0.15s ease;">Max</button>
+      </div>
+    </div>
+    <div style="border-top:1px solid rgba(0,212,255,0.1);margin:4px 0;"></div>
+    <div style="padding:5px 14px 7px;">
+      <div style="font-size:9px;color:rgba(0,212,255,0.5);margin-bottom:5px;letter-spacing:0.06em;text-transform:uppercase;">🌙 Focus Mode</div>
+      <div id="vibeai-focus-btns" style="display:flex;gap:3px;">
+        <button data-focus="2" style="flex:1;background:none;border:1px solid rgba(0,212,255,0.18);color:rgba(0,212,255,0.6);border-radius:4px;padding:3px 0;font-size:9px;cursor:pointer;transition:all 0.15s ease;">2h</button>
+        <button data-focus="12" style="flex:1;background:none;border:1px solid rgba(0,212,255,0.18);color:rgba(0,212,255,0.6);border-radius:4px;padding:3px 0;font-size:9px;cursor:pointer;transition:all 0.15s ease;">12h</button>
+        <button data-focus="0" style="flex:1;background:none;border:1px solid rgba(100,220,160,0.25);color:rgba(100,220,160,0.7);border-radius:4px;padding:3px 0;font-size:9px;cursor:pointer;transition:all 0.15s ease;">Resume</button>
+      </div>
+      <div id="vibeai-focus-status" style="display:none;font-size:9px;color:rgba(100,220,160,0.85);margin-top:4px;"></div>
+    </div>
+    <div style="border-top:1px solid rgba(0,212,255,0.1);margin:4px 0;"></div>
+    <button id="vibeai-consent" style="display:block;width:100%;background:none;border:none;color:rgba(0,212,255,0.65);cursor:pointer;padding:7px 14px;font-size:11px;text-align:left;transition:background 0.15s ease;" title="View consent preferences">Consent</button>
+    <button id="vibeai-privacy" style="display:block;width:100%;background:none;border:none;color:rgba(0,212,255,0.65);cursor:pointer;padding:7px 14px;font-size:11px;text-align:left;transition:background 0.15s ease;" title="View privacy policy">Privacy</button>
+    <button id="vibeai-clear-data" style="display:block;width:100%;background:none;border:none;color:rgba(255,153,102,0.8);cursor:pointer;padding:7px 14px;font-size:11px;text-align:left;transition:background 0.15s ease;" title="Clear all locally stored VibeAI data">Reset Data</button>
+    <button id="vibeai-close-session-btn" style="display:block;width:100%;background:none;border:none;color:rgba(255,120,80,0.75);cursor:pointer;padding:7px 14px;font-size:11px;text-align:left;transition:background 0.15s ease;" title="End session">End Session</button>
+  `;
+  interactionControls.style.position = 'relative';
+  interactionControls.appendChild(overflowMenu);
+  hud.appendChild(interactionControls);
+
+  // v2.20.0: Minimal footer — theme toggle kept (hidden, Tier 2 feature)
   const footer = document.createElement('div');
   footer.id = 'vibeai-hud-footer';
   footer.style.cssText = `
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
-    padding: 4px 12px;
-    border-top: 1px solid rgba(0, 170, 255, 0.15);
+    padding: 3px 10px;
+    border-top: 1px solid rgba(0, 170, 255, 0.1);
     background: var(--vibeai-hud-footer-bg);
     transition: background 0.3s ease;
+    min-height: 20px;
   `;
   footer.innerHTML = `
-    <div style="display:flex; gap:6px; align-items:center; flex:1;">
-      <button id="vibeai-consent" class="footer-btn"
-        style="background:none; border:none; color:#00d4ff; cursor:pointer; padding:4px 8px; font-size:0.8em; border-radius:4px; transition:all 0.2s ease;"
-        title="View consent preferences">
-        Consent
-      </button>
-      <button id="vibeai-privacy" class="footer-btn"
-        style="background:none; border:none; color:#00d4ff; cursor:pointer; padding:4px 8px; font-size:0.8em; border-radius:4px; transition:all 0.2s ease;"
-        title="View privacy policy">
-        Privacy
-      </button>
-      <button id="vibeai-report-bug" class="footer-btn"
-        style="background:none; border:none; color:#00d4ff; cursor:pointer; padding:4px 8px; font-size:0.8em; border-radius:4px; transition:all 0.2s ease;"
-        title="Report a bug or issue">
-        Report
-      </button>
-      <button id="vibeai-clear-data" class="footer-btn"
-        style="background:none; border:none; color:#ff9966; cursor:pointer; padding:4px 8px; font-size:0.8em; border-radius:4px; transition:all 0.2s ease;"
-        title="Clear all locally stored VibeAI data">
-        Reset
-      </button>
-    </div>
-    <div style="display:flex; gap:6px; align-items:center;">
-      <!-- v2.14.3: Theme toggle hidden for Tier 1 (reserved for Tier 2/3 onboarding) -->
-      <button id="vibeai-theme-toggle"
-        title="${currentTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}"
-        style="display:none; background:none; border:none; cursor:pointer; font-size:18px; padding:4px;
-        border-radius:6px; transition:all 0.3s ease;
-        filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
-        ${currentTheme === 'dark' ? '☀️' : '🌙'}
-      </button>
-      <button id="vibeai-coach-btn"
-        title="VibeAI Coach: Post-send reflection & prompt library"
-        style="background:none; border:none; cursor:pointer; font-size:14px; padding:6px 10px;
-        border-radius:8px; transition:all 0.3s ease;
-        filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3)); font-weight:700;
-        background: rgba(255,255,255,0.1); color: white; display: flex; align-items: center; gap: 4px;">
-        <span>🧠</span>
-        <span style="font-size: 12px;">Coach</span>
-      </button>
-    </div>
+    <button id="vibeai-theme-toggle"
+      title="${currentTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}"
+      style="display:none; background:none; border:none; cursor:pointer; font-size:16px; padding:3px;
+      border-radius:6px; transition:all 0.3s ease;
+      filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+      ${currentTheme === 'dark' ? '☀️' : '🌙'}
+    </button>
   `;
   hud.appendChild(footer);
 
@@ -2146,14 +2196,14 @@ function renderHUDContainer() {
 
   // Pre-Phase A: Apply fixed HUD opacity (design authority)
   applyFixedHudOpacity();
-  void 0;
+  console.log('[VibeAI HUD] Fixed opacity applied: α=0.65, blur=14px');
 
   // 🎨 Phase Δ.9.1 - Load lexicon preference and tone map
   // Phase Δ9.2.2: Wait for lexicon to load BEFORE initializing canvas
   loadLexiconPreference().then(() => {
     return loadToneMap();
   }).then(() => {
-    void 0;
+    console.log('[VibeAI Lexicon] ✅ Lexicon loaded, initializing canvas...');
     initializeFoldSpaceCanvas();
   }).catch(err => {
     console.warn('[VibeAI Lexicon] Failed to load initial lexicon:', err);
@@ -2166,7 +2216,7 @@ function renderHUDContainer() {
     // DEBUG FIX (v2.14.0): HARD-GATE FoldSpaceCanvas when Hugo Orb is enabled
     // Hugo Orb uses a completely different DOM structure and rendering pipeline
     if (ENABLE_HUGO_ORB) {
-      void 0;
+      console.log('[VibeAI Canvas] Skipping FoldSpaceCanvas init (Hugo Orb active)');
       return;
     }
 
@@ -2260,12 +2310,12 @@ function renderHUDContainer() {
               }
             });
 
-            void 0;
+            console.log('[VibeAI Canvas] Debug bridge injected (cross-context active)');
           } catch (hookErr) {
             console.warn('[VibeAI Canvas] Failed to inject debug bridge:', hookErr);
           }
         } else {
-          void 0;
+          console.log('[VibeAI] Running in production mode - debug APIs disabled');
         }
 
       } catch (err) {
@@ -2281,7 +2331,7 @@ function renderHUDContainer() {
     const latest = window.VIBEAI_LAST_THREADS[window.VIBEAI_LAST_THREADS.length - 1];
     if (latest && latest.content) {
       updateHRIBridge(latest.content);
-      void 0;
+      console.log('[VibeAI HRI] 🎯 Initial HRI sync from existing threads');
     }
   }
 
@@ -2378,10 +2428,10 @@ function renderHUDContainer() {
     registerCleanup(() => {
       window.removeEventListener('message', messageHandler, true);
       window.__VIBEAI_MESSAGE_LISTENER_REGISTERED__ = false;
-      void 0;
+      console.log('[VibeAI HRI] 🧹 postMessage listener cleaned up');
     });
 
-    void 0;
+    console.log('[VibeAI HRI] ✅ postMessage listener registered (listening for VIBEAI_THREAD_UPDATE)');
   } else {
     console.warn('[VibeAI HRI] ⚠️ postMessage listener already registered, skipping duplicate');
   }
@@ -2412,7 +2462,7 @@ function renderHUDContainer() {
         }
       }
 
-      if (window.VIBEAI_HUD_DEBUG) void 0;
+      if (window.VIBEAI_HUD_DEBUG) console.log('[VibeAI HRI] 📨 threadUpdate event received', { count: detail.count, hasThreads: Array.isArray(detail.threads) });
       if (detail.content) {
         updateHRIBridge(detail.content);
         // v2.17: CustomEvent carries threads array — call updateThreadFeed so stage detector
@@ -2423,7 +2473,7 @@ function renderHUDContainer() {
           if (typeof updateThreadFeed === 'function') updateThreadFeed(detail.threads);
         }
         const target = ENABLE_HUGO_ORB ? 'Hugo Orb' : 'Canvas';
-        if (window.VIBEAI_HUD_DEBUG) void 0;
+        if (window.VIBEAI_HUD_DEBUG) console.log(`[VibeAI HRI] 🔄 ${target} updated from ${detail.platform} (${detail.count} messages)`);
       } else {
         console.warn('[VibeAI HRI] ⚠️ threadUpdate event missing content', detail);
       }
@@ -2434,18 +2484,18 @@ function renderHUDContainer() {
     registerCleanup(() => {
       document.removeEventListener('vibeai:threadUpdate', __vibeai_threadUpdateHandler, { capture: true });
       window.__VIBEAI_THREAD_EVENT_LISTENER_REGISTERED__ = false;
-      void 0;
+      console.log('[VibeAI HRI] 🧹 threadUpdate listener cleaned up');
     });
   } else {
     console.warn('[VibeAI HRI] ⚠️ threadUpdate listener already registered, skipping duplicate');
   }
-  void 0;
+  console.log('[VibeAI HRI] ✅ Dynamic thread monitoring active (8s interval, capture mode)');
 
   // DEBUG FIX (v2.14.0): Expose safe debug hooks for testing
   if (window.VIBEAI_HUD_DEBUG) {
     window.__VIBEAI_DEBUG__ = window.__VIBEAI_DEBUG__ || {};
     window.__VIBEAI_DEBUG__.forceHRI = (text) => {
-      void 0;
+      console.log('[DEBUG] Manual HRI update triggered');
       updateHRIBridge(text || 'This is a test message for debugging HRI pipeline.');
     };
     window.__VIBEAI_DEBUG__.getLast = () => ({
@@ -2475,10 +2525,10 @@ function renderHUDContainer() {
       listenerRegistered: window.__VIBEAI_MESSAGE_LISTENER_REGISTERED__
     });
 
-    void 0;
+    console.log('[VibeAI DEBUG] 🔧 Debug hooks available: __VIBEAI_DEBUG__.forceHRI(), .getLast(), .dispatchTest(), __VIBEAI_DEBUG_ORB__()');
   }
 
-  void 0;
+  console.log('[VibeAI UniHUD] ✅ Unified HUD Container injected');
   return hud;
 }
 
@@ -2500,7 +2550,7 @@ function ensureCanvasLayer() {
     `;
     // Keep it empty for now; real canvas will be injected later by FoldSpaceCanvas when re-integrated
     document.body.appendChild(canvas);
-    void 0;
+    console.log('[VibeAI UniHUD] ✅ Pre-injected foldspace-canvas placeholder');
   } catch { /* best-effort */ }
 }
 
@@ -2527,12 +2577,12 @@ function injectUnifiedHUD(options = { observer: true }) {
     }
 
     if (window.__VIBEAI__.hudMounted && existingHud) {
-      void 0;
+      console.log('[VibeAI HUD] mount skipped (already mounted)');
       return existingHud;
     }
 
     if (window.__VIBEAI__.hudMounting) {
-      void 0;
+      console.log('[VibeAI HUD] mount skipped (mounting in progress)');
       return existingHud || null;
     }
 
@@ -2587,7 +2637,7 @@ function injectUnifiedHUD(options = { observer: true }) {
             window.__vibeai_unified_observer = null;
           } catch (e) {}
         });
-        void 0;
+        console.log('[VibeAI UniHUD] MutationObserver enabled for reinjection (ChatGPT) — throttled 2s');
       }
     } catch { /* ignore observer errors */ }
 
@@ -2872,7 +2922,7 @@ function injectHUDStyles() {
     }
   `;
   document.head.appendChild(style);
-  void 0;
+  console.log('[VibeAI UniHUD] ✅ Styles injected');
 }
 
 // 3. Event listeners
@@ -2944,7 +2994,7 @@ function attachEventListeners() {
           toggleCanvasBtn.style.background = 'rgba(0, 170, 255, 0.3)';
           toggleCanvasBtn.style.color = '#00d4ff';
           toggleCanvasBtn.title = 'Maximize HUD';
-          void 0;
+          console.log('[VibeAI UniHUD] HUD minimized to bottom tab');
         } else {
           // Maximize: restore full HUD
           hud.style.width = '360px';
@@ -2997,7 +3047,7 @@ function attachEventListeners() {
           toggleCanvasBtn.style.background = '';
           toggleCanvasBtn.style.color = '';
           toggleCanvasBtn.title = 'Minimize HUD';
-          void 0;
+          console.log('[VibeAI UniHUD] HUD maximized');
         }
       }
     });
@@ -3010,7 +3060,7 @@ function attachEventListeners() {
         // Phase 2: run cleanup after session close flow (retrieval prompt)
         function __vibeai_do_hud_close() {
           hud.remove();
-          void 0;
+          console.log('[VibeAI UniHUD] HUD removed — clean reopen path available');
 
           // Run registered cleanup functions (remove listeners, intervals, observers)
           try {
@@ -3021,7 +3071,7 @@ function attachEventListeners() {
           try {
             window.__VIBEAI__ = window.__VIBEAI__ || {};
             window.__VIBEAI__.hudClosed = true;
-            void 0;
+            console.log('[VibeAI HUD] hudClosed flag set — nudges suppressed');
           } catch (e) {}
 
           // Phase VIII.0: Cleanup Hugo Orb on close
@@ -3029,7 +3079,7 @@ function attachEventListeners() {
           if (ENABLE_HUGO_ORB && window.hugoOrb) {
             try { window.hugoOrb.destroy(); } catch (e) { console.warn('hugoOrb.destroy error', e); }
             try { window.hugoOrb = null; } catch (e) {}
-            void 0;
+            console.log('[VibeAI HUD] 🧹 Hugo Orb cleaned up');
           }
 
           // Legacy: Cleanup FoldSpace canvas on close
@@ -3050,14 +3100,14 @@ function attachEventListeners() {
 
   if (consentBtn) {
     consentBtn.addEventListener('click', () => {
-      void 0;
+      console.log('[VibeAI UniHUD] 📋 Consent clicked - showing consent modal');
       showConsentModal();
     });
   }
 
   if (privacyBtn) {
     privacyBtn.addEventListener('click', () => {
-      void 0;
+      console.log('[VibeAI UniHUD] 🔒 Privacy clicked - opening privacy statement');
       showPrivacyModal();
     });
   }
@@ -3104,7 +3154,7 @@ function attachEventListeners() {
   // Phase VIII.1 Coach: Coach button opens Lexicon Panel
   if (coachBtn) {
     coachBtn.addEventListener('click', () => {
-      void 0;
+      console.log('[VibeAI Coach] 🧠 Opening Coach Lexicon Panel...');
 
       // Remove highlight when clicked
       coachBtn.classList.remove('highlight');
@@ -3148,6 +3198,15 @@ function attachEventListeners() {
     nudgeTextEl.style.cursor = 'pointer';
     nudgeTextEl.title = 'Click to get thinking prompts';
     nudgeTextEl.addEventListener('click', toggleGuidePanel);
+  }
+
+  // Wire the in-panel close button
+  const guideCloseBtn = document.getElementById('vibeai-guide-close');
+  if (guideCloseBtn && guidePanelEl) {
+    guideCloseBtn.addEventListener('click', () => {
+      guidePanelEl.style.display = 'none';
+      if (guideBtn) guideBtn.style.background = 'none';
+    });
   }
 
   if (guideBtn && guidePanelEl) {
@@ -3284,6 +3343,111 @@ function attachEventListeners() {
     });
   }
 
+  // v2.20.0 D3: Overflow menu toggle (••• button)
+  const overflowBtn = document.getElementById('vibeai-overflow-btn');
+  const overflowMenuEl = document.getElementById('vibeai-overflow-menu');
+
+  function updateCoachLevelUI(level) {
+    const container = document.getElementById('vibeai-coach-level-btns');
+    if (!container) return;
+    container.querySelectorAll('button[data-level]').forEach(btn => {
+      const active = btn.dataset.level === level;
+      btn.style.background = active ? 'rgba(0,212,255,0.18)' : 'none';
+      btn.style.color = active ? 'rgba(0,212,255,1)' : 'rgba(0,212,255,0.6)';
+      btn.style.borderColor = active ? 'rgba(0,212,255,0.6)' : 'rgba(0,212,255,0.18)';
+      btn.style.fontWeight = active ? '700' : '400';
+    });
+  }
+
+  if (overflowBtn && overflowMenuEl) {
+    overflowBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = overflowMenuEl.style.display !== 'none';
+      overflowMenuEl.style.display = isOpen ? 'none' : 'block';
+      if (!isOpen) {
+        // Direction-aware placement: open upward if space allows, else flip downward
+        const btnRect = overflowBtn.getBoundingClientRect();
+        const availableAbove = btnRect.top - 12;
+        const availableBelow = window.innerHeight - btnRect.bottom - 12;
+        const MIN_HEIGHT = 160; // min to show top items (Nudge + Expand Timeline + Bookmarks)
+        if (availableAbove >= MIN_HEIGHT) {
+          overflowMenuEl.style.bottom = 'calc(100% + 4px)';
+          overflowMenuEl.style.top = 'auto';
+          overflowMenuEl.style.maxHeight = Math.min(availableAbove, Math.round(window.innerHeight * 0.7)) + 'px';
+        } else {
+          // Not enough room above — open downward instead
+          overflowMenuEl.style.bottom = 'auto';
+          overflowMenuEl.style.top = 'calc(100% + 4px)';
+          overflowMenuEl.style.maxHeight = Math.max(availableBelow, 120) + 'px';
+        }
+        const currentLevel = (window.VibeCoach && window.VibeCoach.getLevel) ? window.VibeCoach.getLevel() : 'standard';
+        updateCoachLevelUI(currentLevel);
+      }
+    });
+    document.addEventListener('click', () => {
+      if (overflowMenuEl) overflowMenuEl.style.display = 'none';
+    });
+    overflowMenuEl.addEventListener('click', (e) => e.stopPropagation());
+  }
+
+  // D6: Coach intensity level buttons
+  const coachLevelBtns = document.getElementById('vibeai-coach-level-btns');
+  if (coachLevelBtns) {
+    // Set initial highlight
+    const initLevel = (window.VibeCoach && window.VibeCoach.getLevel) ? window.VibeCoach.getLevel() : 'standard';
+    updateCoachLevelUI(initLevel);
+
+    coachLevelBtns.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-level]');
+      if (!btn) return;
+      const level = btn.dataset.level;
+      if (window.VibeCoach && window.VibeCoach.setLevel) {
+        window.VibeCoach.setLevel(level);
+      }
+      updateCoachLevelUI(level);
+    });
+  }
+
+  // Phase 3: Focus Mode buttons
+  function updateFocusModeUI() {
+    const indicator = document.getElementById('vibeai-focus-indicator');
+    const statusEl = document.getElementById('vibeai-focus-status');
+    try {
+      const snoozeUntil = localStorage.getItem('vibeai_snooze_until');
+      const active = snoozeUntil && Date.now() < Number(snoozeUntil);
+      if (indicator) indicator.style.display = active ? 'block' : 'none';
+      if (statusEl) {
+        if (active) {
+          const remaining = Math.ceil((Number(snoozeUntil) - Date.now()) / 3600000);
+          statusEl.textContent = `Active — ${remaining}h remaining`;
+          statusEl.style.display = 'block';
+        } else {
+          statusEl.style.display = 'none';
+        }
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  const focusBtns = document.getElementById('vibeai-focus-btns');
+  if (focusBtns) {
+    updateFocusModeUI(); // init state on load
+    focusBtns.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-focus]');
+      if (!btn) return;
+      const hours = Number(btn.dataset.focus);
+      try {
+        if (hours === 0) {
+          localStorage.removeItem('vibeai_snooze_until');
+        } else {
+          localStorage.setItem('vibeai_snooze_until', String(Date.now() + hours * 3600000));
+        }
+      } catch (e) { void e; }
+      updateFocusModeUI();
+      const menu = document.getElementById('vibeai-overflow-menu');
+      if (menu) menu.style.display = 'none';
+    });
+  }
+
   // Nudge toggle — enable / disable nudge strip
   const nudgeToggleBtn = document.getElementById('vibeai-nudge-toggle');
   if (nudgeToggleBtn) {
@@ -3299,6 +3463,156 @@ function attachEventListeners() {
         window.__VIBEAI__ = window.__VIBEAI__ || {};
         window.__VIBEAI__.nudgesEnabled = nudgesEnabled;
       } catch (e) {}
+    });
+  }
+
+  // --- Bookmark Panel MVP ---
+  function formatRelTime(ts) {
+    const diff = Date.now() - ts;
+    if (diff < 60000) return 'just now';
+    if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+    return Math.floor(diff / 86400000) + 'd ago';
+  }
+
+  function closeBookmarkPanel() {
+    const existing = document.getElementById('vibeai-bookmark-panel');
+    if (existing) existing.remove();
+  }
+
+  function renderBookmarkPanel() {
+    closeBookmarkPanel();
+    // Close coach if open (mutual exclusivity)
+    const coachPanel = document.getElementById('vibeai-coach-panel');
+    if (coachPanel) coachPanel.style.display = 'none';
+
+    try {
+      chrome.storage.local.get(['vibeai_bookmarks'], function(result) {
+        if (chrome.runtime.lastError) return;
+        const bookmarks = (result.vibeai_bookmarks || []).slice(0, 20);
+
+        const panel = document.createElement('div');
+        panel.id = 'vibeai-bookmark-panel';
+        panel.className = 'vibeai-bookmark-panel';
+
+        const header = document.createElement('div');
+        header.className = 'vibeai-bm-header';
+        header.innerHTML = `<span class="vibeai-bm-title">📌 Bookmarks</span><button class="vibeai-bm-close" title="Close">✕</button>`;
+        panel.appendChild(header);
+
+        const list = document.createElement('div');
+        list.className = 'vibeai-bm-list';
+
+        if (!bookmarks.length) {
+          list.innerHTML = `<div class="vibeai-bm-empty">No bookmarks yet.<br>Use the bookmark button on a message to save it here.</div>`;
+        } else {
+          bookmarks.forEach((bm, idx) => {
+            const item = document.createElement('div');
+            item.className = 'vibeai-bm-item';
+
+            const preview = (bm.text || '').slice(0, 80).replace(/\n/g, ' ');
+            const meta = formatRelTime(bm.ts || 0);
+
+            item.innerHTML = `
+              <div class="vibeai-bm-text">
+                <div class="vibeai-bm-preview">${preview || '(no text)'}</div>
+                <div class="vibeai-bm-meta">${meta}</div>
+              </div>
+              <button class="vibeai-bm-delete" data-idx="${idx}" title="Remove">✕</button>
+            `;
+
+            // Click item → scroll to element
+            item.addEventListener('click', (e) => {
+              if (e.target.closest('.vibeai-bm-delete')) return;
+              const sel = bm.selector;
+              if (sel) {
+                try {
+                  const target = document.querySelector(sel);
+                  if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  } else {
+                    const missingNote = item.querySelector('.vibeai-bm-missing');
+                    if (!missingNote) {
+                      const note = document.createElement('div');
+                      note.className = 'vibeai-bm-missing';
+                      note.textContent = 'Message no longer visible';
+                      item.querySelector('.vibeai-bm-text').appendChild(note);
+                    }
+                  }
+                } catch (err) {}
+              }
+              closeBookmarkPanel();
+            });
+
+            // Delete button
+            item.querySelector('.vibeai-bm-delete').addEventListener('click', (e) => {
+              e.stopPropagation();
+              const i = Number(e.currentTarget.dataset.idx);
+              try {
+                chrome.storage.local.get(['vibeai_bookmarks'], function(r2) {
+                  if (chrome.runtime.lastError) return;
+                  const updated = (r2.vibeai_bookmarks || []);
+                  updated.splice(i, 1);
+                  chrome.storage.local.set({ vibeai_bookmarks: updated }, function() {
+                    renderBookmarkPanel(); // re-render
+                  });
+                });
+              } catch (err) {}
+            });
+
+            list.appendChild(item);
+          });
+        }
+
+        panel.appendChild(list);
+        document.body.appendChild(panel);
+
+        // Position: anchored left of HUD, screen-boundary clamped
+        const hudEl = document.getElementById('vibeai-unified-hud');
+        if (hudEl) {
+          const hudRect = hudEl.getBoundingClientRect();
+          const panelW = 272;
+          const panelH = Math.min(panel.offsetHeight || 300, window.innerHeight * 0.7);
+          let left = hudRect.left - panelW - 8;
+          let top = hudRect.top;
+          // Clamp horizontally
+          if (left < 8) left = hudRect.right + 8;
+          if (left + panelW > window.innerWidth - 8) left = window.innerWidth - panelW - 8;
+          // Clamp vertically
+          if (top + panelH > window.innerHeight - 8) top = window.innerHeight - panelH - 8;
+          if (top < 8) top = 8;
+          panel.style.left = left + 'px';
+          panel.style.top = top + 'px';
+        }
+
+        // Close button
+        panel.querySelector('.vibeai-bm-close').addEventListener('click', closeBookmarkPanel);
+
+        // Click outside to close
+        setTimeout(() => {
+          document.addEventListener('click', function onOutside(e) {
+            if (!panel.contains(e.target)) {
+              closeBookmarkPanel();
+              document.removeEventListener('click', onOutside);
+            }
+          });
+        }, 50);
+      });
+    } catch (e) {}
+  }
+
+  const bookmarkMenuBtn = document.getElementById('vibeai-bookmarks-btn');
+  if (bookmarkMenuBtn) {
+    bookmarkMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const menu = document.getElementById('vibeai-overflow-menu');
+      if (menu) menu.style.display = 'none';
+      // Toggle
+      if (document.getElementById('vibeai-bookmark-panel')) {
+        closeBookmarkPanel();
+      } else {
+        renderBookmarkPanel();
+      }
     });
   }
 
@@ -3513,7 +3827,7 @@ function updateThreadFeed(threads) {
       : (thread.tone ? [thread.tone] : pickFromMetrics());
 
     // Debug: Log what we're rendering for this thread
-    if (window.VIBEAI_HUD_DEBUG) void 0;
+    if (window.VIBEAI_HUD_DEBUG) console.log(`[Renderer] foldspaceMiniHTML: tones=${JSON.stringify(tones)}, thread.tone=${thread.tone}, mapped=${JSON.stringify(mapped)}`);
 
     // Map mood keys to representative emoji (aligned with tone strip)
     const moodMap = {
@@ -3597,7 +3911,7 @@ function updateThreadFeed(threads) {
     });
   });
 
-  void 0;
+  console.log(`[VibeAI UniHUD] ✅ Rendered ${threads.length} threads`);
 }
 
 // Helper: auto-title from first 5 words
@@ -3609,7 +3923,7 @@ function autoTitle(content) {
 
 // Scroll to thread on click
 function scrollToThread(threadId) {
-  void 0;
+  console.log(`[VibeAI UniHUD] 🎯 Scrolling to thread: ${threadId}`);
 
   // Detect platform
   const _HOSTNAME = window.location.hostname;
@@ -3658,14 +3972,14 @@ function scrollToThread(threadId) {
     targetElement.style.setProperty('border-radius', '8px', 'important');
     targetElement.style.setProperty('transition', 'all 0.3s ease', 'important');
 
-    void 0;
+    console.log(`[VibeAI UniHUD] ✅ Scrolled to thread: ${threadId}`);
 
     // Remove highlight after 2 seconds
     setTimeout(() => {
       targetElement.style.removeProperty('outline');
       targetElement.style.removeProperty('background-color');
       targetElement.style.removeProperty('border-radius');
-      void 0;
+      console.log(`[VibeAI UniHUD] 🌊 Highlight faded: ${threadId}`);
     }, 2000);
   } else {
     console.warn(`[VibeAI UniHUD] ⚠️ Thread element not found: ${threadId} (index: ${index})`);
@@ -3684,28 +3998,224 @@ function scrollToThread(threadId) {
 //   });
 // }
 
-// 5.5 First-Time Onboarding Hint
-function showFirstTimeHint() {
+// ─── Phase 4: Load Awareness Engine ────────────────────────────────────────
+
+/**
+ * Behavioral load detection using only local, visible signals.
+ * Does NOT claim token accuracy. Uses thread depth + prompt size + code signals.
+ * Returns: 'light' | 'moderate' | 'heavy' | 'high'
+ */
+function computeLoadLevel() {
   try {
-    if (!chrome || !chrome.storage || !chrome.storage.local) {
-      console.warn('[VibeAI] chrome.storage.local not available for first-time hint.');
-      return;
-    }
+    const threads = window.VIBEAI_LAST_THREADS || [];
+    const exchangeCount = threads.length;
+
+    // Isolate user messages for prompt analysis
+    const userMsgs = threads.filter(function(t) { return t.source === 'user' || t.role === 'user'; });
+    const lastUserText = userMsgs.length ? (userMsgs[userMsgs.length - 1].text || '') : '';
+    const lastLen = lastUserText.length;
+
+    // Thresholds (Council-approved v1)
+    const largePaste     = lastLen > 500;
+    const veryLargePaste = lastLen > 1200;
+    const longThread     = exchangeCount > 15;
+    const veryLongThread = exchangeCount > 30;
+
+    // Code/debug signal: code fences, stack traces, error syntax
+    const codeSignal = /```|^\s{4,}\S|Traceback|TypeError|ReferenceError|SyntaxError|at\s+\w+\s*\(/im.test(lastUserText);
+
+    // Rapid interaction: 3+ recent short user prompts
+    const recentShort = userMsgs.slice(-5).filter(function(m) { return (m.text || '').length < 80; });
+    const rapidInteraction = recentShort.length >= 3;
+
+    // Classification — thread depth is weighted heavily per spec
+    if (veryLargePaste || (largePaste && longThread) || (veryLongThread && lastLen > 100)) return 'high';
+    if (longThread || largePaste || (codeSignal && exchangeCount > 8) || rapidInteraction)  return 'heavy';
+    if (exchangeCount > 8 || lastLen > 200) return 'moderate';
+    return 'light';
   } catch (e) {
-    console.warn('[VibeAI] chrome.storage.local check failed:', e);
-    return;
+    return 'light';
+  }
+}
+
+/**
+ * Update the load arc SVG and header message based on current load level.
+ * Called from the existing stagePoller (no extra timer).
+ */
+function updateLoadAwareness() {
+  const arcPath  = document.getElementById('vibeai-load-arc-path');
+  const arcLabel = document.getElementById('vibeai-load-arc-label');
+  const loadMsg  = document.getElementById('vibeai-load-msg');
+  if (!arcPath && !loadMsg) return;
+
+  const level = computeLoadLevel();
+
+  // Focus Mode — arc dims, message suppressed
+  let focusActive = false;
+  try {
+    const snoozeUntil = localStorage.getItem('vibeai_snooze_until');
+    focusActive = !!(snoozeUntil && Date.now() < Number(snoozeUntil));
+  } catch (e) { void e; }
+
+  // Arc visual state — use style.opacity so CSS animation can override it
+  if (arcPath) {
+    // Remove attributes that conflict with style-based animation
+    arcPath.removeAttribute('opacity');
+    switch (level) {
+      case 'light':
+        arcPath.style.opacity = '0';
+        arcPath.style.animation = 'none';
+        arcPath.style.filter = 'none';
+        if (arcLabel) { arcLabel.style.opacity = '0'; arcLabel.textContent = ''; }
+        break;
+      case 'moderate':
+        arcPath.style.opacity = focusActive ? '0.15' : '0.38';
+        arcPath.setAttribute('stroke', 'rgba(0,212,255,0.55)');
+        arcPath.setAttribute('stroke-width', '1.5');
+        arcPath.style.animation = 'none';
+        arcPath.style.filter = 'none';
+        if (arcLabel) {
+          arcLabel.textContent = 'SESSION LOAD';
+          arcLabel.style.color = 'rgba(0,212,255,0.7)';
+          arcLabel.style.opacity = focusActive ? '0' : '1';
+        }
+        break;
+      case 'heavy':
+        arcPath.style.opacity = focusActive ? '0.28' : '';
+        arcPath.setAttribute('stroke', 'rgba(255,165,60,0.8)');
+        arcPath.setAttribute('stroke-width', '2.5');
+        arcPath.style.animation = focusActive ? 'none' : 'vibeai-arc-pulse-heavy 2.4s ease-in-out infinite';
+        arcPath.style.filter = 'none';
+        if (arcLabel) {
+          arcLabel.textContent = 'Heavy Session';
+          arcLabel.style.color = 'rgba(255,165,60,0.9)';
+          arcLabel.style.opacity = focusActive ? '0' : '1';
+        }
+        break;
+      case 'high':
+        arcPath.style.opacity = focusActive ? '0.35' : '';
+        arcPath.setAttribute('stroke', 'rgba(255,120,40,0.9)');
+        arcPath.setAttribute('stroke-width', '3');
+        arcPath.style.animation = focusActive ? 'none' : 'vibeai-arc-pulse-high 1.8s ease-in-out infinite';
+        arcPath.style.filter = focusActive ? 'none' : 'drop-shadow(0 0 3px rgba(255,120,40,0.45))';
+        if (arcLabel) {
+          arcLabel.textContent = 'High Load';
+          arcLabel.style.color = 'rgba(255,100,40,0.95)';
+          arcLabel.style.opacity = focusActive ? '0' : '1';
+        }
+        break;
+    }
   }
 
-  // DEBUG FIX (v2.14.1): Session-based display - shows on every new page load
-  // Show on every page until dismissed (per session, not permanent)
-  if (window.__vibeai_onboard_shown) {
-    // Already shown this session, skip
-    return;
+  // Header micro message — only heavy/high, suppressed during Focus Mode
+  if (loadMsg) {
+    if (!focusActive && level === 'high') {
+      loadMsg.textContent = 'High load — consider a new thread';
+      loadMsg.style.display = 'block';
+    } else if (!focusActive && level === 'heavy') {
+      loadMsg.textContent = 'Heavy session';
+      loadMsg.style.display = 'block';
+    } else {
+      loadMsg.style.display = 'none';
+    }
   }
-  window.__vibeai_onboard_shown = true;
+}
 
-  // Render the onboarding hint
-  renderOnboardingHint();
+// 5.5 First-Time Onboarding Hint
+// v2.20.0: version-keyed via chrome.storage.local
+// - fires on fresh install (no key)
+// - fires again after extension update (version mismatch)
+// - silent on new tab / new window / same install
+// - silent on browser restart (key persists across sessions)
+// - clears on uninstall → fires on reinstall
+const WALKTHROUGH_VERSION = '2.20.0';
+
+function showFirstTimeHint() {
+  // Session guard — prevents double-fire within same page load
+  if (window.__vibeai_onboard_shown) return;
+
+  try {
+    chrome.storage.local.get(['vibeai_intro_version'], function(result) {
+      if (chrome.runtime.lastError) return; // extension context gone
+      if (result.vibeai_intro_version === WALKTHROUGH_VERSION) return; // already seen this version
+
+      // New install or version upgrade — show once
+      window.__vibeai_onboard_shown = true;
+      window.__vibeai_onboard_active = true;
+      showWalkthrough();
+    });
+  } catch (e) { /* extension context unavailable */ }
+}
+
+// Phase 3: 4-step micro walkthrough (one-time, skippable, anchored)
+function showWalkthrough() {
+  const STEPS = [
+    { label: 'What this is',  anchor: '#vibeai-hud-header',    text: "This isn't another AI. It's a mirror — it shows when AI is doing too much of your thinking." },
+    { label: 'The Orb',       anchor: '#vibeai-orb-wrapper',   text: "The orb reflects your thinking mode in real-time: Active, Passive, or Ready. Watch it shift as you engage." },
+    { label: 'Thinking Mirror', anchor: '#vibeai-guide-btn',   text: "When passive acceptance is detected, this opens optional reflection prompts. Tap 'Why?' on any insight to see the reasoning." },
+    { label: 'Your control',  anchor: '#vibeai-overflow-btn',  text: "Adjust Coach Intensity (Off / Minimal / Standard / Active) or enable Focus Mode to pause nudges. All from the ••• menu." }
+  ];
+
+  let currentStep = 0;
+
+  function getPos(selector) {
+    try {
+      const el = document.querySelector(selector);
+      if (el) return el.getBoundingClientRect();
+    } catch (e) {}
+    return null;
+  }
+
+  function removePopup() {
+    const el = document.getElementById('vibeai-walkthrough-popup');
+    if (el) el.remove();
+  }
+
+  function complete() {
+    removePopup();
+    window.__vibeai_onboard_active = false;
+    try {
+      chrome.storage.local.set({ vibeai_intro_version: WALKTHROUGH_VERSION });
+    } catch (e) {}
+  }
+
+  function renderStep(idx) {
+    removePopup();
+    if (idx >= STEPS.length) { complete(); return; }
+
+    const step = STEPS[idx];
+    const anchorRect = getPos(step.anchor);
+    const hud = document.getElementById('vibeai-unified-hud');
+    const hudRect = hud ? hud.getBoundingClientRect() : null;
+
+    // Position: left of HUD if HUD is on right side, otherwise right of anchor
+    let left, top;
+    if (anchorRect) {
+      const onRight = hudRect && hudRect.left > window.innerWidth / 2;
+      left = onRight ? Math.max(8, anchorRect.left - 276) : Math.min(window.innerWidth - 284, anchorRect.right + 10);
+      top = Math.max(8, Math.min(window.innerHeight - 130, anchorRect.top + anchorRect.height / 2 - 55));
+    } else {
+      left = Math.max(8, window.innerWidth - 290);
+      top = Math.max(8, window.innerHeight / 2 - 55);
+    }
+
+    const popup = document.createElement('div');
+    popup.id = 'vibeai-walkthrough-popup';
+    popup.style.cssText = `position:fixed;left:${left}px;top:${top}px;width:260px;z-index:2147483650;background:rgba(10,16,26,0.97);border:1px solid rgba(0,212,255,0.35);border-radius:10px;padding:12px 14px;font-family:system-ui,-apple-system,sans-serif;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,0.5);animation:vibeaiSlideIn 160ms ease-out;`;
+    popup.innerHTML = `
+      <div style="font-size:9px;color:rgba(0,212,255,0.6);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;">Step ${idx + 1} of ${STEPS.length} · ${step.label}</div>
+      <div style="font-size:12px;line-height:1.45;color:rgba(255,255,255,0.9);margin-bottom:10px;">${step.text}</div>
+      <div style="display:flex;gap:6px;justify-content:space-between;align-items:center;">
+        <button id="vibeai-wt-skip" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:10px;cursor:pointer;padding:0;">Skip tour</button>
+        <button id="vibeai-wt-next" style="background:linear-gradient(135deg,#2bb3ff,#8a5bff);border:none;color:#fff;border-radius:6px;padding:4px 12px;font-size:10px;font-weight:700;cursor:pointer;">${idx === STEPS.length - 1 ? 'Done ✓' : 'Next →'}</button>
+      </div>
+    `;
+    document.documentElement.appendChild(popup);
+    popup.querySelector('#vibeai-wt-skip').addEventListener('click', complete);
+    popup.querySelector('#vibeai-wt-next').addEventListener('click', () => renderStep(idx + 1));
+  }
+
+  renderStep(0);
 }
 
 function renderOnboardingHint() {
@@ -3754,7 +4264,7 @@ function renderOnboardingHint() {
       <div style="margin-top: 10px; padding: 8px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; border-left: 3px solid rgba(34, 211, 238, 0.7);">
         <div style="font-weight: 600; margin-bottom: 6px; opacity: 0.95;">What it tracks</div>
         <div style="font-size: 12px; opacity: 0.85; line-height: 1.8;">
-          <div><strong>🧭 Thinking Engagement</strong> — live signal showing whether you are actively engaged or drifting into passive acceptance</div>
+          <div><strong>🧭 Thinking State</strong> — live signal showing whether you are actively engaged or drifting into passive acceptance</div>
           <div style="margin-top: 4px;"><strong>💬 Nudge</strong> — a gentle prompt when passive acceptance is detected</div>
           <div style="margin-top: 4px;"><strong>⊹ Bookmark</strong> — save meaningful moments for later reflection</div>
           <div style="margin-top: 4px;"><strong>↕ Interaction Timeline</strong> — click Expand to see how the conversation unfolded</div>
@@ -3763,7 +4273,7 @@ function renderOnboardingHint() {
         </div>
       </div>
       <div style="margin-top: 10px; opacity: 0.85; font-size: 12px;">
-        💡 Watch the <strong>Thinking Engagement</strong> indicator. If <strong style="color:#fbbf24;">Passive Mode</strong> appears, VibeAI will nudge you to re-engage.
+        💡 Watch the <strong>Thinking State</strong> indicator. If <strong style="color:#fbbf24;">Passive Mode</strong> appears, VibeAI will nudge you to re-engage.
       </div>
     </div>
     <button id="vibeai-first-time-hint-btn"
@@ -3794,7 +4304,7 @@ function renderOnboardingHint() {
     if (el && el.parentElement) {
       el.parentElement.removeChild(el);
     }
-    void 0;
+    console.log('[VibeAI UniHUD] ✅ Onboarding dismissed (will show again on next page)');
   }
 
   const btn = document.getElementById('vibeai-first-time-hint-btn');
@@ -3831,6 +4341,15 @@ try {
         50% {
           box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
         }
+      }
+
+      @keyframes vibeai-arc-pulse-heavy {
+        0%, 100% { opacity: 0.72; }
+        50%       { opacity: 0.28; }
+      }
+      @keyframes vibeai-arc-pulse-high {
+        0%, 100% { opacity: 0.90; }
+        50%       { opacity: 0.35; }
       }
     `;
     document.head.appendChild(style);
@@ -3911,7 +4430,7 @@ function showPausedBar() {
     }
   });
 
-  void 0;
+  console.log('[VibeAI UniHUD] ⏸️ Paused bar displayed');
 }
 
 function showConsentModal() {
@@ -4048,7 +4567,7 @@ function showConsentModal() {
     if (target.id === 'vibeai-consent-accept' && !target.disabled) {
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
         chrome.storage.local.set({ consentGiven: true }, () => {
-          void 0;
+          console.log('[VibeAI UniHUD] ✅ User consent granted');
           // Mirror consent into window.__VIBEAI__ so engine modules have a synchronous truth source
           try { window.__VIBEAI__ = window.__VIBEAI__ || {}; window.__VIBEAI__.consentGiven = true; } catch (e) {}
           modal.remove();
@@ -4057,7 +4576,7 @@ function showConsentModal() {
         });
       } else {
         try { localStorage.setItem('vibeai_consentGiven', 'true'); } catch (err) { /* ignore */ }
-        void 0;
+        console.log('[VibeAI UniHUD] ✅ User consent granted (local fallback)');
         // Mirror consent into window.__VIBEAI__ so engine modules have a synchronous truth source
         try { window.__VIBEAI__ = window.__VIBEAI__ || {}; window.__VIBEAI__.consentGiven = true; } catch (e) {}
         modal.remove();
@@ -4068,7 +4587,7 @@ function showConsentModal() {
 
     // Handle Decline button click - SESSION-ONLY decline (P0 fix)
     if (target.id === 'vibeai-consent-decline') {
-      void 0;
+      console.log('[VibeAI UniHUD] ⏸️ User clicked Maybe Later (session-only decline)');
 
       // Set session-only decline flag (NOT permanent consentGiven:false)
       __vibeai_declined_this_session = true;
@@ -4104,7 +4623,7 @@ function showConsentModal() {
     });
   }
 
-  void 0;
+  console.log('[VibeAI UniHUD] 📋 Consent modal displayed');
 }
 
 // 6b. Privacy Modal
@@ -4219,7 +4738,7 @@ function showPrivacyModal() {
   if (closeBtn) {
     closeBtn.addEventListener('click', () => {
       modal.remove();
-      void 0;
+      console.log('[VibeAI UniHUD] 🔒 Privacy modal closed');
     });
   }
 
@@ -4230,7 +4749,7 @@ function showPrivacyModal() {
     }
   });
 
-  void 0;
+  console.log('[VibeAI UniHUD] 🔒 Privacy modal displayed');
 }
 
 // 7. Initial load (guarded)
@@ -4258,11 +4777,11 @@ let __vibeai_safe_init_called = false;
 function vibeaiSafeInit() {
   // Idempotence guard - prevent multiple calls on refresh
   if (__vibeai_safe_init_called) {
-    void 0;
+    console.log('[VibeAI UniHUD] Init already called, skipping duplicate');
     return;
   }
   __vibeai_safe_init_called = true;
-  void 0;
+  console.log('[VibeAI UniHUD] Starting safe init...');
 
   try {
     // Track consent resolution to avoid modal flash on slow storage
@@ -4272,7 +4791,7 @@ function vibeaiSafeInit() {
     } catch (e) {}
     // First check session decline (in-memory flag or chrome.storage.session)
     if (__vibeai_declined_this_session) {
-      void 0;
+      console.log('[VibeAI UniHUD] Session decline active, showing paused bar');
       setTimeout(() => { showPausedBar(); }, 1000);
       return;
     }
@@ -4295,7 +4814,7 @@ function vibeaiSafeInit() {
     checkSessionDecline.then((sessionDeclined) => {
       if (sessionDeclined) {
         __vibeai_declined_this_session = true;
-        void 0;
+        console.log('[VibeAI UniHUD] Session decline found in storage, showing paused bar');
         setTimeout(() => { showPausedBar(); }, 1000);
         return;
       }
@@ -4318,10 +4837,10 @@ function vibeaiSafeInit() {
       chrome.storage.local.get(['consentGiven'], (data) => {
         clearTimeout(consentCheckTimeout);
         try { if (window.__VIBEAI__) window.__VIBEAI__.consentResolved = true; } catch (e) {}
-        void 0;
+        console.log('[VibeAI UniHUD] Consent check result:', data);
 
         if (data.consentGiven === true) {
-          void 0;
+          console.log('[VibeAI UniHUD] Consent granted, injecting HUD');
           // Mirror storage consent into window.__VIBEAI__ — authoritative runtime source for engine modules
           try { window.__VIBEAI__ = window.__VIBEAI__ || {}; window.__VIBEAI__.consentGiven = true; } catch (e) {}
 
@@ -4340,6 +4859,7 @@ function vibeaiSafeInit() {
                 if (window.__VIBEAI__) {
                   window.__VIBEAI__.stagePollerActive     = false;
                   window.__VIBEAI__.nudgeListenerAttached = false;
+                  window.__VIBEAI__.__sessionStart        = Date.now(); // v2.20.1: reset session key for Thinking Mirror anti-spam
                 }
                 // Reset stage detector for fresh session, then immediately re-populate
                 // from existing thread data so the stage poller has a value on first tick.
@@ -4358,7 +4878,7 @@ function vibeaiSafeInit() {
                       : (Array.isArray(existingThreads) && existingThreads.length > 0 ? existingThreads[existingThreads.length - 1] : null);
                     if (seedThread && seedThread.content && typeof window.VibeStageDetector.update === 'function') {
                       window.VibeStageDetector.update(seedThread.content);
-                      void 0;
+                      console.log('[VibeAI Phase2] StageDetector seeded from existing threads');
                     } else if (typeof window.VibeStageDetector.seedSynthetic === 'function') {
                       // Cold-start: no existing threads to seed from (extension loaded mid-session
                       // or before any messages). Inject synthetic Exploring baseline so the first
@@ -4366,12 +4886,12 @@ function vibeaiSafeInit() {
                       window.VibeStageDetector.seedSynthetic('Exploring');
                     }
                   } catch (seedErr) { /* ignore */ }
-                  void 0;
+                  console.log('[VibeAI Phase2] StageDetector initialized');
                 }
                 // Trigger one-time onboarding nudge check
                 if (window.VibeNudgeEngine && typeof window.VibeNudgeEngine.checkAndShowOnboarding === 'function') {
                   window.VibeNudgeEngine.checkAndShowOnboarding();
-                  void 0;
+                  console.log('[VibeAI Phase2] NudgeEngine onboarding check run');
                 }
                 // Nudge listener — attach once; validates consent + pendingNudge (Chamlin contract)
                 // Fix 2: named function ref + registerCleanup for deterministic detach on close/reinject
@@ -4393,19 +4913,23 @@ function vibeaiSafeInit() {
                       // MVI: Thinking Mirror — auto-open guide on passive nudge
                       // Anti-spam: only auto-open once per unique thread context (keyed by thread count)
                       if (e && e.detail && e.detail.isPassive) {
+                        // v2.20.1 fix: key anti-spam guard on sessionStart+threadCount
+                        // Old key (threadCount only) blocked re-open when __VIBEAI__ persisted
+                        // across extension reloads with same thread count (known window.__VIBEAI__ persistence gotcha)
                         const currentCount = (window.VIBEAI_LAST_THREADS && window.VIBEAI_LAST_THREADS.length) || 0;
                         window.__VIBEAI__ = window.__VIBEAI__ || {};
-                        if (window.__VIBEAI__.__passiveMirrorLastCount !== currentCount) {
-                          window.__VIBEAI__.__passiveMirrorLastCount = currentCount;
+                        const sessionKey = currentCount + '_' + (window.__VIBEAI__.__sessionStart || 0);
+                        if (window.__VIBEAI__.__passiveMirrorLastKey !== sessionKey) {
+                          window.__VIBEAI__.__passiveMirrorLastKey = sessionKey;
                           const guideHdr = document.getElementById('vibeai-guide-header');
-                          if (guideHdr) guideHdr.textContent = 'Thinking Mirror — add your own thinking:';
+                          if (guideHdr) guideHdr.textContent = 'Thinking Mirror';
                           const gpEl = document.getElementById('vibeai-guide-panel');
                           if (gpEl) gpEl.style.display = 'flex';
                           const gBtn = document.getElementById('vibeai-guide-btn');
                           if (gBtn) gBtn.style.background = 'rgba(100,200,180,0.1)';
                         }
                       }
-                      void 0;
+                      console.log('[VibeAI Phase2] Nudge strip shown:', nudge);
                     } catch (err) {
                       console.warn('[VibeAI Phase2] nudgeReady handler error', err);
                     }
@@ -4440,7 +4964,7 @@ function vibeaiSafeInit() {
                           stageEl.style.color = 'rgba(120,200,160,0.85)';
                         }
                         if (engagementEl) {
-                          engagementEl.textContent = 'Thinking Engagement';
+                          engagementEl.textContent = 'Thinking State';
                           engagementEl.style.color = 'rgba(120,200,160,0.55)';
                         }
                         if (orbStageEl) {
@@ -4454,7 +4978,7 @@ function vibeaiSafeInit() {
                       // Map internal stage → user-facing cognitive engagement labels
                       const isPassive = stage === 'Accepting';
                       const stageLabel      = isPassive ? 'Passive Mode' : 'Active — ' + stage;
-                      const engagementLabel = isPassive ? 'Passive Mode' : 'Active';
+                      const engagementLabel = isPassive ? 'Passive' : 'Active';
                       const stageColor      = isPassive ? '#fbbf24' : 'rgba(0,212,255,0.9)';
                       const engagementColor = isPassive ? '#fbbf24' : 'rgba(180,210,210,0.55)';
 
@@ -4463,7 +4987,7 @@ function vibeaiSafeInit() {
                         stageEl.style.color   = stageColor;
                       }
                       if (engagementEl) {
-                        engagementEl.textContent = 'Thinking Engagement: ' + engagementLabel;
+                        engagementEl.textContent = 'Thinking State: ' + engagementLabel;
                         engagementEl.style.color = engagementColor;
                       }
                       if (orbStageEl) {
@@ -4474,6 +4998,8 @@ function vibeaiSafeInit() {
                       if (window.hugoOrb && typeof window.hugoOrb.setStage === 'function') {
                         window.hugoOrb.setStage(stage);
                       }
+                      // Phase 4: Load awareness — piggybacks on existing 2s poller
+                      updateLoadAwareness();
                     } catch (e) {}
                   }, 2000);
                   registerCleanup(function () {
@@ -4488,7 +5014,7 @@ function vibeaiSafeInit() {
 
           // mCopi audit fix: If timeout fired and showed modal, dismiss it now
           if (timeoutFired) {
-            void 0;
+            console.log('[VibeAI UniHUD] Auto-dismissing consent modal (late storage callback)');
             const modal = document.getElementById('vibeai-consent-modal');
             if (modal) modal.remove();
           }
@@ -4540,7 +5066,7 @@ function vibeaiSafeInit() {
 
           // Clean up any legacy consentGiven:false to prevent confusion
           if (data.consentGiven === false) {
-            void 0;
+            console.log('[VibeAI UniHUD] Clearing legacy consentGiven:false (P0 fix)');
             try {
               chrome.storage.local.remove('consentGiven');
             } catch (err) { /* ignore */ }
@@ -4587,26 +5113,26 @@ if (document.readyState === 'complete') {
 // Ctrl+Shift+V = "VibeAI"
 document.addEventListener('keydown', (e) => {
   if (e.ctrlKey && e.shiftKey && e.key === 'V') {
-    void 0;
+    console.log('[VibeAI UniHUD] 🔑 Keyboard shortcut detected (Ctrl+Shift+V)');
 
     chrome.storage.local.get(['consentGiven'], (data) => {
       if (data.consentGiven === true) {
-        void 0;
+        console.log('[VibeAI UniHUD] ℹ️  Consent already granted');
 
         // If HUD is missing despite consent, reinject it
         if (!document.getElementById('vibeai-unified-hud')) {
-          void 0;
+          console.log('[VibeAI UniHUD] Reinjecting HUD...');
           injectUnifiedHUD({ observer: PLATFORM === 'chatgpt' });
         }
       } else {
-        void 0;
+        console.log('[VibeAI UniHUD] Showing consent modal...');
         showConsentModal();
       }
     });
   }
 });
 
-void 0;
+console.log('[VibeAI UniHUD] 💡 Tip: Press Ctrl+Shift+V to enable VibeAI anytime');
 
 // v1.0 Coach: Initialize post-send coaching (runs after VibeAI HUD is ready)
 // Only on supported LLM platforms
@@ -4626,9 +5152,9 @@ if (window.VibeCoach && typeof window.VibeCoach.init === 'function') {
       try {
         const initialized = window.VibeCoach.init();
         if (initialized) {
-          void 0;
+          console.log('[VibeAI Coach] ✅ Post-send coaching initialized');
         } else {
-          void 0;
+          console.log('[VibeAI Coach] User declined consent');
         }
       } catch (err) {
         console.warn('[VibeAI Coach] Initialization failed:', err);

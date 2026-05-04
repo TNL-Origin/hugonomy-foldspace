@@ -269,7 +269,7 @@
     } catch (e) { /* consented stays false */ }
 
     if (!consented) {
-      void 0;
+      console.log('[VibeAI SessionManager] Close flow suppressed — no consent');
       return Promise.resolve();
     }
 
@@ -286,10 +286,10 @@
 
       if (safeResponse) {
         appendEntry(entry, function () {
-          void 0;
+          console.log('[VibeAI SessionManager] Session reflection saved');
         });
       } else {
-        void 0;
+        console.log('[VibeAI SessionManager] Session reflection skipped');
       }
 
       // Reset stage detector for the next session
@@ -323,7 +323,7 @@
     payload[STORAGE_KEY] = [];
     try {
       chrome.storage.local.set(payload, function () {
-        void 0;
+        console.log('[VibeAI SessionManager] Session log cleared');
       });
     } catch (e) {
       console.warn('[VibeAI SessionManager] Clear failed', e);
@@ -338,5 +338,5 @@
     clearLog
   };
 
-  void 0;
+  console.log('[VibeAI SessionManager] Loaded v2.16.0');
 })();

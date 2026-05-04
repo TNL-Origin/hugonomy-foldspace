@@ -39,5 +39,5 @@
     isConsented
   };
 
-  void 0;
+  console.log('[VibeAI ConsentHelper] Loaded v2.16.0');
 })();

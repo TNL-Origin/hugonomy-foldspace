@@ -95,7 +95,7 @@ All source files in this repository are plain, readable JavaScript. See [LICENSE
 
 ## Version
 
-**Current: v2.19.4** — Published March 2026
+**Current: v2.20.1** — Published May 2026
 
 See [KNOWN_ISSUES.md](KNOWN_ISSUES.md) for known issues and current status.
 

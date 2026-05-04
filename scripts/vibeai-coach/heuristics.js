@@ -110,63 +110,64 @@
   }
 
   const StateVisuals = {
-    URGENCY: { icon: "🟡", color: "#FFA500", label: "Urgency Detected" },
+    URGENCY: { icon: "🟡", color: "#FFA500", label: "Rushed" },
     FRUSTRATION: { icon: "🔴", color: "#FF6B6B", label: "Friction Detected" },
     CONFUSION: { icon: "🔵", color: "#4ECDC4", label: "Complexity Detected" },
     CLARITY: { icon: "🟢", color: "#95E1D3", label: "Clarity Detected" },
     NEUTRAL: { icon: "⚪", color: "#E0E0E0", label: "Neutral" }
   };
 
+  // D8 — Shorter, optional-tone coaching copy
   const CoachingScripts = {
     URGENCY: {
-      title: "Quick clarity boost",
-      insight: "This prompt carries urgency. When we rush, AI responses can get fuzzy. (Tip: Drag this panel by the header to move it)",
+      title: "Quick constraint?",
+      insight: "Rushed prompts can get fuzzy answers. Want to add one quick constraint?",
       suggestions: [
-        "Add one constraint (length/format/steps).",
-        "Ask for a short outline first, then details.",
-        "Request 'step-by-step' before the final answer."
+        "Add a length or format limit.",
+        "Ask for a short outline first.",
+        "Try \"step-by-step\" before the final answer."
       ],
-      example: "Try: \"Answer in 3 bullets, then one example.\""
+      example: "\"Answer in 3 bullets, then one example.\""
     },
     FRUSTRATION: {
-      title: "Break the loop",
-      insight: "It looks like you may be stuck in a loop. Fresh framing often fixes 'stuck' outputs. (Tip: Drag header to reposition)",
+      title: "Fresh frame?",
+      insight: "Looks like a stuck loop. A small reframe often breaks it.",
       suggestions: [
-        "State your goal + what went wrong (X vs Y).",
-        "Ask: \"What info are you missing to answer well?\"",
-        "Try a clean restart with one extra context detail."
+        "State: goal + what went wrong (X vs Y).",
+        "Ask: \"What info are you missing?\"",
+        "Try starting fresh with one extra detail."
       ],
-      example: "Try: \"Goal is X. Output does Y. Fix Y.\""
+      example: "\"Goal is X. Output does Y. Fix Y.\""
     },
     CONFUSION: {
-      title: "Add structure",
-      insight: "This topic seems dense. A simpler frame usually unlocks the rest. (Tip: Header is draggable)",
+      title: "Simpler start?",
+      insight: "Dense topic. Want a simpler starting point?",
       suggestions: [
         "Ask for an analogy first.",
-        "Request: definition → why it matters → example.",
-        "Limit scope: \"Only the top 3 concepts.\""
+        "Try: definition → why it matters → example.",
+        "Limit scope: \"Top 3 concepts only.\""
       ],
-      example: "Try: \"Explain with an analogy + 1 example.\""
+      example: "\"Explain with an analogy + 1 example.\""
     },
     CLARITY: {
-      title: "Reinforce the win",
-      insight: "This prompt is structured and calm — that tends to produce better answers. (Tip: Drag to move)",
+      title: "Nice structure",
+      insight: "Structured, calm prompt — tends to get good answers. Add alternatives?",
       suggestions: [
-        "Save this as a template for next time.",
-        "Add output format if you want even more precision.",
-        "Consider asking for alternatives to compare."
+        "Ask for 2 alternatives + tradeoffs.",
+        "Save this structure as a template.",
+        "Add an output format for extra precision."
       ],
-      example: "Try: \"Give 2 alternatives + tradeoffs.\""
+      example: "\"Give 2 alternatives + tradeoffs.\""
     },
     NEUTRAL: {
-      title: "Optional upgrade",
-      insight: "Want more precision? Small constraints usually sharpen the response. (Tip: Drag header to reposition)",
+      title: "Want more precision?",
+      insight: "A small constraint usually sharpens the response.",
       suggestions: [
-        "Specify format (bullets/table).",
-        "Specify audience (beginner/expert).",
-        "Specify length (short/medium/long)."
+        "Specify format (bullets, table, steps).",
+        "Specify audience (beginner, expert).",
+        "Specify length (short, medium, detailed)."
       ],
-      example: "Try: \"Explain for a beginner in 5 bullets.\""
+      example: "\"Explain for a beginner in 5 bullets.\""
     }
   };
 
@@ -194,6 +195,26 @@
     };
   }
 
+  // D5 — Context detection: DEBUG vs DEFAULT
+  function detectContext(text) {
+    const t = text || '';
+    let score = 0;
+
+    // Code blocks are a strong signal
+    if (/```/.test(t)) score += 3;
+    if (/<code[\s>]/i.test(t)) score += 2;
+
+    // Error / exception keywords
+    const errHits = (t.match(/\b(error|exception|traceback|stack trace|stack overflow|TypeError|SyntaxError|ReferenceError|AttributeError|IndexError|ValueError|NullPointerException|ENOENT|EACCES|undefined is not|cannot read prop)\b/gi) || []).length;
+    score += errHits;
+
+    // Debug action keywords
+    const dbgHits = (t.match(/\b(debug|fix|bug|breakpoint|console\.log|print\(|refactor|failing|failed|not working|doesn'?t work|crash|compile|lint|build fail|test fail|CI fail)\b/gi) || []).length;
+    score += dbgHits;
+
+    return score >= 2 ? 'DEBUG' : 'DEFAULT';
+  }
+
   window.VibeHeuristics = {
     analyze: (text, history = {}) => {
       const clean = (text || "").trim();
@@ -217,6 +238,7 @@
         visuals,
         script
       };
-    }
+    },
+    detectContext
   };
 })();

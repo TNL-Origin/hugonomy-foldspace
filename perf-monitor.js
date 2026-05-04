@@ -43,7 +43,7 @@ class PerfMonitor {
     // Start monitoring loop
     this.monitor();
 
-    void 0;
+    console.log('[VibeAI] ⚙️ Performance Monitor initialized');
   }
 
   monitor() {
@@ -97,9 +97,9 @@ class PerfMonitor {
 
   logStats() {
     if (this.memoryMB > 0) {
-      void 0;
+      console.log(`[VibeAI] ⚙️ FPS=${this.fps} | Mem≈${this.memoryMB} MB`);
     } else {
-      void 0;
+      console.log(`[VibeAI] ⚙️ FPS=${this.fps} | Mem=N/A`);
     }
   }
 

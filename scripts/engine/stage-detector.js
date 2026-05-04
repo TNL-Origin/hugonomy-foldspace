@@ -206,7 +206,13 @@
       console.warn('[VibeAI StageDetector] Could not write to __VIBEAI__', e);
     }
 
-    void 0;
+    console.log(
+      '[VibeAI StageDetector] Stage:', stage,
+      '| Skip:', skip,
+      // Note A: guard hResult null (heuristics unavailable on fresh install or load failure)
+      '| HeuristicState:', (hResult ? hResult.state : 'NEUTRAL'),
+      '| Confidence:', (hResult && typeof hResult.confidence === 'number' ? hResult.confidence.toFixed(2) : '0.00')
+    );
 
     return {
       stage,
@@ -232,7 +238,7 @@
         window.__VIBEAI__.stageHistory = stageHistory.slice();
         window.__VIBEAI__.__syntheticSeed = true; // audit flag
       } catch (e) { /* ignore */ }
-      void 0;
+      console.log('[VibeAI StageDetector] Synthetic seed injected:', syntheticStage);
     }
   }
 
@@ -250,7 +256,7 @@
       // v2.18.0: Clear hudClosed on session reset so nudges re-enable for new session
       window.__VIBEAI__.hudClosed         = false;
     } catch (e) { /* ignore */ }
-    void 0;
+    console.log('[VibeAI StageDetector] Reset');
   }
 
   /**
@@ -271,5 +277,5 @@
     STAGES
   };
 
-  void 0;
+  console.log('[VibeAI StageDetector] Loaded v2.16.0');
 })();

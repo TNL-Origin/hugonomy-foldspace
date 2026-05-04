@@ -84,7 +84,7 @@
       // Prevent duplicate bookmarks for the same message
       const alreadyExists = existing.some(b => b.messageId === bookmark.messageId);
       if (alreadyExists) {
-        void 0;
+        console.log('[VibeAI BookmarkManager] Already bookmarked:', bookmark.messageId);
         return;
       }
 
@@ -96,7 +96,7 @@
         : updated;
 
       writeBookmarks(capped, function () {
-        void 0;
+        console.log('[VibeAI BookmarkManager] Bookmark added:', bookmark.messageId);
         try {
           window.dispatchEvent(new CustomEvent('vibeai:bookmarkAdded', {
             detail: { bookmark }
@@ -125,11 +125,11 @@
     readBookmarks(function (existing) {
       const filtered = existing.filter(b => b.messageId !== messageId);
       if (filtered.length === existing.length) {
-        void 0;
+        console.log('[VibeAI BookmarkManager] Not found:', messageId);
         return;
       }
       writeBookmarks(filtered, function () {
-        void 0;
+        console.log('[VibeAI BookmarkManager] Bookmark removed:', messageId);
         try {
           window.dispatchEvent(new CustomEvent('vibeai:bookmarkRemoved', {
             detail: { messageId }
@@ -158,17 +158,17 @@
       const match    = messages.find(m => m.id === messageId);
 
       if (!match) {
-        void 0;
+        console.log('[VibeAI BookmarkManager] Message not found in current DOM:', messageId);
         return;
       }
 
       if (!match.element || !document.contains(match.element)) {
-        void 0;
+        console.log('[VibeAI BookmarkManager] Element no longer in DOM:', messageId);
         return;
       }
 
       match.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      void 0;
+      console.log('[VibeAI BookmarkManager] Scrolled to:', messageId);
 
       // Brief highlight for visual confirmation
       try {
@@ -188,7 +188,7 @@
    */
   function clear() {
     writeBookmarks([], function () {
-      void 0;
+      console.log('[VibeAI BookmarkManager] All bookmarks cleared');
       try {
         window.dispatchEvent(new CustomEvent('vibeai:bookmarksCleared', { detail: {} }));
       } catch (e) { /* ignore */ }
@@ -205,5 +205,5 @@
     clear
   };
 
-  void 0;
+  console.log('[VibeAI BookmarkManager] Loaded v2.16.0');
 })();

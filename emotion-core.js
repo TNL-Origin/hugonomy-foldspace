@@ -36,7 +36,7 @@ export function analyzeTone(text) {
   // Calculate resonance level
   const resonanceLevel = hugoScore > 70 ? "high" : hugoScore > 50 ? "medium" : "low";
 
-  void 0;
+  console.log(`[HugoScore] Text analyzed: tone=${tone}, score=${hugoScore}, resonance=${resonanceLevel}`);
 
   return { tone, hugoScore, hue, driftIndex, resonanceLevel };
 }
