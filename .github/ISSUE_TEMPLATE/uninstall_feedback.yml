@@ -1,0 +1,61 @@
+name: Uninstall feedback
+description: Tell us why you uninstalled VibeAI FoldSpace. Totally optional — we read every one.
+title: "[Uninstall] "
+labels: ["uninstall-feedback"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for trying VibeAI FoldSpace. If you uninstalled, a one-line reason helps us learn what to fix.
+        Skip any field you don't want to fill — even just picking a reason and submitting is useful.
+
+  - type: dropdown
+    id: reason
+    attributes:
+      label: What's the main reason you uninstalled?
+      options:
+        - It interrupted me too often
+        - It didn't catch the moments I expected
+        - I didn't understand what it was doing
+        - I don't use ChatGPT / Claude / Gemini enough to benefit
+        - Performance or speed concern
+        - Privacy concern
+        - Other (please describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: Anything else you'd like to share?
+      description: Totally optional. One sentence is fine.
+      placeholder: e.g. "The mirror popped up while I was deep in a coding session and broke my focus"
+    validations:
+      required: false
+
+  - type: input
+    id: extension-version
+    attributes:
+      label: Extension version
+      description: Auto-filled by the extension — leave as is.
+      placeholder: e.g. 2.22.0
+    validations:
+      required: false
+
+  - type: input
+    id: days-installed
+    attributes:
+      label: Days installed
+      description: Auto-filled by the extension — leave as is.
+      placeholder: e.g. 12
+    validations:
+      required: false
+
+  - type: input
+    id: platform
+    attributes:
+      label: Platform
+      description: Auto-filled by the extension — leave as is.
+      placeholder: e.g. chrome, edge
+    validations:
+      required: false
