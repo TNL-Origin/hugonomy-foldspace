@@ -87,7 +87,7 @@ See [privacy.html](privacy.html) for full privacy policy.
 
 `scripts/hugoscore-engine.js` is human-readable and verifiable per Chrome Web Store policy.
 
-The HugoScore scoring algorithm is the proprietary intellectual property of Hugonomy Systems and Joseph D. Tingling (Patent-pending: US Application No. 63/856,714). While the file is readable, the algorithm logic, lexicon weights, and scoring methodology may not be reproduced, adapted, or used in other products without written permission.
+The HugoScore scoring algorithm is the proprietary intellectual property of Hugonomy Systems and Joseph D. Tingling. While the file is readable, the algorithm logic, lexicon weights, and scoring methodology may not be reproduced, adapted, or used in other products without written permission.
 
 All source files in this repository are plain, readable JavaScript. See [LICENSE.md](LICENSE.md) for full terms.
 
