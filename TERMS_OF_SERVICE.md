@@ -114,7 +114,7 @@ See [PLATFORM_COMPATIBILITY.md](PLATFORM_COMPATIBILITY.md) for details.
 - Hugonomy™ and VibeAI FoldSpace™ are trademarks of Joseph D. Tingling
 - Extension code is licensed under MIT License (see [LICENSE.md](LICENSE.md))
 - HugoScore™ algorithm is proprietary and distributed in obfuscated form
-- **Patent Pending:** U.S. Provisional Patent Application No. 63/856,714
+- - HugoScore™ algorithm is proprietary and distributed in obfuscated form
 
 **Your Content:**
 - You retain all rights to your conversations and data
