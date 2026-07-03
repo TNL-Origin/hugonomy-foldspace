@@ -3,7 +3,6 @@
  * Lexicon-based conversational tone and resonance analysis.
  *
  * Copyright (c) 2026 Joseph D. Tingling / Hugonomy Systems. All Rights Reserved.
- * Patent-pending: US Application No. 63/856,714
  *
  * This file is human-readable and verifiable per Chrome Web Store policy.
  * The algorithm is protected intellectual property. Use, reproduction, or
