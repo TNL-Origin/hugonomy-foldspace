@@ -3,7 +3,7 @@
  * Loads and interfaces with the WASM-compiled HugoScore algorithm
  *
  * This file is the bridge between JavaScript and the binary WASM module
- * Patent-pending algorithm (US App No. 63/856,714)
+ * Proprietary algorithm — © 2024–2026 Hugonomy Systems. All rights reserved.
  */
 
 let wasmModule = null;
