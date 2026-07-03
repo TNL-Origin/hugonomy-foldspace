@@ -48,8 +48,6 @@ For a complete list of dependencies, see package.json and package-lock.json.
 
 ## HugoScore™ Algorithm
 
-**Patent Pending:** U.S. Provisional Patent Application No. 63/856,714
-
 The HugoScore™ emotional intelligence algorithm is proprietary to Joseph D. Tingling and distributed in obfuscated form. Reverse engineering or extraction of the HugoScore™ algorithm is prohibited.
 
 HugoScore™ is a trademark of Joseph D. Tingling.
