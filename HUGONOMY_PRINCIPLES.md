@@ -136,7 +136,6 @@ We establish limits **before** scale because boundaries added after power emerge
 **VibeAI FoldSpace™**
 A Hugonomy™ system
 © 2026 Joseph Duane Tingling, MD/PhD
-**Patent Pending:** U.S. Provisional Patent Application No. 63/856,714
 
 ---
 
